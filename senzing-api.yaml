@@ -1,0 +1,145 @@
+openapi: 3.0.1
+info:
+  title: Senzing REST API
+  version: "1.4"
+  description: >-
+    This is the Senzing REST API.  It describes the REST interface
+    to Senzing API functions available via REST.  It leverages the
+    Senzing native API which is documented at
+    [https://docs.senzing.com](https://docs.senzing.com)
+paths:
+  /records/{dataSourceCode}/{recordId}:
+    get:
+      summary: Get an entity record by data source and record ID.
+      operationId: getRecord
+      parameters:
+      - name: dataSourceCode
+        description: >-
+          The data source code identifying the data source with which
+          the requested record is associated.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: recordId
+        description: >-
+           The identifier that uniquely identifies the requested record
+           within a given data source.  This may have been specified
+           when the record was loaded or generated automatically.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EntityRecord'
+                  rawData:
+                    type: object
+                    nullable: true
+                    additionalProperties: {}
+components:
+  schemas:
+    EntityRecord:
+      type: object
+      properties:
+        dataSource:
+          type: string
+          description: >-
+            The data source code identifying the source from which the record
+            was loaded.
+        recordId:
+          type: string
+          description: >-
+            The identifier that uniquely identifies this record from other
+            records from the same data source.  This may have been loaded with
+            the record or automatically generated from the record's data.
+        recordHash:
+          type: string
+          description: >-
+            A hash of the record data that effectively uniquely identifies the
+            the record and its data as it was loaded.  This is used to identify
+            records that are exact duplicates of one another.
+        addressData:
+          description: >-
+            An array of addresses associated with the record that are formatted
+            for readability.  These may be prefixed by a "usage type" if one
+            was provided (e.g.: "HOME: 101 Main Street")
+          type: array
+          items:
+            type: string
+        attributeData:
+          description: >-
+            An array of attributes associated with the record that are formatted
+            for readability.  These will be prefixed by an attribtue type and
+            optionally by a "usage type" if one was provided.
+          type: array
+          items:
+            type: string
+        identifierData:
+          description: >-
+            An array of entity data associated with the record where the items
+            are formatted for readability.  These will be prefixed by an
+            identifier type and may be prefixed by a "usage type" if one was
+            provided (e.g.: "ID: 123456789" or "EMAIL: WORK: joe@nowhere.com")
+          type: array
+          items:
+            type: string
+        nameData:
+          description: >-
+            An array of names associated with the record that are formatted for
+            readability.  These may be prefixed by a "usage type" if one was
+            provided (e.g.: "Joe Schmoe" or "AKA: Joseph P. Schmoe")
+          type: array
+          items:
+            type: string
+        phoneData:
+          description: >-
+            An array of phone numbers associated with the record that are
+            formatted for readability.  These may be prefixed by a "usage type"
+            if one was provided (e.g.: "HOME: 702-555-1212")
+          type: array
+          items:
+            type: string
+        relationshipData:
+          description: >-
+            An array of relationship data items associated with the record that
+            describes disclosed relationships.
+          type: array
+          items:
+            type: string
+        otherData:
+          description: >-
+            An array of associated data items that were loaded with the record
+            but not normally recognized or used for entity resolution.  This
+            array usually contains useful information from the source system.
+          type: array
+          items:
+            type: string
+        originalSourceData:
+          description: >-
+            The JSON representation of the original data record that was
+            loaded.
+          type: object
+          additionalProperties: {}
