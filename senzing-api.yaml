@@ -76,6 +76,18 @@ paths:
         schema:
           type: boolean
           default: false
+      - name: withRelated
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to pull the complete features and records for first-degree related
+          entities (i.e.: the RelatedEntity instances will have the "partial"
+          flag set to true rather than false).  If false, then all returned
+          RelatedEntity instances will only contain partial data (the default).
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
       responses:
         default:
           description: default response
@@ -118,6 +130,18 @@ paths:
         schema:
           type: boolean
           default: false
+      - name: withRelated
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to pull the complete features and records for first-degree related
+          entities (i.e.: the RelatedEntity instances will have the "partial"
+          flag set to true rather than false).  If false, then all returned
+          RelatedEntity instances will only contain partial data (the default).
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
       responses:
         default:
           description: default response
@@ -125,6 +149,165 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityResponse'
+  /entities/by-attribute-search:
+    get:
+      summary: >-
+        Search for entities that would match or relate to the provided
+        entity features.
+      operationId: searchByAttributes
+      parameters:
+      - name: attrs
+        description: >-
+          The JSON describing the entity attributes in the same format as
+          how an entity record would be loaded.  The specified attribtues
+          will be treated as a hypothetical record being loaded and the
+          result will be anything that would have matched or related to it.
+        in: query
+        required: true
+        schema:
+          type: object
+          additionalProperties: {}
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/EntityAttributeSearchResponse'
+  /entity-paths/by-entity-id:
+    get:
+      summary: >-
+        Finds a path between to entities identified by entity ID
+      operationId: findPathByEntityID
+      parameters:
+      - name: from
+        description: >-
+          The entity ID of the first entity for the path.
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: to
+        description: >-
+          The entity ID of the last entity for the path.
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: maxDegrees
+        description: >-
+            The maximum number of degrees to look for a path from the first
+            entity to the last entity.
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int8
+          minimum: 0
+          maximum: 100
+          default: 3
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/EntityPathResponse'
+  /entity-paths/by-record-id:
+    get:
+      summary: >-
+        Finds a path between to entities identified by data source and
+        record IDs
+      operationId: findPathByRecordID
+      parameters:
+      - name: fromDataSource
+        description: >-
+          The data source of the record for the first entity in the path.
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: fromRecordId
+        description: >-
+          The record Id of the record for the first entity in the path
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: toDataSource
+        description: >-
+          The data source of the record for the last entity in the path.
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: toRecordId
+        description: >-
+          The record Id of the record for the last entity in the path.
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: maxDegrees
+        description: >-
+            The maximum number of degrees to look for a path from the first
+            entity to the last entity.
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int8
+          minimum: 0
+          maximum: 100
+          default: 3
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/EntityPathResponse'
 components:
   schemas:
     RecordResponse:
@@ -148,6 +331,35 @@ components:
             The EntityData describing the requested entity in detail along with
             brief information on entities related at first degree.
           $ref: '#/components/schemas/EntityData'
+        rawData:
+          description: >-
+            The RAW result from the underlying native API function.
+          type: object
+          nullable: true
+          additionalProperties: {}
+    EntityAttributeSearchResponse:
+      type: object
+      properties:
+        searchResults:
+          description: >-
+            The array of SearchEntityData instances describing the entities
+            matching the specified entity search attributes.
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchEntityData'
+        rawData:
+          description: >-
+            The RAW result from the underlying native API function.
+          type: object
+          nullable: true
+          additionalProperties: {}
+    EntityPathResponse:
+      type: object
+      properties:
+        entityPathData:
+          description: >-
+            The EntityPath describing the path that was found.
+          $ref: '#/components/schemas/EntityPathData'
         rawData:
           description: >-
             The RAW result from the underlying native API function.
@@ -297,12 +509,6 @@ components:
             The unique numeric ID identifying the entity.
           type: integer
           format: int64
-        lensId:
-          description: >-
-            The unique numeric ID identifying the lens associated with
-            this entity.
-          type: integer
-          format: int64
         entityName:
           description: >-
             The name associated with this entity that is considered the
@@ -390,12 +596,6 @@ components:
         entityId:
           description: >-
             The unique numeric ID identifying the entity.
-          type: integer
-          format: int64
-        lensId:
-          description: >-
-            The unique numeric ID identifying the lens associated with
-            this entity.
           type: integer
           format: int64
         entityName:
@@ -558,3 +758,176 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RelatedEntity'
+    SearchEntityData:
+      type: object
+      properties:
+        resolvedEntity:
+          description: >-
+            The ResolvedEntity describing the search-matching entity.
+          $ref: '#/components/schemas/ResolvedEntity'
+        possibleMatches:
+          description: >-
+            The array of RelatedEntity instances describing the first-degree
+            possibly matching entities to this search-matching entity.
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedEntity'
+        discoveredRelationships:
+          description: >-
+            The array of RelatedEntity instances describing the first-degree
+            discovered relationships to this search-matching entity.
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedEntity'
+        disclosedRelationships:
+          description: >-
+            The array of RelatedEntity instances describing the first-degree
+            disclosed relationships to this search-matching entity.
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedEntity'
+        matchScore:
+          description: >-
+            The match score between the search entity and this
+            search-matching entity.
+          type: number
+          format: double
+        topNames:
+          description: >-
+            The top-scoring name matches between the search entity and this
+            search-matching entity.
+          type: array
+          items:
+            type: string
+        topAddresses:
+          description: >-
+            The top-scoring address matches between the search entity and this
+            search-matching entity.
+          type: array
+          items:
+            type: string
+        topAttributes:
+          description: >-
+            The top-scoring attributes matches between the search entity and
+            this search-matching entity.
+          type: array
+          items:
+            type: string
+        topPhoneNumbers:
+          description: >-
+            The top-scoring phone number matches between the search entity and
+            this search-matching entity.
+          type: array
+          items:
+            type: string
+        topIdentifiers:
+          description: >-
+            The top-scoring identifier matches between the search entity and
+            this search-matching entity.
+          type: array
+          items:
+            type: string
+        nameDataMatches:
+          description: >-
+            The name matches between the search entity and this search-matching
+            entity, formatted for readability.  These will be formatted with
+            usage types as prefixes where one exists (e.g.: "AKA: John Done")
+          type: array
+          items:
+            type: string
+        attributeDataMatches:
+          description: >-
+            The attribute matches between the search entity and this search-matching
+            entity, formatted for readability.  These will be formatted with
+            attribute type prefixes and usage types as prefixes where one
+            exists (e.g.: "GENDER: M" or "CITIZENSHIP: USA")
+          type: array
+          items:
+            type: string
+        identifierDataMatches:
+          description: >-
+            The identifier matches between the search entity and this
+            search-matching entity, formatted for readability.  These will be
+            formatted with attribute type prefixes and usage types as prefixes
+            where one exists (e.g.: "SSN: 111-22-3333" or
+            "EMAIL: joe@nowhere.com")
+          type: array
+          items:
+            type: string
+        addressDataMatches:
+          description: >-
+            The address matches between the search entity and this
+            search-matching entity, formatted for readability.  These will be
+            formatted with usage types as prefixes where one exists (e.g.:
+            "WORK: 101 Main Street, New York City, NY")
+          type: array
+          items:
+            type: string
+        phoneDataMatches:
+          description: >-
+            The phone matches between the search entity and this
+            search-matching entity, formatted for readability.  These will be
+            formatted with usage types as prefixes where one exists (e.g.:
+            "HOME: 702-555-1212")
+          type: array
+          items:
+            type: string
+        relationshipDataMatches:
+          description: >-
+            The relationship data matches between the search entity and this
+            search-matching entity.
+          type: array
+          items:
+            type: string
+        otherDataMatches:
+          description: >-
+            The other data matches between the search entity and this
+            search-matching entity.
+          type: array
+          items:
+            type: string
+        rawDataMatches:
+          description: >-
+            The raw uncategorized data matches between the search entity and
+            this entity.
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    EntityPath:
+      type: object
+      properties:
+        startEntityId:
+          description: The starting entity ID for the path.
+          nullable: false
+          type: integer
+          format: int64
+        endEntityId:
+          description: The ending entity ID for the path.
+          nullable: false
+          type: integer
+          format: int64
+        entityIDs:
+          description: >-
+            The array of entity IDs identifying the entities on the path
+            in order of how are they are connected on the path.  This is
+            null if there is no path between the entities.
+          nullable: true
+          type: array
+          items:
+            type: integer
+            format: int64
+    EntityPathData:
+      type: object
+      properties:
+        entityPath:
+          $ref: '#/components/schemas/EntityPath'
+        entities:
+          description: >-
+            The array of EntityData objects describing the entities on the
+            path.  This will include partial information on the first-degree
+            related entities to the entity.
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityData'
