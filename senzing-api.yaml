@@ -50,52 +50,7 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/RecordResponse'
-  /entities/by-entity-id/{entityId}:
-    get:
-      summary: Get a resolved entity by entity ID.
-      operationId: getEntityByEntityId
-      parameters:
-      - name: entityId
-        description: >-
-          The unique numeric ID that identifies that entity being requested.
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: withRaw
-        description: >-
-          An optional boolean query parameter specifying whether or not
-          to include the raw JSON response from the underlying native API.
-          This raw response may include additional details but lack some
-          of the abstraction the standard response provides.  If true,
-          then the 'rawData' field in the response will be a non-null
-          value and contain the additional details.
-        in: query
-        required: false
-        schema:
-          type: boolean
-          default: false
-      - name: withRelated
-        description: >-
-          An optional boolean query parameter specifying whether or not
-          to pull the complete features and records for first-degree related
-          entities (i.e.: the RelatedEntity instances will have the "partial"
-          flag set to true rather than false).  If false, then all returned
-          RelatedEntity instances will only contain partial data (the default).
-        in: query
-        required: false
-        schema:
-          type: boolean
-          default: false
-      responses:
-        default:
-          description: default response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/EntityResponse'
-  /entities/by-record-id/{dataSourceCode}/{recordId}:
+  /records/{dataSourceCode}/{recordId}/entity:
     get:
       summary: Get a resolved entity by data source and record ID.
       operationId: getEntityByRecordId
@@ -149,7 +104,52 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityResponse'
-  /entities/by-attribute-search:
+  /entities/{entityId}:
+    get:
+      summary: Get a resolved entity by entity ID.
+      operationId: getEntityByEntityId
+      parameters:
+      - name: entityId
+        description: >-
+          The unique numeric ID that identifies that entity being requested.
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: withRelated
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to pull the complete features and records for first-degree related
+          entities (i.e.: the RelatedEntity instances will have the "partial"
+          flag set to true rather than false).  If false, then all returned
+          RelatedEntity instances will only contain partial data (the default).
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/EntityResponse'
+  /entities:
     get:
       summary: >-
         Search for entities that would match or relate to the provided
@@ -187,20 +187,12 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityAttributeSearchResponse'
-  /entity-paths/by-entity-id:
+  /entities/{entityID}/entity-paths/{toEntityId}:
     get:
       summary: >-
-        Finds a path between to entities identified by entity ID
+        Finds a path between two entities identified by entity ID
       operationId: findPathByEntityID
       parameters:
-      - name: fromEntityId
-        description: >-
-          The entity ID of the first entity for the path.
-        in: query
-        required: true
-        schema:
-          type: integer
-          format: int64
       - name: toEntityId
         description: >-
           The entity ID of the last entity for the path.
@@ -221,7 +213,7 @@ paths:
           minimum: 0
           maximum: 100
           default: 3
-      - name: avoidEntities
+      - name: excludeEntityIds
         description: >-
             The array of entity identifiers that identify entities to be avoided
             or forbidden from the path (depending on the forbidAvoided
@@ -281,114 +273,7 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityPathResponse'
-  /entity-paths/by-record-id:
-    get:
-      summary: >-
-        Finds a path between to entities identified by data source and
-        record IDs
-      operationId: findPathByRecordID
-      parameters:
-      - name: fromDataSource
-        description: >-
-          The data source of the record for the first entity in the path.
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: fromRecordId
-        description: >-
-          The record Id of the record for the first entity in the path
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: toDataSource
-        description: >-
-          The data source of the record for the last entity in the path.
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: toRecordId
-        description: >-
-          The record Id of the record for the last entity in the path.
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: maxDegrees
-        description: >-
-            The maximum number of degrees to look for a path from the first
-            entity to the last entity.
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int8
-          minimum: 0
-          maximum: 100
-          default: 5
-      - name: avoidEntities
-        description: >-
-            The array of entity identifiers that identify entities to be avoided
-            or forbidden from the path (depending on the forbidAvoided
-            parameter).  The entity identifiers are either all 64-bit long
-            integers representing entity IDs or they are all RecordId instances
-            identifying records that are part of the resolved entities to avoid.
-            If this parameter is not provided, then the default is to NOT
-            exclude any entities.
-        in: query
-        required: false
-        schema:
-          type: array
-          items:
-            oneOf:
-              - type: integer
-                format: int64
-              - $ref: '#/components/schemas/RecordId'
-      - name: forbidAvoided
-        description: >-
-          If the avoidEntities parameter is provided then this flag is used to
-          control whether or not to forbid the avoided entities rather than
-          include them in the path as a "last resort".
-        in: query
-        required: false
-        schema:
-          type: boolean
-          default: false
-      - name: withSources
-        description: >-
-          The array of string data source codes identifying data sources for
-          which one must be included in the entities for the path.  If not
-          provided, then the default is to NOT require any specific data
-          sources.
-        in: query
-        required: false
-        schema:
-          type: array
-          items:
-            type: string
-      - name: withRaw
-        description: >-
-          An optional boolean query parameter specifying whether or not
-          to include the raw JSON response from the underlying native API.
-          This raw response may include additional details but lack some
-          of the abstraction the standard response provides.  If true,
-          then the 'rawData' field in the response will be a non-null
-          value and contain the additional details.
-        in: query
-        required: false
-        schema:
-          type: boolean
-          default: false
-      responses:
-        default:
-          description: default response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/EntityPathResponse'
-  /entity-networks/by-entity-id:
+  /entity-networks:
     get:
       summary: >-
         Finds the entity network around one or more entities identified by
@@ -409,82 +294,6 @@ paths:
           items:
             type: integer
             format: int64
-      - name: maxDegrees
-        description: >-
-            The maximum number of degrees to look for a path between the
-            specified entity IDs.
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int8
-          minimum: 0
-          maximum: 100
-          default: 5
-      - name: buildOut
-        description: >-
-            The maximum number of degrees to build out around each of the
-            specified entities regardless of those entities being on the
-            path between entities.
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int8
-          minimum: 0
-          maximum: 100
-          default: 1
-      - name: maxEntities
-        description: >-
-            The maximum number of entities to return to prevent responses
-            that are too large.
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          minimum: 0
-          default: 1000
-      - name: withRaw
-        description: >-
-          An optional boolean query parameter specifying whether or not
-          to include the raw JSON response from the underlying native API.
-          This raw response may include additional details but lack some
-          of the abstraction the standard response provides.  If true,
-          then the 'rawData' field in the response will be a non-null
-          value and contain the additional details.
-        in: query
-        required: false
-        schema:
-          type: boolean
-          default: false
-      responses:
-        default:
-          description: default response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/EntityNetworkResponse'
-  /entity-networks/by-record-id:
-    get:
-      summary: >-
-        Finds the entity network around one or more entities that contain the
-        records identified by specified data source / record ID pairs.  If no
-        paths exist, then island networks are returned with each island network
-        containing up to a specified number of related entities.
-      operationId: findNetworkByRecordID
-      parameters:
-      - name: recordIds
-        description: >-
-          The array of RecordId instances identifying the records that are part
-          of the resolved entities for which the networks and paths are being
-          requested.
-        in: query
-        required: true
-        schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/RecordId'
       - name: maxDegrees
         description: >-
             The maximum number of degrees to look for a path between the
