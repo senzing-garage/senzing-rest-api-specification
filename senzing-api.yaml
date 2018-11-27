@@ -193,7 +193,7 @@ paths:
         Finds a path between to entities identified by entity ID
       operationId: findPathByEntityID
       parameters:
-      - name: from
+      - name: fromEntityId
         description: >-
           The entity ID of the first entity for the path.
         in: query
@@ -201,7 +201,7 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: to
+      - name: toEntityId
         description: >-
           The entity ID of the last entity for the path.
         in: query
@@ -221,6 +221,46 @@ paths:
           minimum: 0
           maximum: 100
           default: 3
+      - name: avoidEntities
+        description: >-
+            The array of entity identifiers that identify entities to be avoided
+            or forbidden from the path (depending on the forbidAvoided
+            parameter).  The entity identifiers are either all 64-bit long
+            integers representing entity IDs or they are all RecordId instances
+            identifying records that are part of the resolved entities to avoid.
+            If this parameter is not provided, then the default is to NOT
+            exclude any entities.
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            oneOf:
+              - type: integer
+                format: int64
+              - $ref: '#/components/schemas/RecordId'
+      - name: forbidAvoided
+        description: >-
+          If the avoidEntities parameter is provided then this flag is used to
+          control whether or not to forbid the avoided entities rather than
+          include them in the path as a "last resort".
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: withSources
+        description: >-
+          The array of string data source codes identifying data sources for
+          which one must be included in the entities for the path.  If not
+          provided, then the default is to NOT require any specific data
+          sources.
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
       - name: withRaw
         description: >-
           An optional boolean query parameter specifying whether or not
@@ -287,7 +327,47 @@ paths:
           format: int8
           minimum: 0
           maximum: 100
-          default: 3
+          default: 5
+      - name: avoidEntities
+        description: >-
+            The array of entity identifiers that identify entities to be avoided
+            or forbidden from the path (depending on the forbidAvoided
+            parameter).  The entity identifiers are either all 64-bit long
+            integers representing entity IDs or they are all RecordId instances
+            identifying records that are part of the resolved entities to avoid.
+            If this parameter is not provided, then the default is to NOT
+            exclude any entities.
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            oneOf:
+              - type: integer
+                format: int64
+              - $ref: '#/components/schemas/RecordId'
+      - name: forbidAvoided
+        description: >-
+          If the avoidEntities parameter is provided then this flag is used to
+          control whether or not to forbid the avoided entities rather than
+          include them in the path as a "last resort".
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: withSources
+        description: >-
+          The array of string data source codes identifying data sources for
+          which one must be included in the entities for the path.  If not
+          provided, then the default is to NOT require any specific data
+          sources.
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
       - name: withRaw
         description: >-
           An optional boolean query parameter specifying whether or not
@@ -308,8 +388,174 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityPathResponse'
+  /entity-networks/by-entity-id:
+    get:
+      summary: >-
+        Finds the entity network around one or more entities identified by
+        their entity IDs and attempts to find paths between the specified
+        entities.  If no paths exist, then island networks are returned
+        with each island network containing up to a specified number of
+        related entities.
+      operationId: findNetworkByEntityID
+      parameters:
+      - name: entityIds
+        description: >-
+          The array of 64-bit integer entity IDs identifying the entities for
+          which the networks and paths are being requested.
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      - name: maxDegrees
+        description: >-
+            The maximum number of degrees to look for a path between the
+            specified entity IDs.
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int8
+          minimum: 0
+          maximum: 100
+          default: 5
+      - name: buildOut
+        description: >-
+            The maximum number of degrees to build out around each of the
+            specified entities regardless of those entities being on the
+            path between entities.
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int8
+          minimum: 0
+          maximum: 100
+          default: 1
+      - name: maxEntities
+        description: >-
+            The maximum number of entities to return to prevent responses
+            that are too large.
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
+          default: 1000
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/EntityNetworkResponse'
+  /entity-networks/by-record-id:
+    get:
+      summary: >-
+        Finds the entity network around one or more entities that contain the
+        records identified by specified data source / record ID pairs.  If no
+        paths exist, then island networks are returned with each island network
+        containing up to a specified number of related entities.
+      operationId: findNetworkByRecordID
+      parameters:
+      - name: recordIds
+        description: >-
+          The array of RecordId instances identifying the records that are part
+          of the resolved entities for which the networks and paths are being
+          requested.
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecordId'
+      - name: maxDegrees
+        description: >-
+            The maximum number of degrees to look for a path between the
+            specified entity IDs.
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int8
+          minimum: 0
+          maximum: 100
+          default: 5
+      - name: buildOut
+        description: >-
+            The maximum number of degrees to build out around each of the
+            specified entities regardless of those entities being on the
+            path between entities.
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int8
+          minimum: 0
+          maximum: 100
+          default: 1
+      - name: maxEntities
+        description: >-
+            The maximum number of entities to return to prevent responses
+            that are too large.
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
+          default: 1000
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/EntityNetworkResponse'
 components:
   schemas:
+    RecordId:
+      type: object
+      properties:
+        dataSource:
+          description: >-
+            The data source code that uniquely identifies the data source
+            associated with the record.
+          type: string
+        recordId:
+          description: >-
+            The record ID that uniquely identifies a record within the
+            respective data source.
+          type: string
     RecordResponse:
       type: object
       properties:
@@ -358,8 +604,21 @@ components:
       properties:
         entityPathData:
           description: >-
-            The EntityPath describing the path that was found.
+            The EntityPathData describing the path that was found.
           $ref: '#/components/schemas/EntityPathData'
+        rawData:
+          description: >-
+            The RAW result from the underlying native API function.
+          type: object
+          nullable: true
+          additionalProperties: {}
+    EntityNetworkResponse:
+      type: object
+      properties:
+        entityNetworkData:
+          description: >-
+            The EntityNetworkData describing the network that was found.
+          $ref: '#/components/schemas/EntityNetworkData'
         rawData:
           description: >-
             The RAW result from the underlying native API function.
@@ -928,6 +1187,24 @@ components:
             The array of EntityData objects describing the entities on the
             path.  This will include partial information on the first-degree
             related entities to the entity.
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityData'
+    EntityNetworkData:
+      type: object
+      properties:
+        entityPaths:
+          description: >-
+            The array of EntityPath objects describing the paths that make up
+            the entity network (including island networks).
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityPath'
+        entities:
+          description: >-
+            The array of EntityData objects describing the entities on the
+            path.  This may only include partial information on the entities at
+            the edge of the network.
           type: array
           items:
             $ref: '#/components/schemas/EntityData'
