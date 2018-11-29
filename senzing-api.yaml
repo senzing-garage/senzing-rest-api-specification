@@ -11,7 +11,7 @@ paths:
   /data-sources:
     get:
       summary: Get a list of configured data sources.
-      operationId: listDataSources()
+      operationId: listDataSources
       parameters:
       - name: withRaw
         description: >-
@@ -33,6 +33,48 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/DataSourcesResponse'
+  /data-sources/{dataSourceCode}/records/{recordId}:
+    get:
+      summary: Get an entity record by data source and record ID.
+      operationId: getDataSourceRecord
+      parameters:
+      - name: dataSourceCode
+        description: >-
+          The data source code identifying the data source with which
+          the requested record is associated.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: recordId
+        description: >-
+           The identifier that uniquely identifies the requested record
+           within a given data source.  This may have been specified
+           when the record was loaded or generated automatically.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/RecordResponse'
   /records/{dataSourceCode}/{recordId}:
     get:
       summary: Get an entity record by data source and record ID.
@@ -75,7 +117,7 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/RecordResponse'
-  /entities/by-entity-id/{entityId}:
+  /entities/{entityId}:
     get:
       summary: Get a resolved entity by entity ID.
       operationId: getEntityByEntityId
@@ -120,7 +162,7 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityResponse'
-  /entities/by-record-id/{dataSourceCode}/{recordId}:
+  /data-sources/{dataSourceCode}/records/{recordId}/entity:
     get:
       summary: Get a resolved entity by data source and record ID.
       operationId: getEntityByRecordId
@@ -174,7 +216,106 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityResponse'
-  /entities/by-attribute-search:
+  /query-entities/by-entity-id:
+    get:
+      summary: Get a resolved entity by entity ID.
+      operationId: getEntityByEntityId
+      parameters:
+      - name: entityId
+        description: >-
+          The unique numeric ID that identifies that entity being requested.
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: withRelated
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to pull the complete features and records for first-degree related
+          entities (i.e.: the RelatedEntity instances will have the "partial"
+          flag set to true rather than false).  If false, then all returned
+          RelatedEntity instances will only contain partial data (the default).
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/EntityResponse'
+  /query-entities/by-record-id:
+    get:
+      summary: Get a resolved entity by data source and record ID.
+      operationId: seatchEntityByRecordId
+      parameters:
+      - name: dataSourceCode
+        description: >-
+          The data source code identifying the data source with which
+          the requested record is associated.
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: recordId
+        description: >-
+           The identifier that uniquely identifies the requested record
+           within a given data source.  This may have been specified
+           when the record was loaded or generated automatically.
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: withRaw
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to include the raw JSON response from the underlying native API.
+          This raw response may include additional details but lack some
+          of the abstraction the standard response provides.  If true,
+          then the 'rawData' field in the response will be a non-null
+          value and contain the additional details.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: withRelated
+        description: >-
+          An optional boolean query parameter specifying whether or not
+          to pull the complete features and records for first-degree related
+          entities (i.e.: the RelatedEntity instances will have the "partial"
+          flag set to true rather than false).  If false, then all returned
+          RelatedEntity instances will only contain partial data (the default).
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/EntityResponse'
+  /query-entities/by-attribute:
     get:
       summary: >-
         Search for entities that would match or relate to the provided
@@ -212,7 +353,7 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityAttributeSearchResponse'
-  /entity-paths/by-entity-id:
+  /query-entity-paths/by-entity-id:
     get:
       summary: >-
         Finds a path between to entities identified by entity ID
@@ -306,7 +447,7 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityPathResponse'
-  /entity-paths/by-record-id:
+  /query-entity-paths/by-record-id:
     get:
       summary: >-
         Finds a path between to entities identified by data source and
@@ -413,7 +554,7 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityPathResponse'
-  /entity-networks/by-entity-id:
+  /query-entity-networks/by-entity-id:
     get:
       summary: >-
         Finds the entity network around one or more entities identified by
@@ -490,7 +631,7 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityNetworkResponse'
-  /entity-networks/by-record-id:
+  /query-entity-networks/by-record-id:
     get:
       summary: >-
         Finds the entity network around one or more entities that contain the
