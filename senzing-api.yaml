@@ -75,48 +75,6 @@ paths:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/RecordResponse'
-  /records/{dataSourceCode}/{recordId}:
-    get:
-      summary: Get an entity record by data source and record ID.
-      operationId: getRecord
-      parameters:
-      - name: dataSourceCode
-        description: >-
-          The data source code identifying the data source with which
-          the requested record is associated.
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: recordId
-        description: >-
-           The identifier that uniquely identifies the requested record
-           within a given data source.  This may have been specified
-           when the record was loaded or generated automatically.
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: withRaw
-        description: >-
-          An optional boolean query parameter specifying whether or not
-          to include the raw JSON response from the underlying native API.
-          This raw response may include additional details but lack some
-          of the abstraction the standard response provides.  If true,
-          then the 'rawData' field in the response will be a non-null
-          value and contain the additional details.
-        in: query
-        required: false
-        schema:
-          type: boolean
-          default: false
-      responses:
-        default:
-          description: default response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/RecordResponse'
   /entities/{entityId}:
     get:
       summary: Get a resolved entity by entity ID.
@@ -709,7 +667,100 @@ paths:
                 $ref: '#/components/schemas/EntityNetworkResponse'
 components:
   schemas:
+    BaseResponse:
+      type: object
+      properties:
+        meta:
+          type: object
+          properties:
+            httpMethod:
+              type: string
+              enum:
+                - GET
+                - POST
+                - PUT
+                - PATCH
+                - DELETE
+            timestamp:
+              type: string
+              format: date-time
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+        rawData:
+          description: >-
+            The RAW result from the underlying native API function.
+          type: object
+          nullable: true
+          additionalProperties: {}
+    DataSourcesResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                dataSources:
+                  description: >-
+                    The list of data source codes that are configured.
+                  type: array
+                  items:
+                    type: string
+    RecordResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                record:
+                  description: >-
+                    The EntityRecord describing the matching record.
+                  $ref: '#/components/schemas/EntityRecord'
+    EntityResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/EntityData'
+    EntityAttributeSearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                searchResults:
+                  description: >-
+                    The array AttributeSearchResult instances describing the
+                    entities matching the specified entity search attributes
+                    including the AttributeSearchResultType for each.
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AttributeSearchResult'
+    EntityPathResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/EntityPathData'
+    EntityNetworkResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/EntityNetworkData'
     RecordId:
+      description: >-
+        Identifies a record by its data source code and record identifier.
       type: object
       properties:
         dataSource:
@@ -722,91 +773,10 @@ components:
             The record ID that uniquely identifies a record within the
             respective data source.
           type: string
-    DataSourcesResponse:
-      type: object
-      properties:
-        dataSources:
-          description: >-
-            The list of data source codes that are configured.
-          type: array
-          items:
-            type: string
-        rawData:
-          description: >-
-            The RAW result from the underlying native API function.
-          type: object
-          nullable: true
-          additionalProperties: {}
-    RecordResponse:
-      type: object
-      properties:
-        record:
-          description: >-
-            The EntityRecord describing the matching record.
-          $ref: '#/components/schemas/EntityRecord'
-        rawData:
-          description: >-
-            The RAW result from the underlying native API function.
-          type: object
-          nullable: true
-          additionalProperties: {}
-    EntityResponse:
-      type: object
-      properties:
-        entityData:
-          description: >-
-            The EntityData describing the requested entity in detail along with
-            brief information on entities related at first degree.
-          $ref: '#/components/schemas/EntityData'
-        rawData:
-          description: >-
-            The RAW result from the underlying native API function.
-          type: object
-          nullable: true
-          additionalProperties: {}
-    EntityAttributeSearchResponse:
-      type: object
-      properties:
-        searchResults:
-          description: >-
-            The array of SearchEntityData instances describing the entities
-            matching the specified entity search attributes.
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchEntityData'
-        rawData:
-          description: >-
-            The RAW result from the underlying native API function.
-          type: object
-          nullable: true
-          additionalProperties: {}
-    EntityPathResponse:
-      type: object
-      properties:
-        entityPathData:
-          description: >-
-            The EntityPathData describing the path that was found.
-          $ref: '#/components/schemas/EntityPathData'
-        rawData:
-          description: >-
-            The RAW result from the underlying native API function.
-          type: object
-          nullable: true
-          additionalProperties: {}
-    EntityNetworkResponse:
-      type: object
-      properties:
-        entityNetworkData:
-          description: >-
-            The EntityNetworkData describing the network that was found.
-          $ref: '#/components/schemas/EntityNetworkData'
-        rawData:
-          description: >-
-            The RAW result from the underlying native API function.
-          type: object
-          nullable: true
-          additionalProperties: {}
     EntityRecord:
+      description: >-
+        Describes a record (aka: observed entity) that has been loaded for
+        a particular data source.
       type: object
       properties:
         dataSource:
@@ -1026,316 +996,129 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/EntityFeature'
+    BaseRelatedEntity:
+      description: >-
+        Provides the additional fields to a ResolvedEntity that describe
+        an entity's relationship to another.  This serves as a basis for
+        AttributeSearchResult and RelatedEntity.
+      allOf:
+        - $ref: '#/components/schemas/ResolvedEntity'
+        - type: object
+          properties:
+            matchLevel:
+              description: >-
+                The integer "match level" describing how the related entity
+                matched to the primary resolved entity.
+              type: integer
+              format: int32
+            fullNameScore:
+              description: >-
+                The full name score between the primary resolved entity and
+                this related entity.  The higher the score the closer the
+                name match.
+              type: integer
+              format: int32
+            matchScore:
+              description: >-
+                The match score between the primary resolved entity and
+                this related entity.  The higher the score the closer
+                the match.
+              type: integer
+              format: int32
+            disclosed:
+              description: >-
+                A boolean flag indicating if this related entity
+                represents a disclosed relationship.
+              type: boolean
+            ambiguous:
+              description: >-
+                A boolean flag indicating if this related entity
+                represents an ambiguous relationship.
+              type: boolean
+            matchKey:
+              description: >-
+                The match key describing what features matched between
+                the primary resolved entity and the related entity.
+              type: string
+            resolutionRuleCode:
+              description: >-
+                The code identifying the resolution rule that related
+                this entity to the primary resolved entity.
+              type: string
+            refScore:
+              description: >-
+                The ref score between the primary resolved entity and
+                this related entity.
+              type: integer
+              format: int32
+            partial:
+              description: >-
+                If true then this RelatedEntity has complete features and
+                records, otherwise they are not provided.  Also, the
+                recordSummary items will be missing the topRecordIds if partial
+                is true.
+              type: boolean
+    RelationshipType:
+      description: >-
+        Describes how an entity is related to another (either a possible match,
+        a discovered possible relationship or a disclosed relationship)
+      type: string
+      enum:
+        - POSSIBLE_MATCH
+        - POSSIBLE_RELATION
+        - DISCLOSED_RELATION
     RelatedEntity:
       description: >-
         Provides a description of an entity that is related to a
         ResolvedEntity.  This describes how the entity is related and may
         be missing the complete features and record list of a ResolvedEntity.
-      type: object
-      properties:
-        entityId:
-          description: >-
-            The unique numeric ID identifying the entity.
-          type: integer
-          format: int64
-        entityName:
-          description: >-
-            The name associated with this entity that is considered the
-            best name among all the associated names.
-          type: string
-        bestName:
-          description: >-
-            Usually the same as the entityName property, but this may differ
-            if the entity was found based on a name search.  In such a case,
-            this field represents the name that most closely matches the name
-            that was searched on.
-          type: string
-        recordSummary:
-          description: >-
-            The array of DataSourceRecordSummary instances describing the
-            number of records associated with each data source that contributes
-            to this entity.  The topRecordIds property of the returned elements
-            is only provided if the partial flag is true.
-          type: array
-          items:
-            $ref: '#/components/schemas/DataSourceRecordSummary'
-        nameData:
-          description: >-
-            An array of names associated with the entity that are formatted for
-            readability.  These may be prefixed by a "usage type" if one was
-            provided (e.g.: "Joe Schmoe" or "AKA: Joseph P. Schmoe")
-          type: array
-          items:
-            type: string
-        attributeData:
-          description: >-
-            An array of attributes associated with the entity that are formatted
-            for readability.  These will be prefixed by an attribtue type and
-            optionally by a "usage type" if one was provided.
-          type: array
-          items:
-            type: string
-        addressData:
-          description: >-
-            An array of addresses associated with the entity that are formatted
-            for readability.  These may be prefixed by a "usage type" if one
-            was provided (e.g.: "HOME: 101 Main Street")
-          type: array
-          items:
-            type: string
-        phoneData:
-          description: >-
-            An array of phone numbers associated with the entity that are
-            formatted for readability.  These may be prefixed by a "usage type"
-            if one was provided (e.g.: "HOME: 702-555-1212")
-          type: array
-          items:
-            type: string
-        identifierData:
-          description: >-
-            An array of entity data associated with the record where the items
-            are formatted for readability.  These will be prefixed by an
-            identifier type and may be prefixed by a "usage type" if one was
-            provided (e.g.: "ID: 123456789" or "EMAIL: WORK: joe@nowhere.com")
-          type: array
-          items:
-            type: string
-        matchLevel:
-          description: >-
-            The integer "match level" describing how the related entity matched
-            to the primary resolved entity.
-          type: integer
-          format: int32
-        fullNameScore:
-          description: >-
-            The full name score between the primary resolved entity and this
-            related entity.  The higher the score the closer the name match.
-          type: integer
-          format: int32
-        matchScore:
-          description: >-
-            The match score between the primary resolved entity and this related
-            entity.  The higher the score the closer the match.
-          type: integer
-          format: int32
-        disclosed:
-          description: >-
-            A boolean flag indicating if this related entity represents a
-            disclosed relationship.
-          type: boolean
-        ambiguous:
-          description: >-
-            A boolean flag indicating if this related entity represents an
-            ambiguous relationship.
-          type: boolean
-        matchKey:
-          description: >-
-            The match key describing what features matched between the primary
-            resolved entity and the related entity.
-          type: string
-        resolutionRuleCode:
-          description: >-
-            The code identifying the resolution rule that related this entity
-            to the primary resolved entity.
-          type: string
-        refScore:
-          description: >-
-            The ref score between the primary resolved entity and this related
-            entity.
-          type: integer
-          format: int32
-        partial:
-          description: >-
-            If true then this RelatedEntity has complete features and records,
-            otherwise they are not provided.  Also, the recordSummary items
-            will be missing the topRecordIds if partial is true.
-          type: boolean
-        records:
-          description: >-
-            The optional array of EntityRecord instances describing the records
-            associated with this entity.  This is NOT provided if the partial
-            flag is set to true.
-          nullable: true
-          type: array
-          items:
-            $ref: '#/components/schemas/EntityRecord'
-        features:
-          description: >-
-            The optional map of string feature names to arrays of EntityFeature
-            instances describing the values associated with each respective
-            feature name. This is NOT provided if the partial flag is set to
-            true.
-          nullable: true
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/EntityFeature'
+      allOf:
+        - type: object
+          properties:
+            relationType:
+              $ref: '#/components/schemas/RelationshipType'
+        - $ref: '#/components/schemas/BaseRelatedEntity'
     EntityData:
+      description: >-
+        Describes an entity and the entities related to that entity at
+        one degree of separation.
       type: object
       properties:
         resolvedEntity:
           description: The ResolvedEntity describing the primary entity.
           $ref: '#/components/schemas/ResolvedEntity'
-        possibleMatches:
+        relatedEntities:
           description: >-
             The array of RelatedEntity instances describing the possible
-            matches.
+            matches, discovered relationships, and disclosed relationships.
           type: array
           items:
             $ref: '#/components/schemas/RelatedEntity'
-        discoveredRelationships:
-          description: >-
-            The array of RelatedEntity instances describing the discovered
-            relationships (aka: "possibly related") entities.
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedEntity'
-        disclosedRelationships:
-          description: >-
-            The array of RelatedEntity instances describing the disclosed
-            relationship entities.
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedEntity'
-    SearchEntityData:
-      type: object
-      properties:
-        resolvedEntity:
-          description: >-
-            The ResolvedEntity describing the search-matching entity.
-          $ref: '#/components/schemas/ResolvedEntity'
-        possibleMatches:
-          description: >-
-            The array of RelatedEntity instances describing the first-degree
-            possibly matching entities to this search-matching entity.
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedEntity'
-        discoveredRelationships:
-          description: >-
-            The array of RelatedEntity instances describing the first-degree
-            discovered relationships to this search-matching entity.
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedEntity'
-        disclosedRelationships:
-          description: >-
-            The array of RelatedEntity instances describing the first-degree
-            disclosed relationships to this search-matching entity.
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedEntity'
-        matchScore:
-          description: >-
-            The match score between the search entity and this
-            search-matching entity.
-          type: number
-          format: double
-        topNames:
-          description: >-
-            The top-scoring name matches between the search entity and this
-            search-matching entity.
-          type: array
-          items:
-            type: string
-        topAddresses:
-          description: >-
-            The top-scoring address matches between the search entity and this
-            search-matching entity.
-          type: array
-          items:
-            type: string
-        topAttributes:
-          description: >-
-            The top-scoring attributes matches between the search entity and
-            this search-matching entity.
-          type: array
-          items:
-            type: string
-        topPhoneNumbers:
-          description: >-
-            The top-scoring phone number matches between the search entity and
-            this search-matching entity.
-          type: array
-          items:
-            type: string
-        topIdentifiers:
-          description: >-
-            The top-scoring identifier matches between the search entity and
-            this search-matching entity.
-          type: array
-          items:
-            type: string
-        nameDataMatches:
-          description: >-
-            The name matches between the search entity and this search-matching
-            entity, formatted for readability.  These will be formatted with
-            usage types as prefixes where one exists (e.g.: "AKA: John Done")
-          type: array
-          items:
-            type: string
-        attributeDataMatches:
-          description: >-
-            The attribute matches between the search entity and this search-matching
-            entity, formatted for readability.  These will be formatted with
-            attribute type prefixes and usage types as prefixes where one
-            exists (e.g.: "GENDER: M" or "CITIZENSHIP: USA")
-          type: array
-          items:
-            type: string
-        identifierDataMatches:
-          description: >-
-            The identifier matches between the search entity and this
-            search-matching entity, formatted for readability.  These will be
-            formatted with attribute type prefixes and usage types as prefixes
-            where one exists (e.g.: "SSN: 111-22-3333" or
-            "EMAIL: joe@nowhere.com")
-          type: array
-          items:
-            type: string
-        addressDataMatches:
-          description: >-
-            The address matches between the search entity and this
-            search-matching entity, formatted for readability.  These will be
-            formatted with usage types as prefixes where one exists (e.g.:
-            "WORK: 101 Main Street, New York City, NY")
-          type: array
-          items:
-            type: string
-        phoneDataMatches:
-          description: >-
-            The phone matches between the search entity and this
-            search-matching entity, formatted for readability.  These will be
-            formatted with usage types as prefixes where one exists (e.g.:
-            "HOME: 702-555-1212")
-          type: array
-          items:
-            type: string
-        relationshipDataMatches:
-          description: >-
-            The relationship data matches between the search entity and this
-            search-matching entity.
-          type: array
-          items:
-            type: string
-        otherDataMatches:
-          description: >-
-            The other data matches between the search entity and this
-            search-matching entity.
-          type: array
-          items:
-            type: string
-        rawDataMatches:
-          description: >-
-            The raw uncategorized data matches between the search entity and
-            this entity.
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              type: string
+    AttributeSearchResultType:
+      description: >-
+        Describes how the entity matching the search attributes would have
+        entity resolved against those attributes (either a match, possible
+        match, discovered relationship or name only match).
+      type: string
+      enum:
+        - MATCH
+        - POSSIBLE_MATCH
+        - POSSIBLE_RELATION
+        - NAME_ONLY_MATCH
+    AttributeSearchResult:
+      description: >-
+        Describes an entity that matched attribute search criteria and how
+        it matched against that criteria.
+      allOf:
+        - type: object
+          properties:
+            resultType:
+              $ref: '#/components/schemas/AttributeSearchResultType'
+        - $ref: '#/components/schemas/BaseRelatedEntity'
     EntityPath:
+      description: >-
+        Describes a path between two entities using the entity IDs of the
+        entities in the path.
       type: object
       properties:
         startEntityId:
@@ -1359,6 +1142,10 @@ components:
             type: integer
             format: int64
     EntityPathData:
+      description: >-
+        Describes a path between two entities using the entity IDs of the
+        entities in the path and includes the data from the actual entities
+        on the path.
       type: object
       properties:
         entityPath:
@@ -1372,6 +1159,10 @@ components:
           items:
             $ref: '#/components/schemas/EntityData'
     EntityNetworkData:
+      description: >-
+        Describes a network of paths between entities using the entity IDs of
+        the entities in the path and includes the data from the actual entities
+        in the network.
       type: object
       properties:
         entityPaths:
