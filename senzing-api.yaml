@@ -13,10 +13,16 @@ paths:
       summary: Pings the server to make sure it is up and running.
       operationId: ping
       responses:
-        default:
-          description: default response
+        '200':
+          description: Successful response
           content:
             application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+            default:
               schema:
                 $ref: '#/components/schemas/BaseResponse'
   /data-sources:
@@ -26,12 +32,14 @@ paths:
       parameters:
         - $ref: '#/components/parameters/withRawQueryParam'
       responses:
-        default:
-          description: default response
+        '200':
+          description: Successful response
           content:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/DataSourcesResponse'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}:
     get:
       summary: Get an entity record by data source and record ID.
@@ -41,12 +49,32 @@ paths:
         - $ref: '#/components/parameters/recordIdPathParam'
         - $ref: '#/components/parameters/withRawQueryParam'
       responses:
-        default:
-          description: default response
+        '200':
+          description: Successul response
           content:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/RecordResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/RecordResponse'
+        '404':
+          description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
   /entities/{entityId}:
     get:
       summary: Get a resolved entity by entity ID.
@@ -63,12 +91,32 @@ paths:
       - $ref: '#/components/parameters/withRelatedQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
-        default:
-          description: default response
+        '200':
+          description: Successful response
           content:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/EntityResponse'
+        '404':
+          description: If the entity ID is not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}/entity:
     get:
       summary: Get a resolved entity by data source and record ID.
@@ -79,12 +127,32 @@ paths:
         - $ref: '#/components/parameters/withRelatedQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
       responses:
-        default:
+        '200':
           description: default response
           content:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/EntityResponse'
+        '404':
+          description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
   /entities:
     get:
       summary: >-
@@ -111,16 +179,38 @@ paths:
            "ADDR_POSTAL_CODE": "55073-1234"}
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
-        default:
-          description: default response
+        '200':
+          description: Successful response
           content:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityAttributeSearchResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityAttributeSearchResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/EntityAttributeSearchResponse'
+        '401':
+          description: >-
+              If the specified attrs parameter is missing or is not formatted
+              properly.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
   /entity-paths:
     get:
       summary: >-
-        Finds a path between to entities identified by entity ID or by
+        Finds a path between two entities identified by entity ID or by
         data sources and record IDs of constituent records.  You may provide
         entity IDs or data source and record IDs to identify the from/to
         entities in the path, but you may not mix and match.
@@ -128,30 +218,24 @@ paths:
       parameters:
       - name: from
         description: >-
-          The identifier for the first entity for the path either as an
+          The EntityIdentifier for the first entity for the path either as an
           entity ID or a JSON-encoded RecordId for the constituent record.
           Whatever format is used for the "from" parameter must match the
           format of the "to" parameter.
         in: query
         required: true
         schema:
-          oneOf:
-            - type: integer
-              format: int64
-            - $ref: '#/components/schemas/RecordId'
+          $ref: '#/components/schemas/EntityIdentifier'
       - name: to
         description: >-
-          The identifier for the last entity for the path either as an
+          The EntityIdentifier for the last entity for the path either as an
           entity ID or a JSON-encoded record ID for the constituent record.
           Whatever format is used for the "to" parameter must match the
           format of the "from" parameter.
         in: query
         required: true
         schema:
-          oneOf:
-            - type: integer
-              format: int64
-            - $ref: '#/components/schemas/RecordId'
+          $ref: '#/components/schemas/EntityIdentifier'
       - name: maxDegrees
         description: >-
             The maximum number of degrees to look for a path from the first
@@ -166,13 +250,13 @@ paths:
           default: 3
       - name: avoidEntities
         description: >-
-            The array of entity identifiers that identify entities to be avoided
-            or forbidden from the path (depending on the forbidAvoided
-            parameter).  The entity identifiers are either all 64-bit long
-            integers representing entity IDs or they are all RecordId instances
-            identifying records that are part of the resolved entities to avoid.
-            If this parameter is not provided, then the default is to NOT
-            exclude any entities.
+          The array of EntityIdentifier's that identify entities to be
+          avoided or forbidden from the path (depending on the forbidAvoided
+          parameter).  The entity identifiers are either all 64-bit long
+          integers representing entity IDs or they are all RecordId instances
+          identifying records that are part of the resolved entities to avoid.
+          If this parameter is not provided, then the default is to NOT
+          exclude any entities.
         in: query
         required: false
         schema:
@@ -206,12 +290,34 @@ paths:
             type: string
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
-        default:
-          description: default response
+        '200':
+          description: Successful response
           content:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityPathResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityPathResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/EntityPathResponse'
+        '401':
+          description: >-
+            If the 'from' or 'to' parameters are missing or if any of the
+            parameters are not formatted as expected.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
   /entity-networks:
     get:
       summary: >-
@@ -225,7 +331,7 @@ paths:
       parameters:
       - name: entities
         description: >-
-          The array of entity identifiers which may be 64-bit integer
+          The array of EntityIdentifier's which may be 64-bit integer
           entity IDs or JSON-encoded RecordId for the constituent records.
           The format for all of the provided identifiers must be the same
           (i.e.: all entity IDs or all data-source / record-id combos).
@@ -276,12 +382,34 @@ paths:
           default: 1000
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
-        default:
-          description: default response
+        '200':
+          description: Successful response
           content:
             application/json; charset=UTF-8:
               schema:
                 $ref: '#/components/schemas/EntityNetworkResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityNetworkResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/EntityNetworkResponse'
+        '401':
+          description: >-
+            If the 'entityIds' parameters is missing or if any of the
+            parameters are not formatted as expected.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
 components:
   parameters:
     withRawQueryParam:
@@ -329,6 +457,19 @@ components:
         when the record was loaded or generated automatically.
       schema:
         type: string
+  responses:
+    ServerError:
+      description: Unexpected server error occurred.
+      content:
+        application/json; charset=UTF-8:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+        default:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
     BaseResponse:
       description: >-
@@ -355,6 +496,15 @@ components:
           properties:
             self:
               type: string
+    ErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            errors:
+              type: array
+              items:
+                $ref: '#/components/schemas/Error'
     ResponseWithRawData:
       description: >-
         Extends the BaseResponse to add the rawData field.
@@ -431,6 +581,26 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/EntityNetworkData'
+    Error:
+      description: >-
+        Describes an error.
+      type: object
+      properties:
+        code:
+          description: The internal error code.
+          type: string
+          nullable: true
+        message:
+          description: The message describing the error.
+          type: string
+    EntityIdentifier:
+      description: >-
+        Identifies an entity by either its entity ID or by the data source
+        code and record ID of one of its constituent records.
+      oneOf:
+        - type: integer
+          format: int64
+        - $ref: '#/components/schemas/RecordId'
     RecordId:
       description: >-
         Identifies a record by its data source code and record identifier.
