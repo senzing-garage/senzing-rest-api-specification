@@ -8,6 +8,17 @@ info:
     Senzing native API which is documented at
     [https://docs.senzing.com](https://docs.senzing.com)
 paths:
+  /ping:
+    get:
+      summary: Pings the server to make sure it is up and running.
+      operationId: ping
+      responses:
+        default:
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
   /data-sources:
     get:
       summary: Get a list of configured data sources.
@@ -320,6 +331,9 @@ components:
         type: string
   schemas:
     BaseResponse:
+      description: >-
+        Represents the base information included in all responses sans the
+        actual data for the response.
       type: object
       properties:
         meta:
@@ -341,15 +355,22 @@ components:
           properties:
             self:
               type: string
-        rawData:
-          description: >-
-            The RAW result from the underlying native API function.
-          type: object
-          nullable: true
-          additionalProperties: {}
-    DataSourcesResponse:
+    ResponseWithRawData:
+      description: >-
+        Extends the BaseResponse to add the rawData field.
       allOf:
         - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            rawData:
+              description: >-
+                The RAW result from the underlying native API function.
+              type: object
+              nullable: true
+              additionalProperties: {}
+    DataSourcesResponse:
+      allOf:
+        - $ref: '#/components/schemas/ResponseWithRawData'
         - type: object
           properties:
             data:
@@ -363,7 +384,7 @@ components:
                     type: string
     RecordResponse:
       allOf:
-        - $ref: '#/components/schemas/BaseResponse'
+        - $ref: '#/components/schemas/ResponseWithRawData'
         - type: object
           properties:
             data:
@@ -375,14 +396,14 @@ components:
                   $ref: '#/components/schemas/EntityRecord'
     EntityResponse:
       allOf:
-        - $ref: '#/components/schemas/BaseResponse'
+        - $ref: '#/components/schemas/ResponseWithRawData'
         - type: object
           properties:
             data:
               $ref: '#/components/schemas/EntityData'
     EntityAttributeSearchResponse:
       allOf:
-        - $ref: '#/components/schemas/BaseResponse'
+        - $ref: '#/components/schemas/ResponseWithRawData'
         - type: object
           properties:
             data:
@@ -398,14 +419,14 @@ components:
                     $ref: '#/components/schemas/AttributeSearchResult'
     EntityPathResponse:
       allOf:
-        - $ref: '#/components/schemas/BaseResponse'
+        - $ref: '#/components/schemas/ResponseWithRawData'
         - type: object
           properties:
             data:
               $ref: '#/components/schemas/EntityPathData'
     EntityNetworkResponse:
       allOf:
-        - $ref: '#/components/schemas/BaseResponse'
+        - $ref: '#/components/schemas/ResponseWithRawData'
         - type: object
           properties:
             data:
