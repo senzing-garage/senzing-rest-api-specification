@@ -18,13 +18,13 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/BaseResponse'
+                $ref: '#/components/schemas/SzBaseResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/BaseResponse'
+                $ref: '#/components/schemas/SzBaseResponse'
             default:
               schema:
-                $ref: '#/components/schemas/BaseResponse'
+                $ref: '#/components/schemas/SzBaseResponse'
   /data-sources:
     get:
       summary: Get a list of configured data sources.
@@ -37,7 +37,7 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/DataSourcesResponse'
+                $ref: '#/components/schemas/SzDataSourcesResponse'
         '5XX':
           $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}:
@@ -54,25 +54,25 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/RecordResponse'
+                $ref: '#/components/schemas/SzRecordResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/RecordResponse'
+                $ref: '#/components/schemas/SzRecordResponse'
             default:
               schema:
-                $ref: '#/components/schemas/RecordResponse'
+                $ref: '#/components/schemas/SzRecordResponse'
         '404':
           description: If data source or record ID are not found.
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             default:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
         '5XX':
           $ref: '#/components/responses/ServerError'
   /entities/{entityId}:
@@ -96,25 +96,25 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/EntityResponse'
+                $ref: '#/components/schemas/SzEntityResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/EntityResponse'
+                $ref: '#/components/schemas/SzEntityResponse'
             default:
               schema:
-                $ref: '#/components/schemas/EntityResponse'
+                $ref: '#/components/schemas/SzEntityResponse'
         '404':
           description: If the entity ID is not found.
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             default:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
         '5XX':
           $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}/entity:
@@ -132,25 +132,25 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/EntityResponse'
+                $ref: '#/components/schemas/SzEntityResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/EntityResponse'
+                $ref: '#/components/schemas/SzEntityResponse'
             default:
               schema:
-                $ref: '#/components/schemas/EntityResponse'
+                $ref: '#/components/schemas/SzEntityResponse'
         '404':
           description: If data source or record ID are not found.
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             default:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
         '5XX':
           $ref: '#/components/responses/ServerError'
   /entities:
@@ -184,13 +184,13 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/EntityAttributeSearchResponse'
+                $ref: '#/components/schemas/SzEntityAttributeSearchResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/EntityAttributeSearchResponse'
+                $ref: '#/components/schemas/SzEntityAttributeSearchResponse'
             default:
               schema:
-                $ref: '#/components/schemas/EntityAttributeSearchResponse'
+                $ref: '#/components/schemas/SzEntityAttributeSearchResponse'
         '401':
           description: >-
               If the specified attrs parameter is missing or is not formatted
@@ -198,13 +198,13 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             default:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
         '5XX':
           $ref: '#/components/responses/ServerError'
   /entity-paths:
@@ -225,7 +225,7 @@ paths:
         in: query
         required: true
         schema:
-          $ref: '#/components/schemas/EntityIdentifier'
+          $ref: '#/components/schemas/SzEntityIdentifier'
       - name: to
         description: >-
           The EntityIdentifier for the last entity for the path either as an
@@ -235,7 +235,7 @@ paths:
         in: query
         required: true
         schema:
-          $ref: '#/components/schemas/EntityIdentifier'
+          $ref: '#/components/schemas/SzEntityIdentifier'
       - name: maxDegrees
         description: >-
             The maximum number of degrees to look for a path from the first
@@ -260,12 +260,7 @@ paths:
         in: query
         required: false
         schema:
-          type: array
-          items:
-            oneOf:
-              - type: integer
-                format: int64
-              - $ref: '#/components/schemas/RecordId'
+          $ref: '#/components/schemas/SzEntityIdentifiers'
       - name: forbidAvoided
         description: >-
           If the avoidEntities parameter is provided then this flag is used to
@@ -295,13 +290,13 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/EntityPathResponse'
+                $ref: '#/components/schemas/SzEntityPathResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/EntityPathResponse'
+                $ref: '#/components/schemas/SzEntityPathResponse'
             default:
               schema:
-                $ref: '#/components/schemas/EntityPathResponse'
+                $ref: '#/components/schemas/SzEntityPathResponse'
         '401':
           description: >-
             If the 'from' or 'to' parameters are missing or if any of the
@@ -309,13 +304,13 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             default:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
         '5XX':
           $ref: '#/components/responses/ServerError'
   /entity-networks:
@@ -338,12 +333,7 @@ paths:
         in: query
         required: true
         schema:
-          type: array
-          items:
-            oneOf:
-              - type: integer
-                format: int64
-              - $ref: '#/components/schemas/RecordId'
+          $ref: '#/components/schemas/SzEntityIdentifiers'
       - name: maxDegrees
         description: >-
             The maximum number of degrees to look for a path between the
@@ -387,13 +377,13 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/EntityNetworkResponse'
+                $ref: '#/components/schemas/SzEntityNetworkResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/EntityNetworkResponse'
+                $ref: '#/components/schemas/SzEntityNetworkResponse'
             default:
               schema:
-                $ref: '#/components/schemas/EntityNetworkResponse'
+                $ref: '#/components/schemas/SzEntityNetworkResponse'
         '401':
           description: >-
             If the 'entityIds' parameters is missing or if any of the
@@ -401,13 +391,13 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
             default:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/SzErrorResponse'
         '5XX':
           $ref: '#/components/responses/ServerError'
 components:
@@ -463,15 +453,15 @@ components:
       content:
         application/json; charset=UTF-8:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/SzErrorResponse'
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/SzErrorResponse'
         default:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/SzErrorResponse'
   schemas:
-    BaseResponse:
+    SzBaseResponse:
       description: >-
         Represents the base information included in all responses sans the
         actual data for the response.
@@ -496,20 +486,20 @@ components:
           properties:
             self:
               type: string
-    ErrorResponse:
+    SzErrorResponse:
       allOf:
-        - $ref: '#/components/schemas/BaseResponse'
+        - $ref: '#/components/schemas/SzBaseResponse'
         - type: object
           properties:
             errors:
               type: array
               items:
-                $ref: '#/components/schemas/Error'
-    ResponseWithRawData:
+                $ref: '#/components/schemas/SzError'
+    SzResponseWithRawData:
       description: >-
         Extends the BaseResponse to add the rawData field.
       allOf:
-        - $ref: '#/components/schemas/BaseResponse'
+        - $ref: '#/components/schemas/SzBaseResponse'
         - type: object
           properties:
             rawData:
@@ -518,9 +508,9 @@ components:
               type: object
               nullable: true
               additionalProperties: {}
-    DataSourcesResponse:
+    SzDataSourcesResponse:
       allOf:
-        - $ref: '#/components/schemas/ResponseWithRawData'
+        - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
@@ -532,9 +522,9 @@ components:
                   type: array
                   items:
                     type: string
-    RecordResponse:
+    SzRecordResponse:
       allOf:
-        - $ref: '#/components/schemas/ResponseWithRawData'
+        - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
@@ -543,17 +533,17 @@ components:
                 record:
                   description: >-
                     The EntityRecord describing the matching record.
-                  $ref: '#/components/schemas/EntityRecord'
-    EntityResponse:
+                  $ref: '#/components/schemas/SzEntityRecord'
+    SzEntityResponse:
       allOf:
-        - $ref: '#/components/schemas/ResponseWithRawData'
+        - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
-              $ref: '#/components/schemas/EntityData'
-    EntityAttributeSearchResponse:
+              $ref: '#/components/schemas/SzEntityData'
+    SzEntityAttributeSearchResponse:
       allOf:
-        - $ref: '#/components/schemas/ResponseWithRawData'
+        - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
@@ -566,22 +556,22 @@ components:
                     including the AttributeSearchResultType for each.
                   type: array
                   items:
-                    $ref: '#/components/schemas/AttributeSearchResult'
-    EntityPathResponse:
+                    $ref: '#/components/schemas/SzAttributeSearchResult'
+    SzEntityPathResponse:
       allOf:
-        - $ref: '#/components/schemas/ResponseWithRawData'
+        - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
-              $ref: '#/components/schemas/EntityPathData'
-    EntityNetworkResponse:
+              $ref: '#/components/schemas/SzEntityPathData'
+    SzEntityNetworkResponse:
       allOf:
-        - $ref: '#/components/schemas/ResponseWithRawData'
+        - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
-              $ref: '#/components/schemas/EntityNetworkData'
-    Error:
+              $ref: '#/components/schemas/SzEntityNetworkData'
+    SzError:
       description: >-
         Describes an error.
       type: object
@@ -593,15 +583,29 @@ components:
         message:
           description: The message describing the error.
           type: string
-    EntityIdentifier:
+    SzEntityIdentifier:
       description: >-
         Identifies an entity by either its entity ID or by the data source
         code and record ID of one of its constituent records.
       oneOf:
         - type: integer
           format: int64
-        - $ref: '#/components/schemas/RecordId'
-    RecordId:
+        - $ref: '#/components/schemas/SzRecordId'
+    SzEntityIdentifiers:
+      description: >-
+        Identifies zero or more entities by either its entity ID or by the
+        data source code and record ID of one of their constituent records.
+        Identifiers in the array are homogeneous, either all entity IDs or
+        all RecordId instances containing the data-source-code/record-id pair.
+      oneOf:
+      - type: array
+        items:
+          type: integer
+          format: int64
+      - type: array
+        items:
+          $ref: '#/components/schemas/SzRecordId'
+    SzRecordId:
       description: >-
         Identifies a record by its data source code and record identifier.
         This abbreviated format is used in query parameters to identify
@@ -618,7 +622,7 @@ components:
             The record ID that uniquely identifies a record within the
             respective data source.
           type: string
-    EntityRecord:
+    SzEntityRecord:
       description: >-
         Describes a record (aka: observed entity) that has been loaded for
         a particular data source.
@@ -703,7 +707,7 @@ components:
             loaded.
           type: object
           additionalProperties: {}
-    DataSourceRecordSummary:
+    SzDataSourceRecordSummary:
       description: >-
         Describes the number of records associated with a specific data source
         for a given resolved entity.  Optionally, if the complete set of records
@@ -731,7 +735,7 @@ components:
           nullable: true
           items:
             type: string
-    EntityFeature:
+    SzEntityFeature:
       description: >-
         Describes a feature for an entity as well as including any close values
         for the feature that were considered to be duplicate values for
@@ -753,7 +757,7 @@ components:
           type: array
           items:
             type: string
-    ResolvedEntity:
+    SzResolvedEntity:
       description: >-
         Describes a resolved entity that is made up of one or more EntityRecord
         instances.
@@ -783,7 +787,7 @@ components:
             to this entity.
           type: array
           items:
-            $ref: '#/components/schemas/DataSourceRecordSummary'
+            $ref: '#/components/schemas/SzDataSourceRecordSummary'
         nameData:
           description: >-
             An array of names associated with the entity that are formatted for
@@ -831,7 +835,7 @@ components:
             associated with this entity.
           type: array
           items:
-            $ref: '#/components/schemas/EntityRecord'
+            $ref: '#/components/schemas/SzEntityRecord'
         features:
           description: >-
             The map of string feature names to arrays of EntityFeature instances
@@ -840,14 +844,14 @@ components:
           additionalProperties:
             type: array
             items:
-              $ref: '#/components/schemas/EntityFeature'
-    BaseRelatedEntity:
+              $ref: '#/components/schemas/SzEntityFeature'
+    SzBaseRelatedEntity:
       description: >-
         Provides the additional fields to a ResolvedEntity that describe
         an entity's relationship to another.  This serves as a basis for
         AttributeSearchResult and RelatedEntity.
       allOf:
-        - $ref: '#/components/schemas/ResolvedEntity'
+        - $ref: '#/components/schemas/SzResolvedEntity'
         - type: object
           properties:
             matchLevel:
@@ -903,7 +907,7 @@ components:
                 recordSummary items will be missing the topRecordIds if partial
                 is true.
               type: boolean
-    RelationshipType:
+    SzRelationshipType:
       description: >-
         Describes how an entity is related to another (either a possible match,
         a discovered possible relationship or a disclosed relationship)
@@ -912,7 +916,7 @@ components:
         - POSSIBLE_MATCH
         - POSSIBLE_RELATION
         - DISCLOSED_RELATION
-    RelatedEntity:
+    SzRelatedEntity:
       description: >-
         Provides a description of an entity that is related to a
         ResolvedEntity.  This describes how the entity is related and may
@@ -921,9 +925,9 @@ components:
         - type: object
           properties:
             relationType:
-              $ref: '#/components/schemas/RelationshipType'
-        - $ref: '#/components/schemas/BaseRelatedEntity'
-    EntityData:
+              $ref: '#/components/schemas/SzRelationshipType'
+        - $ref: '#/components/schemas/SzBaseRelatedEntity'
+    SzEntityData:
       description: >-
         Describes an entity and the entities related to that entity at
         one degree of separation.
@@ -931,15 +935,15 @@ components:
       properties:
         resolvedEntity:
           description: The ResolvedEntity describing the primary entity.
-          $ref: '#/components/schemas/ResolvedEntity'
+          $ref: '#/components/schemas/SzResolvedEntity'
         relatedEntities:
           description: >-
             The array of RelatedEntity instances describing the possible
             matches, discovered relationships, and disclosed relationships.
           type: array
           items:
-            $ref: '#/components/schemas/RelatedEntity'
-    AttributeSearchResultType:
+            $ref: '#/components/schemas/SzRelatedEntity'
+    SzAttributeSearchResultType:
       description: >-
         Describes how the entity matching the search attributes would have
         entity resolved against those attributes (either a match, possible
@@ -950,7 +954,7 @@ components:
         - POSSIBLE_MATCH
         - POSSIBLE_RELATION
         - NAME_ONLY_MATCH
-    AttributeSearchResult:
+    SzAttributeSearchResult:
       description: >-
         Describes an entity that matched attribute search criteria and how
         it matched against that criteria.
@@ -958,9 +962,9 @@ components:
         - type: object
           properties:
             resultType:
-              $ref: '#/components/schemas/AttributeSearchResultType'
-        - $ref: '#/components/schemas/BaseRelatedEntity'
-    EntityPath:
+              $ref: '#/components/schemas/SzAttributeSearchResultType'
+        - $ref: '#/components/schemas/SzBaseRelatedEntity'
+    SzEntityPath:
       description: >-
         Describes a path between two entities using the entity IDs of the
         entities in the path.
@@ -986,7 +990,7 @@ components:
           items:
             type: integer
             format: int64
-    EntityPathData:
+    SzEntityPathData:
       description: >-
         Describes a path between two entities using the entity IDs of the
         entities in the path and includes the data from the actual entities
@@ -994,7 +998,7 @@ components:
       type: object
       properties:
         entityPath:
-          $ref: '#/components/schemas/EntityPath'
+          $ref: '#/components/schemas/SzEntityPath'
         entities:
           description: >-
             The array of EntityData objects describing the entities on the
@@ -1002,8 +1006,8 @@ components:
             related entities to the entity.
           type: array
           items:
-            $ref: '#/components/schemas/EntityData'
-    EntityNetworkData:
+            $ref: '#/components/schemas/SzEntityData'
+    SzEntityNetworkData:
       description: >-
         Describes a network of paths between entities using the entity IDs of
         the entities in the path and includes the data from the actual entities
@@ -1016,7 +1020,7 @@ components:
             the entity network (including island networks).
           type: array
           items:
-            $ref: '#/components/schemas/EntityPath'
+            $ref: '#/components/schemas/SzEntityPath'
         entities:
           description: >-
             The array of EntityData objects describing the entities on the
@@ -1024,4 +1028,4 @@ components:
             the edge of the network.
           type: array
           items:
-            $ref: '#/components/schemas/EntityData'
+            $ref: '#/components/schemas/SzEntityData'
