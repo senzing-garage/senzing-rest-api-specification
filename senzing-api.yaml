@@ -8,10 +8,12 @@ info:
     Senzing native API which is documented at
     [https://docs.senzing.com](https://docs.senzing.com)
 paths:
-  /ping:
+  /heartbeat:
     get:
-      summary: Pings the server to make sure it is up and running.
-      operationId: ping
+      summary: >-
+        Gets a heartbeat from the server to make sure it is up and
+        running.  The response will include the current timestamp.
+      operationId: heartbeat
       responses:
         '200':
           description: Successful response
@@ -25,6 +27,23 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzBaseResponse'
+  /license:
+    get:
+      summary: Get the license information.
+      operationId: license
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzLicenseResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzLicenseResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzLicenseResponse'
   /data-sources:
     get:
       summary: Get a list of configured data sources.
@@ -508,6 +527,13 @@ components:
               type: object
               nullable: true
               additionalProperties: {}
+    SzLicenseResponse:
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/SzLicenseInfo'
     SzDataSourcesResponse:
       allOf:
         - $ref: '#/components/schemas/SzResponseWithRawData'
@@ -622,6 +648,46 @@ components:
             The record ID that uniquely identifies a record within the
             respective data source.
           type: string
+    SzLicenseInfo:
+      description: >-
+        Describes the Senzing product license.
+      type: object
+      properties:
+        customer:
+          type: string
+          description: >-
+            The customer information associated with the license.
+        contract:
+          type: string
+          description: >-
+            The contract information associated with the license.
+        licenseType:
+          type: string
+          description: >-
+            The description of the type of license.
+        licenseLevel:
+          type: string
+          description: >-
+            The description of the license level.
+        billing:
+          type: string
+          description: >-
+            The billing information associated with the license
+        issuanceDate:
+          type: string
+          format: date-time
+          description: >-
+            The issuance date for the license.
+        expirationDate:
+          type: string
+          format: date-time
+          description: >-
+            The expiration date for the license.
+        recordLimit:
+          type: integer
+          format: int64
+          description: >-
+            The record limit associated with the license.
     SzEntityRecord:
       description: >-
         Describes a record (aka: observed entity) that has been loaded for
