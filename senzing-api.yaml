@@ -10,6 +10,8 @@ info:
 paths:
   /heartbeat:
     get:
+      tags:
+        - Admin
       summary: >-
         Gets a heartbeat from the server to make sure it is up and
         running.  The response will include the current timestamp.
@@ -29,6 +31,8 @@ paths:
                 $ref: '#/components/schemas/SzBaseResponse'
   /license:
     get:
+      tags:
+        - Admin
       summary: Get the license information.
       operationId: license
       responses:
@@ -46,6 +50,8 @@ paths:
                 $ref: '#/components/schemas/SzLicenseResponse'
   /data-sources:
     get:
+      tags:
+        - Config
       summary: Get a list of configured data sources.
       operationId: listDataSources
       parameters:
@@ -61,6 +67,8 @@ paths:
           $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}:
     get:
+      tags:
+        - Entity Data
       summary: Get an entity record by data source and record ID.
       operationId: getDataSourceRecord
       parameters:
@@ -96,6 +104,8 @@ paths:
           $ref: '#/components/responses/ServerError'
   /entities/{entityId}:
     get:
+      tags:
+        - Entity Data
       summary: Get a resolved entity by entity ID.
       operationId: getEntityByEntityId
       parameters:
@@ -138,6 +148,8 @@ paths:
           $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}/entity:
     get:
+      tags:
+        - Entity Data
       summary: Get a resolved entity by data source and record ID.
       operationId: getEntityByRecordId
       parameters:
@@ -174,6 +186,8 @@ paths:
           $ref: '#/components/responses/ServerError'
   /entities:
     get:
+      tags:
+        - Entity Data
       summary: >-
         Search for entities that would match or relate to the provided
         entity features.
@@ -203,13 +217,13 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/SzEntityAttributeSearchResponse'
+                $ref: '#/components/schemas/SzAttributeSearchResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/SzEntityAttributeSearchResponse'
+                $ref: '#/components/schemas/SzAttributeSearchResponse'
             default:
               schema:
-                $ref: '#/components/schemas/SzEntityAttributeSearchResponse'
+                $ref: '#/components/schemas/SzAttributeSearchResponse'
         '401':
           description: >-
               If the specified attrs parameter is missing or is not formatted
@@ -228,6 +242,8 @@ paths:
           $ref: '#/components/responses/ServerError'
   /entity-paths:
     get:
+      tags:
+        - Entity Graph
       summary: >-
         Finds a path between two entities identified by entity ID or by
         data sources and record IDs of constituent records.  You may provide
@@ -267,15 +283,15 @@ paths:
           minimum: 0
           maximum: 100
           default: 3
-      - name: avoidEntities
+      - name: x
         description: >-
-          The array of EntityIdentifier's that identify entities to be
-          avoided or forbidden from the path (depending on the forbidAvoided
-          parameter).  The entity identifiers are either all 64-bit long
-          integers representing entity IDs or they are all RecordId instances
-          identifying records that are part of the resolved entities to avoid.
-          If this parameter is not provided, then the default is to NOT
-          exclude any entities.
+          Multi-valued query parameter containing EntityIdentifier definitions
+          that identify entities to be avoided or forbidden from the path
+          (depending on the forbidAvoided parameter).  The entity identifiers
+          are either all 64-bit long integers representing entity IDs or they
+          are all RecordId instances identifying records that are part of the
+          resolved entities to avoid.  If this parameter is not provided, then
+          the default is to NOT exclude any entities.
         in: query
         required: false
         schema:
@@ -290,12 +306,12 @@ paths:
         schema:
           type: boolean
           default: false
-      - name: withSources
+      - name: s
         description: >-
-          The array of string data source codes identifying data sources for
-          which one must be included in the entities for the path.  If not
-          provided, then the default is to NOT require any specific data
-          sources.
+          The multi-valued query parameter where each value is a data source
+          code identifying data sources for which one must be included in the
+          entities for the path.  If not provided, then the default is to NOT
+          require any specific data sources.
         in: query
         required: false
         schema:
@@ -334,6 +350,8 @@ paths:
           $ref: '#/components/responses/ServerError'
   /entity-networks:
     get:
+      tags:
+        - Entity Graph
       summary: >-
         Finds the entity network around one or more entities identified by
         their entity IDs or by the data source codes and record ID's of their
@@ -343,12 +361,13 @@ paths:
         related entities.
       operationId: findNetworkByEntityID
       parameters:
-      - name: entities
+      - name: e
         description: >-
-          The array of EntityIdentifier's which may be 64-bit integer
-          entity IDs or JSON-encoded RecordId for the constituent records.
-          The format for all of the provided identifiers must be the same
-          (i.e.: all entity IDs or all data-source / record-id combos).
+          The multi-valued query parameter where each value is formatted as an
+          EntityIdentifier which may be 64-bit integer entity IDs or
+          JSON-encoded RecordId for the constituent records.  The format for
+          all of the provided identifiers must be the same  (i.e.: all entity
+          IDs or all data-source / record-id combos).
         in: query
         required: true
         schema:
@@ -497,6 +516,9 @@ components:
                 - PUT
                 - PATCH
                 - DELETE
+            httpStatusCode:
+              type: integer
+              format: int16
             timestamp:
               type: string
               format: date-time
@@ -567,7 +589,7 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/SzEntityData'
-    SzEntityAttributeSearchResponse:
+    SzAttributeSearchResponse:
       allOf:
         - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
@@ -705,12 +727,6 @@ components:
             The identifier that uniquely identifies this record from other
             records from the same data source.  This may have been loaded with
             the record or automatically generated from the record's data.
-        recordHash:
-          type: string
-          description: >-
-            A hash of the record data that effectively uniquely identifies the
-            the record and its data as it was loaded.  This is used to identify
-            records that are exact duplicates of one another.
         addressData:
           description: >-
             An array of addresses associated with the record that are formatted
@@ -846,7 +862,7 @@ components:
             this field represents the name that most closely matches the name
             that was searched on.
           type: string
-        recordSummary:
+        recordSummaries:
           description: >-
             The array of DataSourceRecordSummary instances describing the
             number of records associated with each data source that contributes
@@ -1095,3 +1111,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzEntityData'
+tags:
+  - name: Admin
+    description: Administrative operations.
+  - name: Config
+    description: Configuration operations.
+  - name: Entity Data
+    description: Entity and record data operations.
+  - name: Entity Graph
+    description: Entity relationship connections for graphing.
+
