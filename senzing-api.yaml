@@ -25,19 +25,19 @@ paths:
                 $ref: '#/components/schemas/SzBaseResponse'
               examples:
                 goodResponse:
-                  externalValue: 'examples/heartbeat-response-200.json'
+                  externalValue: 'https://raw.githubusercontent.com/senzing/rest-api-propobarrycaceres/senzing-rest-api/issue-1.caceres.initial/examples/heartbeat-response-200.json'
             application/json:
               schema:
                 $ref: '#/components/schemas/SzBaseResponse'
               examples:
                 goodResponse:
-                  externalValue: 'examples/heartbeat-response-200.json'
+                  externalValue: 'https://raw.githubusercontent.com/senzing/rest-api-propobarrycaceres/senzing-rest-api/issue-1.caceres.initial/examples/heartbeat-response-200.json'
             default:
               schema:
                 $ref: '#/components/schemas/SzBaseResponse'
               examples:
                 goodResponse:
-                  externalValue: 'examples/heartbeat-response-200.json'
+                  externalValue: 'https://raw.githubusercontent.com/senzing/rest-api-propobarrycaceres/senzing-rest-api/issue-1.caceres.initial/examples/heartbeat-response-200.json'
   /license:
     get:
       tags:
