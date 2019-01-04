@@ -8,6 +8,5 @@ Thumbs.db
 .idea/
 *.iml
 .vscode/
-.project
 *.msi
 *.wixpdb
