@@ -7,7 +7,7 @@ The Senzing REST API proposal...
 Viewing the Senzing REST API OpenAPI specification:
 
 - In [Swagger editor](http://editor.swagger.io/?url=https://raw.githubusercontent.com/Senzing/rest-api-proposal/master/senzing-api.yaml)
-- In [github](senzing-api.yaml)
+- In [GitHub](senzing-api.yaml)
 
 ## Submitting comments
 
