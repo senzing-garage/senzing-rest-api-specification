@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "1.4"
+  version: "1.5.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -71,6 +71,81 @@ paths:
                 $ref: '#/components/schemas/SzDataSourcesResponse'
         '5XX':
           $ref: '#/components/responses/ServerError'
+  /data-sources/{dataSourceCode}/records:
+    post:
+      tags:
+        - Entity Data
+      summary: Load a new record in
+      operationId: addRecordWithReturnedRecordId
+      parameters:
+        - $ref: '#/components/parameters/dataSourceCodePathParam'
+        - name: loadId
+          description: >-
+            The load ID to associate with the loaded record.
+          in: query
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: >-
+          The record data as JSON.  The format of the JSON is described
+          by the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+          The specified JSON may include or exclude the DSRC_CODE field.
+          It will be added if excluded.  If included, it must match the
+          data source code in the path parameters.
+        required: true
+        content:
+          application/json; charset=UTF-8:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzLoadRecordResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzLoadRecordResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzLoadRecordResponse'
+        '400':
+          description: >-
+            If the specified data contains a DSRC_CODE field that is not
+            consistent with the dataSourceCode in the path of the request
+            or if the specified content body is not formatted as JSON.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '404':
+          description: >-
+            If the specified data source code in the path is not recognized.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}:
     get:
       tags:
@@ -96,6 +171,84 @@ paths:
                 $ref: '#/components/schemas/SzRecordResponse'
         '404':
           description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags:
+        - Entity Data
+      summary: >-
+        Load a new record or replace a record in a data source with a
+        specific record ID.
+      operationId: addRecord
+      parameters:
+        - $ref: '#/components/parameters/dataSourceCodePathParam'
+        - $ref: '#/components/parameters/recordIdPathParam'
+        - name: loadId
+          description: >-
+            The load ID to associate with the loaded record.
+          in: query
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: >-
+          The record data as JSON.  The format of the JSON is described
+          by the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+          The specified JSON may include or exclude the DSRC_CODE and
+          RECORD_ID fields.  Any excluded field will be added to the JSON
+          accordingly.  Any included field in the JSON, must match the
+          respective path parameter for data source code or record ID.
+        required: true
+        content:
+          application/json; charset=UTF-8:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzLoadRecordResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzLoadRecordResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzLoadRecordResponse'
+        '400':
+          description: >-
+            If the specified data contains a DSRC_CODE field that is not
+            consistent with the dataSourceCode in the path of the request
+            or if the specified content body is not formatted as JSON.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '404':
+          description: >-
+            If the specified data source code in the path is not recognized.
           content:
             application/json; charset=UTF-8:
               schema:
@@ -582,6 +735,18 @@ components:
                   type: array
                   items:
                     type: string
+    SzLoadRecordResponse:
+      allOf:
+        - $ref: '#/components/schemas/SzBaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                recordId:
+                  description: >-
+                    The record ID of the record that was loaded.
+                  type: string
     SzRecordResponse:
       allOf:
         - $ref: '#/components/schemas/SzResponseWithRawData'
