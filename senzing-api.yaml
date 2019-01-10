@@ -69,7 +69,7 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzDataSourcesResponse'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records:
     post:
@@ -144,7 +144,7 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzErrorResponse'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}:
     get:
@@ -181,7 +181,7 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzErrorResponse'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
     put:
       tags:
@@ -259,7 +259,7 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzErrorResponse'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
   /entities/{entityId}:
     get:
@@ -303,7 +303,7 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzErrorResponse'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}/entity:
     get:
@@ -341,7 +341,7 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzErrorResponse'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
   /entities:
     get:
@@ -403,7 +403,7 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzErrorResponse'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
   /entity-paths:
     get:
@@ -511,7 +511,7 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzErrorResponse'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
   /entity-networks:
     get:
@@ -601,7 +601,7 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzErrorResponse'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
 components:
   parameters:
