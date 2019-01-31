@@ -2,7 +2,9 @@
 
 ## Overview
 
-The Senzing REST API proposal...
+The Senzing REST API...
+
+## View
 
 Viewing the Senzing REST API OpenAPI specification:
 
