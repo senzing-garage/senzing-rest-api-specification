@@ -48,6 +48,99 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzLicenseResponse'
+  /attribute-types:
+    get:
+      tags:
+        - Config
+      summary: Get a list of configured attribute types.
+      operationId: getAttributeTypes
+      parameters:
+        - name: withInternal
+          description: >-
+            The load ID to associate with the loaded record.
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: attributeClass
+          description: >-
+            If specified, this filters the list of returned attribute types
+            to those of a specific attribute class.  If not specified then no
+            filtering on attribute class is performed and all are returned.
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SzAttributeClass'
+        - name: featureType
+          description: >-
+            If specified, this filters the list of returned attribute types
+            to those belonging to a specific feature type.  If not specified
+            then no filtering on feature type is performed and all are returned.
+          in: query
+          required: false
+          schema:
+            type: string
+            default: null
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzAttributeTypesResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzAttributeTypesResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzAttributeTypesResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /attribute-types/{attributeCode}:
+    get:
+      tags:
+        - Config
+      summary: Get the attribute type identified by the attribute code.
+      operationId: getAttributeType
+      parameters:
+        - name: attributeCode
+          description: >-
+            The attribute code that uniquely identifies the attribute type.
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzAttributeTypeResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzAttributeTypeResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzAttributeTypeResponse'
+        '404':
+          description: >-
+            If the specified attribute code is not recognized.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /data-sources:
     get:
       tags:
@@ -90,7 +183,7 @@ paths:
         description: >-
           The record data as JSON.  The format of the JSON is described
           by the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
-          The specified JSON may include or exclude the DSRC_CODE field.
+          The specified JSON may include or exclude the DATA_SOURCE field.
           It will be added if excluded.  If included, it must match the
           data source code in the path parameters.
         required: true
@@ -118,7 +211,7 @@ paths:
                 $ref: '#/components/schemas/SzLoadRecordResponse'
         '400':
           description: >-
-            If the specified data contains a DSRC_CODE field that is not
+            If the specified data contains a DATA_SOURCE field that is not
             consistent with the dataSourceCode in the path of the request
             or if the specified content body is not formatted as JSON.
           content:
@@ -204,7 +297,7 @@ paths:
         description: >-
           The record data as JSON.  The format of the JSON is described
           by the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
-          The specified JSON may include or exclude the DSRC_CODE and
+          The specified JSON may include or exclude the DATA_SOURCE and
           RECORD_ID fields.  Any excluded field will be added to the JSON
           accordingly.  Any included field in the JSON, must match the
           respective path parameter for data source code or record ID.
@@ -233,7 +326,7 @@ paths:
                 $ref: '#/components/schemas/SzLoadRecordResponse'
         '400':
           description: >-
-            If the specified data contains a DSRC_CODE field that is not
+            If the specified data contains a DATA_SOURCE field that is not
             consistent with the dataSourceCode in the path of the request
             or if the specified content body is not formatted as JSON.
           content:
@@ -720,7 +813,34 @@ components:
         - type: object
           properties:
             data:
-              $ref: '#/components/schemas/SzLicenseInfo'
+              type: object
+              properties:
+                license:
+                  $ref: '#/components/schemas/SzLicenseInfo'
+    SzAttributeTypesResponse:
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                attributeTypes:
+                  description: >-
+                    The list of attribute types.
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SzAttributeType'
+    SzAttributeTypeResponse:
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                attributeType:
+                  $ref: '#/components/schemas/SzAttributeType'
     SzDataSourcesResponse:
       allOf:
         - $ref: '#/components/schemas/SzResponseWithRawData'
@@ -808,6 +928,123 @@ components:
         message:
           description: The message describing the error.
           type: string
+    SzAttributeClass:
+      description: >-
+        Enumerates the various classes of attribute types (and features).
+        This is a generalization over attribute type that is more general
+        than feature type (NOTE: stand-alone attribute types such as
+        "DATA_SOURCE" or "RECORD_ID" do not have a feature type, but do have
+        an attribute class of "OBSERVATION").  Attribute class determines how
+        attributes / features are grouped together (e.g.: "nameData" contains
+        all name features and "identifierData" contains all identifier
+        features).  The possible values are:
+          * `ADDRESS` - Attributes pertaining to an address such as "POSTAL_CODE"
+          * `CHARACTERISTIC` - Attributes pertaining to physical characteristics
+                               of an entity.  Such as "BIRTH_DATE"
+          * `IDENTIFIER` - Attributes pertaining to identifiers such as
+                          drivers license number, passport number, or email
+                          address.
+          * `NAME` - Attributes pertaing to names such as "NAME_FIRST" or
+                     "NAME_LAST"
+          * `OBSERVATION` - Attributes pertaining to meta-data about the
+                            observation (record) such as "RECORD_ID" or
+                            "DATA_SOURCE"
+          * `PHONE` - Attributes pertaining to phone numbers such
+                      "PHONE_NUMBER" or "PHONE_EXTENSION"
+          * `RELATIONSHIP` - Attributes pertaining to relationships such as
+                             "RELATIONSHIP_TYPE".
+          * `OTHER` - An attribute class for custom features or for attributes
+                      that are loaded but not mapped.
+      type: string
+      enum:
+        - ADDRESS
+        - CHARACTERISTIC
+        - IDENTIFIER
+        - NAME
+        - OBSERVATION
+        - PHONE
+        - RELATIONSHIP
+        - OTHER
+    SzAttributeNecessity:
+      description: >-
+        Describes the necessity for this attribute type within the
+        feature type.  Possible values are:
+          * `REQUIRED` - The attribute for the attribute type must be
+                         provided whenever the feature is provided (e.g.:
+                         "PASSPORT_NUMBER" is required with the "PASSPORT"
+                         feature).
+          * `SUFFICIENT` - If no attributes for `REQUIRED` attribute types
+                           are provided for the feature, then at least one
+                           marked `SUFFICIENT` must be provided (e.g.:
+                           "NAME_FULL" or "NAME_ORG" for the "NAME" feature)
+          * `PREFERRED` - Attributes of `PREFERRED` attribute types are
+                          optional, but providing them greatly enhances
+                          accuracy for scoring and matching purposes (e.g.:
+                          a "PASSPORT_COUNTRY" for "PASSPORT" feature)
+          * `OPTIONAL` - Attributes of `OPTIONAL` attribute types are
+                         optional and do not significantly affect accuracy
+                         for scoring and matching purposes, but do provide
+                         additional information (e.g.: "PASSPORT_ISSUE_DT"
+                         for the "PASSPORT" feature)
+      type: string
+      enum:
+        - REQUIRED
+        - SUFFICIENT
+        - PREFERRED
+        - OPTIONAL
+    SzAttributeType:
+      description: >-
+        Describes an attribute type that partially (or fully) describes a
+        feature of an entity that may be loaded as part of a record or
+        used as criteria in a search.
+      type: object
+      properties:
+        attributeCode:
+          description: >-
+            The unique string that identifies the attribute type among all
+            other attribute types.
+          type: string
+          nullable: false
+        defaultValue:
+          description: >-
+            The default value assumed for the attribute when it is not
+            provided but is required as part of a feature.
+          type: string
+          nullable: true
+        necessity:
+          $ref: '#/components/schemas/SzAttributeNecessity'
+        attributeClass:
+          $ref: '#/components/schemas/SzAttributeClass'
+        featureType:
+          description: >-
+            Identifiers the feature type that this attribute type is an
+            attribute of (if any).  For example, the "NAME_FIRST" attribute type
+            would be an attribute of the "NAME" feature type and
+            "PASSPORT_COUNTRY" would be an attribute of "PASSPORT" feature type.
+            Some (advanced) attribute types are stand-alone and do not belong
+            to a feature (e.g.: "RECORD_ID").
+          type: string
+          nullable: true
+        advanced:
+          description: >-
+            Indicates if the attribute type is considered to be "advanced".
+            Advanced attribute types usually require the user to have some
+            knowledge of how the data is mapped in the entity repository
+            (e.g.: "RECORD_ID" or "DATA_SOURCE").  An application may exclude
+            displaying these as options if these things are being auto-generated
+            or automatically selected for the user.  You may want to contact
+            Senzing support before leveraging advanced attribute types in your
+            application.
+          type: boolean
+          nullable: false
+        internal:
+          description: >-
+            Whether or not an attribute type is typically generated internally
+            based on other attribute types.  These are not commonly used by the
+            user except in some rare cases.  Examples include pre-hashed
+            versions of attributes that are hashed.
+          type: boolean
+          nullable: false
     SzEntityIdentifier:
       description: >-
         Identifies an entity by either its entity ID or by the data source
@@ -912,11 +1149,12 @@ components:
           type: array
           items:
             type: string
-        attributeData:
+        characteristicData:
           description: >-
-            An array of attributes associated with the record that are formatted
-            for readability.  These will be prefixed by an attribtue type and
-            optionally by a "usage type" if one was provided.
+            An array of characteristics associated with the record that are
+            formatted for readability.  These will be prefixed by a
+            characteristic type and optionally by a "usage type" if one was
+            provided.
           type: array
           items:
             type: string
@@ -1055,11 +1293,12 @@ components:
           type: array
           items:
             type: string
-        attributeData:
+        characteristicData:
           description: >-
-            An array of attributes associated with the entity that are formatted
-            for readability.  These will be prefixed by an attribtue type and
-            optionally by a "usage type" if one was provided.
+            An array of characteristiics associated with the entity that are
+            formatted for readability.  These will be prefixed by a
+            characteristic type and optionally by a "usage type" if one was
+            provided.
           type: array
           items:
             type: string
