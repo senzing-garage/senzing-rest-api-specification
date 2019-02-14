@@ -512,9 +512,14 @@ paths:
       - name: from
         description: >-
           The EntityIdentifier for the first entity for the path either as an
-          entity ID or a JSON-encoded RecordId for the constituent record.
+          entity ID or an encoded SzRecordId for the constituent record.
           Whatever format is used for the "from" parameter must match the
-          format of the "to" parameter.
+          format of the "to" parameter.  NOTE: An encoded SzRecordId can EITHER
+          be encoded as JSON or as a delimited string where the first character
+          is the delimiter and the remainder is parsed as a data source prefix
+          (up to the second occurrence of the delimiter) and a record ID suffix
+          (all characters after the second occurrence of the delimiter).  For
+          example: `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
         in: query
         required: true
         schema:
@@ -522,9 +527,15 @@ paths:
       - name: to
         description: >-
           The EntityIdentifier for the last entity for the path either as an
-          entity ID or a JSON-encoded record ID for the constituent record.
+          entity ID or a encoded SzRecordId for the constituent record.
           Whatever format is used for the "to" parameter must match the
-          format of the "from" parameter.
+          format of the "from" parameter.  NOTE: An encoded SzRecordId can
+          EITHER be encoded as JSON or as a delimited string where the first
+          character is the delimiter and the remainder is parsed as a data
+          source prefix (up to the second occurrence of the delimiter) and a
+          record ID suffix (all characters after the second occurrence of the
+          delimiter).  For example: `{"src":"PEOPLE","id":"12345ABC"}` or
+          `:PEOPLE:12345ABC`.
         in: query
         required: true
         schema:
@@ -547,9 +558,15 @@ paths:
           that identify entities to be avoided or forbidden from the path
           (depending on the forbidAvoided parameter).  The entity identifiers
           are either all 64-bit long integers representing entity IDs or they
-          are all RecordId instances identifying records that are part of the
-          resolved entities to avoid.  If this parameter is not provided, then
-          the default is to NOT exclude any entities.
+          are all encoded SzRecordId instances identifying records that are part
+          of the resolved entities to avoid.  If this parameter is not provided,
+          then the default is to NOT exclude any entities.  NOTE: An encoded
+          SzRecordId can EITHER be encoded as JSON or as a delimited string
+          where the first character is the delimiter and the remainder is
+          parsed as a data source prefix (up to the second occurrence of the
+          delimiter) and a record ID suffix (all characters after the second
+          occurrence of the delimiter).  For example:
+          `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
         in: query
         required: false
         schema:
@@ -593,7 +610,8 @@ paths:
         '400':
           description: >-
             If the 'from' or 'to' parameters are missing or if any of the
-            parameters are not formatted as expected.
+            parameters are not formatted as expected.  Also, if any of the
+            identified entities or records cannot be found.
           content:
             application/json; charset=UTF-8:
               schema:
@@ -621,11 +639,18 @@ paths:
       parameters:
       - name: e
         description: >-
-          The multi-valued query parameter where each value is formatted as an
-          EntityIdentifier which may be 64-bit integer entity IDs or
-          JSON-encoded RecordId for the constituent records.  The format for
-          all of the provided identifiers must be the same  (i.e.: all entity
-          IDs or all data-source / record-id combos).
+          Multi-valued query parameter containing EntityIdentifier definitions
+          that identify entities to be included in the entity network.  The
+          entity identifiers are either all 64-bit long integers representing
+          entity IDs or they are all encoded SzRecordId instances identifying
+          records that are part of the resolved entities to avoid.  At least
+          one entity identifier is required.  NOTE: An encoded SzRecordId can
+          EITHER be encoded as JSON or as a delimited string where the first
+          character is the delimiter and the remainder is parsed as a data
+          source prefix (up to the second occurrence of the delimiter) and a
+          record ID suffix (all characters after the second occurrence of the
+          delimiter).  For example: `{"src":"PEOPLE","id":"12345ABC"}` or
+          `:PEOPLE:12345ABC`.
         in: query
         required: true
         schema:
@@ -682,8 +707,9 @@ paths:
                 $ref: '#/components/schemas/SzEntityNetworkResponse'
         '400':
           description: >-
-            If the 'entityIds' parameters is missing or if any of the
-            parameters are not formatted as expected.
+            If the 'e' entity identifiers parameter is missing or if any of the
+            parameters are not formatted as expected.  Also, if any of the
+            identified entities or records cannot be found.
           content:
             application/json; charset=UTF-8:
               schema:
