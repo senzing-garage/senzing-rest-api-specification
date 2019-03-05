@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "1.5.0"
+  version: "1.5.2"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -554,16 +554,38 @@ paths:
           default: 3
       - name: x
         description: >-
-          Multi-valued query parameter containing EntityIdentifier definitions
+          Repeating query parameter containing EntityIdentifier definitions
           that identify entities to be avoided or forbidden from the path
           (depending on the forbidAvoided parameter).  The entity identifiers
           are either all 64-bit long integers representing entity IDs or they
-          are all encoded SzRecordId instances identifying records that are part
-          of the resolved entities to avoid.  If this parameter is not provided,
-          then the default is to NOT exclude any entities.  NOTE: An encoded
-          SzRecordId can EITHER be encoded as JSON or as a delimited string
-          where the first character is the delimiter and the remainder is
-          parsed as a data source prefix (up to the second occurrence of the
+          are all encoded SzRecordId instances identifying records that are
+          part of the resolved entities to exclude.  If this parameter is not
+          provided, then the default is to NOT exclude any entities.  If both
+          this parameter and the `avoidEntities` parameter are specified then
+          the values are merged.  NOTE: An encoded SzRecordId can EITHER be encoded
+          as JSON or as a delimited string where the first character is the
+          delimiter and the remainder is parsed as a data source prefix (up to
+          the second occurrence of the delimiter) and a record ID suffix (all
+          characters after the second occurrence of the delimiter).  For
+          example: `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/SzEntityIdentifier'
+      - name: avoidEntities
+        description: >-
+          Single query parameter containing multiple EntityIdentifier
+          definitions as a JSON array or a simple comma-separated array that
+          identify entities to be avoided or forbidden from the path
+          (depending on the forbidAvoided parameter).  The entity identifiers
+          are either all 64-bit long integers representing entity IDs or they
+          are all encoded SzRecordId instances identifying records that are
+          part of the resolved entities to exclude.  At least one entity
+          identifier is required.  If both this parameter and one or more `x`
+          parameters are specified then the values are merged.  NOTE: An
+          encoded SzRecordId can EITHER be encoded as JSON or as a delimited
+          string where the first character is the delimiter and the remainder
+          is parsed as a data source prefix (up to the second occurrence of the
           delimiter) and a record ID suffix (all characters after the second
           occurrence of the delimiter).  For example:
           `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
@@ -639,20 +661,41 @@ paths:
       parameters:
       - name: e
         description: >-
-          Multi-valued query parameter containing EntityIdentifier definitions
+          Repeating query parameter containing EntityIdentifier definitions
           that identify entities to be included in the entity network.  The
           entity identifiers are either all 64-bit long integers representing
           entity IDs or they are all encoded SzRecordId instances identifying
           records that are part of the resolved entities to avoid.  At least
-          one entity identifier is required.  NOTE: An encoded SzRecordId can
-          EITHER be encoded as JSON or as a delimited string where the first
-          character is the delimiter and the remainder is parsed as a data
-          source prefix (up to the second occurrence of the delimiter) and a
-          record ID suffix (all characters after the second occurrence of the
-          delimiter).  For example: `{"src":"PEOPLE","id":"12345ABC"}` or
-          `:PEOPLE:12345ABC`.
+          one entity identifier is required.  If both this parameter and the
+          `entities` parameter are specified then the values are merged.
+          NOTE: An encoded SzRecordId can EITHER be encoded as JSON or as a
+          delimited string where the first character is the delimiter and the
+          remainder is parsed as a data source prefix (up to the second
+          occurrence of the delimiter) and a record ID suffix (all characters
+          after the second occurrence of the delimiter).  For example:
+          `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
         in: query
-        required: true
+        required: false
+        schema:
+          $ref: '#/components/schemas/SzEntityIdentifier'
+      - name: entities
+        description: >-
+          Single query parameter containing multiple EntityIdentifier
+          definitions that identify entities to be included in the entity
+          network as a JSON array or a simple comma-separated array.  The
+          entity identifiers are either all 64-bit long integers representing
+          entity IDs or they are all encoded SzRecordId instances identifying
+          records that are part of the resolved entities to avoid.  At least
+          one entity identifier is required.  If both this parameter and one
+          or more `e` parameters are specified then the values are merged.
+          NOTE: An encoded SzRecordId can EITHER be encoded as JSON or as a
+          delimited string where the first character is the delimiter and the
+          remainder is parsed as a data source prefix (up to the second
+          occurrence of the delimiter) and a record ID suffix (all characters
+          after the second occurrence of the delimiter).  For example:
+          `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
+        in: query
+        required: false
         schema:
           $ref: '#/components/schemas/SzEntityIdentifiers'
       - name: maxDegrees
