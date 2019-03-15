@@ -52,7 +52,11 @@ paths:
     get:
       tags:
         - Config
-      summary: Get a list of configured attribute types.
+      summary: >-
+        Get a list of configured attribute types.  NOTE: any implementation
+        providing this API function must be sensitive to config changes.  For
+        example, if the configuration is read at startup and later changed the
+        changes may not be picked up unless the server is restarted.
       operationId: getAttributeTypes
       parameters:
         - name: withInternal
@@ -102,7 +106,11 @@ paths:
     get:
       tags:
         - Config
-      summary: Get the attribute type identified by the attribute code.
+      summary: >-
+        Get the attribute type identified by the attribute code.  NOTE: any
+        implementation providing this API function must be sensitive to config
+        changes.  For example, if the configuration is read at startup and later
+        changed the changes may not be picked up unless the server is restarted.
       operationId: getAttributeType
       parameters:
         - name: attributeCode
@@ -145,7 +153,11 @@ paths:
     get:
       tags:
         - Config
-      summary: Get a list of configured data sources.
+      summary: >-
+        Get a list of configured data sources.  NOTE: any implementation
+        providing this API function must be sensitive to config changes.
+        For example, if the configuration is read at startup and later changed
+        the changes may not be picked up unless the server is restarted.
       operationId: listDataSources
       parameters:
         - $ref: '#/components/parameters/withRawQueryParam'
