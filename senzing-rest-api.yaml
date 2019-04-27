@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "1.5.2"
+  version: "1.6.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -57,7 +57,8 @@ paths:
       parameters:
         - name: withInternal
           description: >-
-            The load ID to associate with the loaded record.
+            Set to `true` to include internal attribute types that are generally
+            not mapped by users.  This defaults to false.
           in: query
           required: false
           schema:
@@ -369,6 +370,8 @@ paths:
         schema:
           type: integer
           format: int64
+      - $ref: '#/components/parameters/featureModeQueryParam'
+      - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRelatedQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -407,6 +410,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
         - $ref: '#/components/parameters/recordIdPathParam'
+        - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRelatedQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -451,9 +456,17 @@ paths:
           format as how an entity record would be loaded.  The specified
           attributes will be treated as a hypothetical record being loaded
           and the result will be anything that would have matched or related
-          to it.
+          to it.  *NOTE*: normally, this parameter is required and the JSON
+          value must be URL-encoded; however, you may instead provide short-hand
+          parameters that begin with the prefix `attr_` and a suffix that is
+          the JSON property you want added to the JSON.  For example the
+          parameter `attr_NAME_FULL` would set the `NAME_FULL` property in the
+          JSON.  This can be handy when you are manually constructing the URL
+          and you want to avoid having to URL encode JSON.  The short-hand
+          parameters that are formated as `attr_[JSON_PROPERTY]` will be
+          *ignored* if the `attrs` parameter is provided.
         in: query
-        required: true
+        required: false
         schema:
           type: object
           additionalProperties: {}
@@ -468,6 +481,18 @@ paths:
             "ADDR_STATE": "CA",
             "ADDR_POSTAL_CODE": "55073-1234"
           }
+      - name: withRelationships
+        description: >-
+          Set to `false` to suppress inclusion of related entity information.
+          This defaults to `true` for backwards compatibility with previous
+          implementations.
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+      - $ref: '#/components/parameters/featureModeQueryParam'
+      - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
         '200':
@@ -615,6 +640,8 @@ paths:
           type: array
           items:
             type: string
+      - $ref: '#/components/parameters/featureModeQueryParam'
+      - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
         '200':
@@ -734,6 +761,8 @@ paths:
           format: int32
           minimum: 0
           default: 1000
+      - $ref: '#/components/parameters/featureModeQueryParam'
+      - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
         '200':
@@ -793,6 +822,43 @@ components:
       schema:
         type: boolean
         default: false
+    featureModeQueryParam:
+      in: query
+      name: featureMode
+      required: false
+      description: >-
+        The method by which feature values should be included for entities.
+        The possible values are:
+          * `NONE` - Do not include any feature values -- this is the fastest
+                     option from a performance perspective because feature
+                     values do not have to be retrieved.
+          * `REPRESENTATIVE` - Include only a single representative value per
+                               "unique" value of a feature.  If there are
+                               multiple values that are near duplicates then
+                               only one value is included and the others are
+                               suppressed.
+          * `WITH_DUPLICATES` - Group near-duplicate feature values and return
+                                a representative value along with its near
+                                duplicate values.
+      schema:
+        type: string
+        enum:
+          - REPRESENTATIVE
+          - WITH_DUPLICATES
+          - NONE
+        default: WITH_DUPLICATES
+    forceMinimalQueryParam:
+      in: query
+      name: forceMinimal
+      required: false
+      description: >-
+        Whether or not to force the minimum entity detail response which may
+        consist of nothing more than an entity ID.  This provides the fastest
+        response to an entity query operation because no additional data needs
+        to be retrieved other than what is directly accessible.
+      schema:
+        type: boolean
+        default: false
     dataSourceCodePathParam:
       in: path
       name: dataSourceCode
@@ -836,6 +902,8 @@ components:
           type: object
           properties:
             httpMethod:
+              description: >-
+                The HTTP method that was used for the operation.
               type: string
               enum:
                 - GET
@@ -844,11 +912,27 @@ components:
                 - PATCH
                 - DELETE
             httpStatusCode:
+              description: >-
+                The HTTP status response code.
               type: integer
               format: int16
             timestamp:
+              description: >-
+                The timestamp of the operation's execution.
               type: string
               format: date-time
+            version:
+              type: string
+            timings:
+              description: >-
+                The timing measurements that were taken where the keys are
+                identifying what was timed and the values are the number of
+                milliseconds.
+              type: object
+              nullable: true
+              additionalProperties:
+                type: integer
+                format: int64
         links:
           type: object
           properties:
@@ -1412,6 +1496,15 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SzEntityFeature'
+        partial:
+          description: >-
+            If true then this SzResolvedEntity has complete features and
+            records, otherwise they are not provided.  Also, the
+            recordSummary items may be missing the topRecordIds if partial
+            is true.  This can be true for partially retrieved related
+            entities or if features are suppressed or if the minimal
+            response flag has been specified.
+          type: boolean
     SzBaseRelatedEntity:
       description: >-
         Provides the additional fields to a ResolvedEntity that describe
@@ -1467,13 +1560,6 @@ components:
                 this related entity.
               type: integer
               format: int32
-            partial:
-              description: >-
-                If true then this RelatedEntity has complete features and
-                records, otherwise they are not provided.  Also, the
-                recordSummary items will be missing the topRecordIds if partial
-                is true.
-              type: boolean
     SzRelationshipType:
       description: >-
         Describes how an entity is related to another (either a possible match,
@@ -1528,6 +1614,13 @@ components:
       allOf:
         - type: object
           properties:
+            relatedEntities:
+              description: >-
+                The array of RelatedEntity instances describing the possible
+                matches, discovered relationships, and disclosed relationships.
+              type: array
+              items:
+                $ref: '#/components/schemas/SzRelatedEntity'
             resultType:
               $ref: '#/components/schemas/SzAttributeSearchResultType'
         - $ref: '#/components/schemas/SzBaseRelatedEntity'
