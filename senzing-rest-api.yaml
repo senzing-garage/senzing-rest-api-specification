@@ -536,7 +536,7 @@ paths:
       parameters:
       - name: from
         description: >-
-          The EntityIdentifier for the first entity for the path either as an
+          The SzEntityIdentifier for the first entity for the path either as an
           entity ID or an encoded SzRecordId for the constituent record.
           Whatever format is used for the "from" parameter must match the
           format of the "to" parameter.  NOTE: An encoded SzRecordId can EITHER
@@ -551,7 +551,7 @@ paths:
           $ref: '#/components/schemas/SzEntityIdentifier'
       - name: to
         description: >-
-          The EntityIdentifier for the last entity for the path either as an
+          The SzEntityIdentifier for the last entity for the path either as an
           entity ID or a encoded SzRecordId for the constituent record.
           Whatever format is used for the "to" parameter must match the
           format of the "from" parameter.  NOTE: An encoded SzRecordId can
@@ -579,7 +579,7 @@ paths:
           default: 3
       - name: x
         description: >-
-          Repeating query parameter containing EntityIdentifier definitions
+          Repeating query parameter containing SzEntityIdentifier definitions
           that identify entities to be avoided or forbidden from the path
           (depending on the forbidAvoided parameter).  The entity identifiers
           are either all 64-bit long integers representing entity IDs or they
@@ -599,7 +599,7 @@ paths:
           $ref: '#/components/schemas/SzEntityIdentifier'
       - name: avoidEntities
         description: >-
-          Single query parameter containing multiple EntityIdentifier
+          Single query parameter containing multiple SzEntityIdentifier
           definitions as a JSON array or a simple comma-separated array that
           identify entities to be avoided or forbidden from the path
           (depending on the forbidAvoided parameter).  The entity identifiers
@@ -688,7 +688,7 @@ paths:
       parameters:
       - name: e
         description: >-
-          Repeating query parameter containing EntityIdentifier definitions
+          Repeating query parameter containing SzEntityIdentifier definitions
           that identify entities to be included in the entity network.  The
           entity identifiers are either all 64-bit long integers representing
           entity IDs or they are all encoded SzRecordId instances identifying
@@ -707,7 +707,7 @@ paths:
           $ref: '#/components/schemas/SzEntityIdentifier'
       - name: entities
         description: >-
-          Single query parameter containing multiple EntityIdentifier
+          Single query parameter containing multiple SzEntityIdentifier
           definitions that identify entities to be included in the entity
           network as a JSON array or a simple comma-separated array.  The
           entity identifiers are either all 64-bit long integers representing
@@ -1030,7 +1030,7 @@ components:
               properties:
                 record:
                   description: >-
-                    The EntityRecord describing the matching record.
+                    The SzEntityRecord describing the matching record.
                   $ref: '#/components/schemas/SzEntityRecord'
     SzEntityResponse:
       allOf:
@@ -1357,6 +1357,49 @@ components:
             loaded.
           type: object
           additionalProperties: {}
+    SzMatchedRecord:
+      description: >-
+        Provides the additional fields to an SzEntityRecord that describe
+        how it matched to the entity that it belongs to.
+      allOf:
+        - $ref: '#/components/schemas/SzEntityRecord'
+        - type: object
+          properties:
+            matchKey:
+              description: >-
+                The match key describing what features matched between
+                the first record in the resolved entity and this record.
+                This is blank for the first record.
+              type: string
+            resolutionRuleCode:
+              description: >-
+                The code identifying the resolution rule that matched this
+                record to the first record in the resolved entity.  This is
+                blank for the first record.
+              type: string
+            matchScore:
+              description: >-
+                The match score between the first record in the resolved
+                entity and this record.  The higher the score the closer
+                the match.  This is `null` for the first record in the
+                resolved entity,.
+              type: integer
+              format: int32
+              nullable: true
+            matchLevel:
+              description: >-
+                The integer "match level" describing how the first record in
+                the resolved entity matched to this record.  This is zero for
+                the first record and usually one (1) for other records.
+              type: integer
+              format: int32
+            refScore:
+              description: >-
+                The ref score between the first record in the resolved entity
+                and this record.  This is zero (0) for the first record in the
+                resolved entity.
+              type: integer
+              format: int32
     SzDataSourceRecordSummary:
       description: >-
         Describes the number of records associated with a specific data source
@@ -1409,8 +1452,8 @@ components:
             type: string
     SzResolvedEntity:
       description: >-
-        Describes a resolved entity that is made up of one or more EntityRecord
-        instances.
+        Describes a resolved entity that is made up of one or more
+        SzMatchedRecord instances.
       type: object
       properties:
         entityId:
@@ -1482,14 +1525,14 @@ components:
             type: string
         records:
           description: >-
-            The array of EntityRecord instances describing the records
+            The array of SzMatchedRecord instances describing the records
             associated with this entity.
           type: array
           items:
-            $ref: '#/components/schemas/SzEntityRecord'
+            $ref: '#/components/schemas/SzMatchedRecord'
         features:
           description: >-
-            The map of string feature names to arrays of EntityFeature instances
+            The map of string feature names to arrays of SzEntityFeature instances
             describing the values associated with each respective feature name.
           type: object
           additionalProperties:
@@ -1507,9 +1550,9 @@ components:
           type: boolean
     SzBaseRelatedEntity:
       description: >-
-        Provides the additional fields to a ResolvedEntity that describe
+        Provides the additional fields to an SzResolvedEntity that describe
         an entity's relationship to another.  This serves as a basis for
-        AttributeSearchResult and RelatedEntity.
+        SzAttributeSearchResult and SzRelatedEntity.
       allOf:
         - $ref: '#/components/schemas/SzResolvedEntity'
         - type: object
@@ -1534,6 +1577,7 @@ components:
                 the match.
               type: integer
               format: int32
+              nullable: true
             disclosed:
               description: >-
                 A boolean flag indicating if this related entity
@@ -1661,7 +1705,7 @@ components:
           $ref: '#/components/schemas/SzEntityPath'
         entities:
           description: >-
-            The array of EntityData objects describing the entities on the
+            The array of SzEntityData objects describing the entities on the
             path.  This will include partial information on the first-degree
             related entities to the entity.
           type: array
@@ -1676,14 +1720,14 @@ components:
       properties:
         entityPaths:
           description: >-
-            The array of EntityPath objects describing the paths that make up
+            The array of SzEntityPath objects describing the paths that make up
             the entity network (including island networks).
           type: array
           items:
             $ref: '#/components/schemas/SzEntityPath'
         entities:
           description: >-
-            The array of EntityData objects describing the entities on the
+            The array of SzEntityData objects describing the entities on the
             path.  This may only include partial information on the entities at
             the edge of the network.
           type: array
