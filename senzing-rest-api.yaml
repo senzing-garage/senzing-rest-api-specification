@@ -1382,7 +1382,7 @@ components:
                 The match score between the first record in the resolved
                 entity and this record.  The higher the score the closer
                 the match.  This is `null` for the first record in the
-                resolved entity,.
+                resolved entity.
               type: integer
               format: int32
               nullable: true
