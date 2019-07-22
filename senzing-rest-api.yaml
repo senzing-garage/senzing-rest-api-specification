@@ -984,6 +984,8 @@ components:
               format: date-time
             version:
               type: string
+            restApiVersion:
+              type: string
             timings:
               description: >-
                 The timing measurements that were taken where the keys are
@@ -1382,10 +1384,18 @@ components:
           type: string
           description: >-
             The version of the REST API Server implementation.
+        restApiVersion:
+          type: string
+          description: >-
+            The version of the REST API Specification that is implemented.
         nativeApiVersion:
           type: string
           description: >-
             The version for the underlying runtime native Senzing API.
+        nativeApiBuildNumber:
+          type: string
+          description: >-
+            The build number for the underlying runtime native Senzing API.
         nativeApiBuildDate:
           type: date-time
           description: >-
