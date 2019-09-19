@@ -7,6 +7,16 @@ info:
     to Senzing API functions available via REST.  It leverages the
     Senzing native API which is documented at
     [https://docs.senzing.com](https://docs.senzing.com)
+
+servers:
+  - url: http://localhost:{port}
+    description: localhost
+    variables:
+      port:
+        enum:
+          - '8080'
+          - '8889'
+        default: '8080'
 paths:
   /heartbeat:
     get:
