@@ -10,7 +10,6 @@ info:
 
 servers:
   - url: http://localhost:{port}
-    description: localhost
     variables:
       port:
         enum:
