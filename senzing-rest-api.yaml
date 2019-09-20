@@ -14,8 +14,8 @@ servers:
       port:
         enum:
           - '8080'
-          - '8889'
-        default: '8080'
+          - '8250'
+        default: '8250'
 paths:
   /heartbeat:
     get:
