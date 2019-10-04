@@ -16,6 +16,7 @@ servers:
           - '8250'
           - '8080'
         default: '8250'
+  - url: http://senzing-api.local
 paths:
   /heartbeat:
     get:
