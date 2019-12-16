@@ -232,14 +232,18 @@ paths:
         content:
           application/json; charset=UTF-8:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/SzDataSourceDescriptor'
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/SzDataSourceDescriptor'
+                - $ref: '#/components/schemas/SzDataSourceDescriptor'
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/SzDataSourceDescriptor'
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/SzDataSourceDescriptor'
+                - $ref: '#/components/schemas/SzDataSourceDescriptor'
           text/plain; charset=UTF=8:
             schema:
               type: string
@@ -299,70 +303,6 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzDataSourceResponse'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    put:
-      tags:
-        - Config
-      summary: >-
-        Obtains the current default configuration, adds the specified data
-        source and sets the modified configuration as the new default
-        configuration -- returning the set of all configured data sources.
-      operationId: addDataSource
-      parameters:
-        - $ref: '#/components/parameters/dataSourceCodePathParam'
-        - name: dataSourceId
-          description: >-
-            Optional parameter to specify the numeric data source ID to use
-            when create the data source.  This can be omitted if the data source
-            ID should be automatically generated.
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: >-
-          The optional request body to describe the data sources to be created.
-          The `dataSourceCode` property must match the URL and the object can
-          further contain the `dataSourceId` property.
-        required: false
-        content:
-          application/json; charset=UTF-8:
-            schema:
-              $ref: '#/components/schemas/SzDataSource'
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SzDataSource'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzDataSourcesResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzDataSourcesResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzDataSourcesResponse'
-        '403':
-          description: >-
-            If the server was started in read-only mode and so the operation
-            is not permitted.  This is also returned if the server was started
-            with a file-based configuration rather than a configuration stored
-            in the database (i.e.: `G2CONFIGFILE` is specified in an INI file)
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
   /entity-types:
@@ -429,20 +369,31 @@ paths:
         description: >-
           The optional request body to describe the entity types to be created.
           This can be specified as an alternative to the `entityType` parameter
-          or in addition to it.  The content must be an array of `SzEntityType`
-          objects.
+          or in addition to it.  The content must be an array of string entity
+          type codes or `SzEntityType` objects.  It may also be a plain-text
+          unquoted string that is simply a single entity type code.
         required: false
         content:
           application/json; charset=UTF-8:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/SzEntityTypeDescriptor'
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/SzEntityTypeDescriptor'
+                - $ref: '#/components/schemas/SzEntityTypeDescriptor'
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/SzEntityTypeDescriptor'
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/SzEntityTypeDescriptor'
+                - $ref: '#/components/schemas/SzEntityTypeDescriptor'
+          text/plain; charset=UTF=8:
+            schema:
+              type: string
+          text/plain:
+            schema:
+              type: string
       responses:
         '200':
           description: Successful response
@@ -496,82 +447,6 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzEntityTypeResponse'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    put:
-      tags:
-        - Config
-      summary: >-
-        Obtains the current default configuration, adds the specified entity
-        type and sets the modified configuration as the new default
-        configuration -- returning the set of all configured entity types.
-      operationId: addEntityType
-      parameters:
-        - $ref: '#/components/parameters/entityTypeCodePathParam'
-        - name: entityClass
-          description: >-
-            Parameter to specify the entity class code to associate with the
-            entity type.  This can be omitted if the entity class is specified
-            in the request body as an `SzEntityType` object.
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: entityTypeId
-          description: >-
-            Optional parameter to specify the numeric entiy type ID to use
-            when create the entity type.  This can be omitted if the entity
-            type ID should be automatically generated.
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: >-
-          The optional request body to describe the entity type to be created.
-          The request body can only be omitted if the `entityClass` is query
-          parameter is provided.  Otherwise, this must be used to provide the
-          `entityClassCode` and can additionally include the `entityTypeId`
-          property.  If the `entityTypeId` is omitted or is `null` then it
-          will be auto generated.
-        required: false
-        content:
-          application/json; charset=UTF-8:
-            schema:
-              $ref: '#/components/schemas/SzEntityType'
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SzEntityType'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzEntityTypesResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzEntityTypesResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzEntityTypesResponse'
-        '403':
-          description: >-
-            If the server was started in read-only mode and so the operation
-            is not permitted.  This is also returned if the server was started
-            with a file-based configuration rather than a configuration stored
-            in the database (i.e.: `G2CONFIGFILE` is specified in an INI file)
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
   /entity-classes:
@@ -702,82 +577,6 @@ paths:
                 $ref: '#/components/schemas/SzEntityClassResponse'
         '500':
           $ref: '#/components/responses/ServerError'
-    put:
-      tags:
-        - Config
-      summary: >-
-        Obtains the current default configuration, adds the specified entity
-        type and sets the modified configuration as the new default
-        configuration -- returning the set of all configured entity classes.
-      operationId: addEntityTypeForClass
-      parameters:
-        - $ref: '#/components/parameters/entityClassCodePathParam'
-        - name: entityClassId
-          description: >-
-            Optional parameter to specify the numeric entity class ID to use
-            when creating the entity type.  This can be omitted if the entity
-            type ID should be automatically generated.
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-        - name: resolving
-          description: >-
-            Optional parameter to specify whether or not entities having an
-            entity type belonging to this entity class will resolve against
-            each other.  This is `true` if they will resolve and `false` if
-            they will not.  If this parameter is not provided then it defaults
-            to `true`.
-          in: query
-          required: false
-          schema:
-            type: boolean
-            default: true
-      requestBody:
-        description: >-
-          The optional request body to describe the data sources to be created.
-          The `dataSourceCode` property must match the URL and the object can
-          further contain the `dataSourceId` property.
-        required: false
-        content:
-          application/json; charset=UTF-8:
-            schema:
-              $ref: '#/components/schemas/SzEntityClass'
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SzEntityClass'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzEntityClassesResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzEntityClassesResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzEntityClassesResponse'
-        '403':
-          description: >-
-            If the server was started in read-only mode and so the operation
-            is not permitted.  This is also returned if the server was started
-            with a file-based configuration rather than a configuration stored
-            in the database (i.e.: `G2CONFIGFILE` is specified in an INI file)
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-        '500':
-          $ref: '#/components/responses/ServerError'
   /entity-classes/{entityClassCode}/entity-types:
     get:
       tags:
@@ -871,7 +670,7 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
-  /entity-types/{entityTypeCode}/entity-types/{entityTypeCode}:
+  /entity-classes/{entityClassCode}/entity-types/{entityTypeCode}:
     get:
       tags:
         - Config
@@ -894,74 +693,6 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzEntityTypeResponse'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    put:
-      tags:
-        - Config
-      summary: >-
-        Obtains the current default configuration, adds the specified entity
-        type and sets the modified configuration as the new default
-        configuration -- returning the set of all configured entity types.
-      operationId: createEntityTypeWithClass
-      parameters:
-        - $ref: '#/components/parameters/entityClassCodePathParam'
-        - $ref: '#/components/parameters/entityTypeCodePathParam'
-        - name: entityTypeId
-          description: >-
-            Optional parameter to specify the numeric entiy type ID to use
-            when create the entity type.  This can be omitted if the entity
-            type ID should be automatically generated.
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: >-
-          The optional request body to describe the entity type to be created.
-          The request body can only be omitted if the `entityClass` is query
-          parameter is provided.  Otherwise, this must be used to provide the
-          `entityClassCode` and can additionally include the `entityTypeId`
-          property.  If the `entityTypeId` is omitted or is `null` then it
-          will be auto generated.
-        required: false
-        content:
-          application/json; charset=UTF-8:
-            schema:
-              $ref: '#/components/schemas/SzEntityType'
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SzEntityType'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzEntityTypesResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzEntityTypesResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzEntityTypesResponse'
-        '403':
-          description: >-
-            If the server was started in read-only mode and so the operation
-            is not permitted.  This is also returned if the server was started
-            with a file-based configuration rather than a configuration stored
-            in the database (i.e.: `G2CONFIGFILE` is specified in an INI file)
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
   /config/current:
