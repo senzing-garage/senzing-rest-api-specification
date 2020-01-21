@@ -1472,10 +1472,25 @@ paths:
         - name: dataSource
           description: >-
             Used to set the overriding data source for the records.  This data source
-            will be assigned to every record unless the record has a data source already
+            will be assigned to every record unless the record already has a data source
             and that data source has a specific override specified by a `dataSource_xxxx`
             parameter.  For example `dataSource_EMPL` will map the `EMPL` data source
-            to the specified value.
+            to the specified value.  If no override is provided then the data source
+            specified for the record is used directly and if the record has no data
+            source then it will fail to load.
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entityType
+          description: >-
+            Used to set the overriding entity type for the records.  This entity type
+            will be assigned to every record unless the record already has an entity type
+            and that data source has a specific override specified by a `entityType_xxxx`
+            parameter.  For example `entityType_PERSON` will map the `PERSON` entity type
+            to the specified value.  If no override is provided then the entity type
+            specified for the record is used directly, unless the record has no entity
+            type in which case an entity type by the same name as the data source is used.
           in: query
           required: false
           schema:
@@ -2888,6 +2903,32 @@ components:
           nullable: false
           type: integer
           format: int32
+    SzEntityTypeRecordAnalysis:
+      description: >-
+        Provides statistics specific to a given entity type of the records
+        found in bulk data.
+      type: object
+      properties:
+        entityType:
+          description: >-
+            The entity type code identifying the entity type for which the
+            statistics are being provided.  This is `null` if the statistics
+            pertain to those records with no entity type defined in the
+            source data.
+          type: string
+          nullable: true
+        recordCount:
+          description: >-
+            The number of records having the associated entity type.
+          type: integer
+          format: int32
+        recordsWithRecordIdCount:
+          description: >-
+            The number of records having the associated entity type that
+            include a `RECORD_ID` value.
+          nullable: false
+          type: integer
+          format: int32
     SzDataSourceBulkLoadResult:
       description: >-
         Provides statistics specific to a given data source of the records
@@ -2967,6 +3008,12 @@ components:
           nullable: false
           type: integer
           format: int32
+        recordsWithEntityTypeCount:
+          description: >-
+            The number of records provided that include a `ENTITY_TYPE` value.
+          nullable: false
+          type: integer
+          format: int32
         analysisByDataSource:
           description: >-
             The array of `SzDataSourceRecordAnalysis` elements map of string data source names to integer counts of how many
@@ -2975,6 +3022,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzDataSourceRecordAnalysis'
+        analysisByEntityType:
+          description: >-
+            The array of `SzEntityTypeRecordAnalysis` elements map of string entity type names to integer counts of how many
+            records are provided with that data source name.
+          nullable: false
+          type: array
+          items:
+            $ref: '#/components/schemas/SzEntityTypeRecordAnalysis'
     SzBulkLoadStatus:
       description: >-
         Describes the status of a bulk load:
