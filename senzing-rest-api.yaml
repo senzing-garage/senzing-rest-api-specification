@@ -3016,16 +3016,14 @@ components:
           format: int32
         analysisByDataSource:
           description: >-
-            The array of `SzDataSourceRecordAnalysis` elements map of string data source names to integer counts of how many
-            records are provided with that data source name.
+            The array of `SzDataSourceRecordAnalysis` elements providing statistics on the records by data source.
           nullable: false
           type: array
           items:
             $ref: '#/components/schemas/SzDataSourceRecordAnalysis'
         analysisByEntityType:
           description: >-
-            The array of `SzEntityTypeRecordAnalysis` elements map of string entity type names to integer counts of how many
-            records are provided with that data source name.
+            The array of `SzEntityTypeRecordAnalysis` elements providing statistics on the records by entity type.
           nullable: false
           type: array
           items:
