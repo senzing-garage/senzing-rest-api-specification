@@ -1412,6 +1412,8 @@ paths:
         - Bulk Data
       summary: Analyze a bulk data set of records. (Supports SSE)
       operationId: analyzeBulkRecords
+      parameters:
+        - $ref: '#/components/parameters/progressPeriodParam'
       requestBody:
         description: >-
           The bulk record data as a single JSON record per line, a JSON array,
@@ -1507,6 +1509,7 @@ paths:
           required: false
           schema:
             type: string
+        - $ref: '#/components/parameters/progressPeriodParam'
       requestBody:
         description: >-
           The bulk record data as a single JSON record per line, a JSON array,
@@ -1682,6 +1685,19 @@ components:
         when the record was loaded or generated automatically.
       schema:
         type: string
+    progressPeriodParam:
+      in: query
+      name: progressPeriod
+      required: false
+      description: >-
+        The suggested maximum time between SSE `progress` events specified in
+        milliseconds.  If not specified then the default of `3000` milliseconds
+        (i.e.: 3 seconds) is used.  This parameter is NOT used if the operation
+        is not producing an SSE response (i.e.: `text/event-stream` media type
+        was not requested via the `Accept` header).
+      schema:
+        type: string
+        default: 3000
   responses:
     ServerError:
       description: Unexpected server error occurred.
@@ -2941,20 +2957,12 @@ components:
           nullable: false
           type: integer
           format: int32
-    SzDataSourceBulkLoadResult:
+    SzBaseBulkLoadResult:
       description: >-
-        Provides statistics specific to a given data source of the records
-        loaded from bulk data.
+        Provides statistics specific common to all bulk load results regardless
+        of how they are aggregated.
       type: object
       properties:
-        dataSource:
-          description: >-
-            The data source code identifying the data source for which the
-            load statistics are being provided.  This is `null` if the
-            statistics pertain to those records with no data source defined
-            in the source data.
-          type: string
-          nullable: true
         recordCount:
           description: >-
             The number of records found in the bulk data set having the
@@ -2984,6 +2992,32 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzBulkLoadError'
+    SzDataSourceBulkLoadResult:
+      description: >-
+        Provides bulk data load statistics specific to a given data source.
+      allOf:
+        - $ref: '#/components/schemas/SzBaseBulkLoadResult'
+        - type: object
+          properties:
+            dataSource:
+              description: >-
+                The data source code identifying the data source for which the
+                load statistics are being provided.
+              type: string
+              nullable: false
+    SzEntityTypeBulkLoadResult:
+      description: >-
+        Provides bulk data load statistics specific to a given enitty type.
+      allOf:
+        - $ref: '#/components/schemas/SzBaseBulkLoadResult'
+        - type: object
+          properties:
+            entityType:
+              description: >-
+                The entity type code identifying the entity type for which the
+                load statistics are being provided.
+              type: string
+              nullable: false
     SzBulkDataStatus:
       description: >-
         Describes the status of a bulk data operation:
@@ -3061,67 +3095,54 @@ components:
       description: >-
         Describes the result from loading a set of bulk data records
         described as a JSON array, JSON Lines format or CSV format.
-      type: object
-      properties:
-        status:
-          description: >-
-            The state of the bulk load.
-          $ref: '#/components/schemas/SzBulkDataStatus'
-        characterEncoding:
-          description: >-
-            The character encoding used to process the bulk data.
-          nullable: false
-          type: string
-        mediaType:
-          description: >-
-            The media type of the bulk data.
-          nullable: false
-          type: string
-        recordCount:
-          description: >-
-            The number of records found in the bulk data set.  This may not
-            match the number of "observed entities" once loaded since some
-            records may be exact duplicates.
-          nullable: false
-          type: integer
-          format: int32
-        loadedRecordCount:
-          description: >-
-            The number of records successfully loaded from the bulk data set.
-            This may not match the number of "observed entities" loaded
-            since some records may be exact duplicates.
-          nullable: false
-          type: integer
-          format: int32
-        failedRecordCount:
-          description: >-
-            The number of records for which the attempt to load failed with an
-            error.
-          nullable: false
-          type: integer
-          format: int32
-        incompleteRecordCount:
-          description: >-
-            The number of records that are incomplete because they are missing
-            a `DATA_SOURCE` field.
-          nullable: false
-          type: integer
-          format: int32
-        resultsByDataSource:
-          description: >-
-            The array of `SzDataSourceBulkDataResult` elements describing the
-            load statistics by data source.
-          nullable: false
-          type: array
-          items:
-            $ref: '#/components/schemas/SzDataSourceBulkLoadResult'
-        topErrors:
-          description: >-
-            The array of top error occurrences with the number of times they
-            occurred.
-          type: array
-          items:
-            $ref: '#/components/schemas/SzBulkLoadError'
+      allOf:
+        - $ref: '#/components/schemas/SzBaseBulkLoadResult'
+        - type: object
+          properties:
+            status:
+              description: >-
+                The state of the bulk load.
+              $ref: '#/components/schemas/SzBulkDataStatus'
+            characterEncoding:
+              description: >-
+                The character encoding used to process the bulk data.
+              nullable: false
+              type: string
+            mediaType:
+              description: >-
+                The media type of the bulk data.
+              nullable: false
+              type: string
+            missingDataSourceCount:
+              description: >-
+                The number of records that are incomplete because they are
+                missing the `DATA_SOURCE` field.
+              nullable: false
+              type: integer
+              format: int32
+            missingEntityTypeCount:
+              description: >-
+                The number of records that are incomplete because they are
+                missing the `ENTITY_TYPE` field.
+              nullable: false
+              type: integer
+              format: int32
+            resultsByDataSource:
+              description: >-
+                The array of `SzDataSourceBulkDataResult` elements describing
+                the load statistics by data source.
+              nullable: false
+              type: array
+              items:
+                $ref: '#/components/schemas/SzDataSourceBulkLoadResult'
+            resultsByEntityType:
+              description: >-
+                The array of `SzEntityTypeBulkDataResult` elements describing
+                the load statistics by entity type.
+              nullable: false
+              type: array
+              items:
+                $ref: '#/components/schemas/SzEntityTypeBulkLoadResult'
 tags:
   - name: Admin
     description: Administrative operations.
