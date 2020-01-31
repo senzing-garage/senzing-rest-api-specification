@@ -6,7 +6,19 @@ info:
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
     Senzing native API which is documented at
-    [https://docs.senzing.com](https://docs.senzing.com)
+    [https://docs.senzing.com](https://docs.senzing.com).
+    <br><br>
+    <b>NOTE:</b> Some end-points described here will indicate "(Supports SSE)" to
+    indicate that they support "Server-sent Events" via the `text/event-stream`
+    media type.  This support is activated by adding the
+    `Accept: text/event-stream` header to a request to override the
+    default `application/json` media type.  Further, the end-point will behave
+    the similarly to its stand operation but will produce `progress` events
+    at regular intervals that are equivalent to its `200` response schema.
+    Upon success, the final event will be `completed` with the same response
+    schema as a `200` response.  Upon failure, the final event will be
+    `failed` with same schema as the `4xx` or `5xx` response (typically the
+    `SzErrorResponse`)
 paths:
   /heartbeat:
     get:
@@ -1398,7 +1410,7 @@ paths:
     post:
       tags:
         - Bulk Data
-      summary: Analyze a bulk data set of records
+      summary: Analyze a bulk data set of records. (Supports SSE)
       operationId: analyzeBulkRecords
       requestBody:
         description: >-
@@ -1449,7 +1461,7 @@ paths:
                     format: binary
       responses:
         '200':
-          description: Successful response
+          description: Successful response.
           content:
             application/json; charset=UTF-8:
               schema:
@@ -1466,7 +1478,7 @@ paths:
     post:
       tags:
         - Bulk Data
-      summary: Load the records in the provided bulk data set.
+      summary: Load the records in the provided bulk data set. (supports SSE)
       operationId: loadBulkRecords
       parameters:
         - name: dataSource
@@ -2972,12 +2984,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzBulkLoadError'
+    SzBulkDataStatus:
+      description: >-
+        Describes the status of a bulk data operation:
+          * `NOT_STARTED` - The bulk data operation has not started.
+          * `IN_PROGRESS` - If bulk data operation is in progress.
+          * `ABORTED` - The bulk data operation was aborted.
+          * `COMPLETED` - The bulk data operation completed normally.
+      type: string
+      enum:
+        - NOT_STARTED
+        - IN_PROGRESS
+        - ABORTED
+        - COMPLETED
     SzBulkDataAnalysis:
       description: >-
         Describes the analysis performed against a set of bulk data records
         described as a JSON array, JSON Lines format or CSV format.
       type: object
       properties:
+        status:
+          description: >-
+            The state of the bulk load.
+          $ref: '#/components/schemas/SzBulkDataStatus'
         characterEncoding:
           description: >-
             The character encoding used to process the bulk data.
@@ -3028,19 +3057,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzEntityTypeRecordAnalysis'
-    SzBulkLoadStatus:
-      description: >-
-        Describes the status of a bulk load:
-          * `NOT_STARTED` - The bulk load has not started.
-          * `IN_PROGRESS` - If bulk load is in progress.
-          * `ABORTED` - The bulk load was aborted.
-          * `COMPLETED` - The bulk load completed without aborting.
-      type: string
-      enum:
-        - NOT_STARTED
-        - IN_PROGRESS
-        - ABORTED
-        - COMPLETED
     SzBulkLoadResult:
       description: >-
         Describes the result from loading a set of bulk data records
@@ -3050,7 +3066,7 @@ components:
         status:
           description: >-
             The state of the bulk load.
-          $ref: '#/components/schemas/SzBulkLoadStatus'
+          $ref: '#/components/schemas/SzBulkDataStatus'
         characterEncoding:
           description: >-
             The character encoding used to process the bulk data.
