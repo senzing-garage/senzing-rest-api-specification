@@ -2931,6 +2931,13 @@ components:
           nullable: false
           type: integer
           format: int32
+        recordsWithEntityTypeCount:
+          description: >-
+            The number of records having the associated data source that
+            include an `ENTITY_TYPE` value.
+          nullable: false
+          type: integer
+          format: int32
     SzEntityTypeRecordAnalysis:
       description: >-
         Provides statistics specific to a given entity type of the records
@@ -2957,6 +2964,13 @@ components:
           nullable: false
           type: integer
           format: int32
+        recordsWithDataSourceCount:
+          description: >-
+            The number of records having the associated entity type that
+            include a `DATA_SOURCE` value.
+          nullable: false
+          type: integer
+          format: int32
     SzBaseBulkLoadResult:
       description: >-
         Provides statistics specific common to all bulk load results regardless
@@ -2965,24 +2979,30 @@ components:
       properties:
         recordCount:
           description: >-
-            The number of records found in the bulk data set having the
-            associated data source.  This may not match the number of
-            "observed entities" once loaded since some records may be exact
-            duplicates.
+            The number of records found in the bulk data set with the aggregate
+            group.  This may not match the number of "observed entities" once
+            loaded since some records may be exact duplicates.
           type: integer
           format: int32
         loadedRecordCount:
           description: >-
             The number of records successfully loaded from the bulk data set
-            having the associated data source.  This may not match the number
-            of "observed entities" loaded for that data source since some
-            records may be exact duplicates.
+            within the aggregate group.  This may not match the number
+            of "observed entities" loaded since some records may be exact
+            duplicates.
+          type: integer
+          format: int32
+        incompleteRecordCount:
+          description: >-
+            The number of records from the bulk data set within the aggregate
+            group that are missing either a `DATA_SOURCE` value or `ENTITY_TYPE`
+            value.
           type: integer
           format: int32
         failedRecordCount:
           description: >-
-            The number of records from the bulk data set having the associated
-            data source that failed to load.
+            The number of records from the bulk data set within the aggregate
+            group that failed to load.
           type: integer
           format: int32
         topErrors:
