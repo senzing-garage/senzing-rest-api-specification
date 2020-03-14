@@ -19,6 +19,15 @@ info:
     schema as a `200` response.  Upon failure, the final event will be
     `failed` with same schema as the `4xx` or `5xx` response (typically the
     `SzErrorResponse`)
+    [https://docs.senzing.com](https://docs.senzing.com)
+
+servers:
+  - url: http://localhost:{port}
+    variables:
+      port:
+        default: '8250'
+  - url: http://senzing-api.local
+
 paths:
   /heartbeat:
     get:
