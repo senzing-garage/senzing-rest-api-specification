@@ -1,11 +1,24 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "1.7.5"
+  version: "1.8.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
     Senzing native API which is documented at
+    [https://docs.senzing.com](https://docs.senzing.com).
+    <br><br>
+    <b>NOTE:</b> Some end-points described here will indicate "(Supports SSE)" to
+    indicate that they support "Server-sent Events" via the `text/event-stream`
+    media type.  This support is activated by adding the
+    `Accept: text/event-stream` header to a request to override the
+    default `application/json` media type.  Further, the end-point will behave
+    the similarly to its stand operation but will produce `progress` events
+    at regular intervals that are equivalent to its `200` response schema.
+    Upon success, the final event will be `completed` with the same response
+    schema as a `200` response.  Upon failure, the final event will be
+    `failed` with same schema as the `4xx` or `5xx` response (typically the
+    `SzErrorResponse`)
     [https://docs.senzing.com](https://docs.senzing.com)
 
 servers:
@@ -75,6 +88,25 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzVersionResponse'
+  /server-info:
+    get:
+      tags:
+        - Admin
+      summary: Get info regarding the server's state and supported features.
+      operationId: getServerInfo
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzServerInfoResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzServerInfoResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzServerInfoResponse'
   /attribute-types:
     get:
       tags:
@@ -192,6 +224,498 @@ paths:
                 $ref: '#/components/schemas/SzDataSourcesResponse'
         '500':
           $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Config
+      summary: >-
+        Obtains the current default configuration, adds the specified data
+        sources and sets the modified configuration as the new default
+        configuration -- returning the set of all configured data sources.
+      operationId: addDataSources
+      parameters:
+        - name: dataSource
+          description: >-
+            The multi-valued query parameter where each value is a data source
+            code identifying data sources to be created.
+          in: query
+          required: false
+          schema:
+            type: string
+        - $ref: '#/components/parameters/withRawQueryParam'
+      requestBody:
+        description: >-
+          The optional request body to describe the data sources to be created.
+          This can be specified as an alternative to the `dataSource` parameter
+          or in addition to it.  The content can be an array of string data
+          source codes or `SzDataSource` objects.  It may also be a plain-text
+          unquoted string that is simply a single data source code.
+        required: false
+        content:
+          application/json; charset=UTF-8:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/SzDataSourceDescriptor'
+                - $ref: '#/components/schemas/SzDataSourceDescriptor'
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/SzDataSourceDescriptor'
+                - $ref: '#/components/schemas/SzDataSourceDescriptor'
+          text/plain; charset=UTF=8:
+            schema:
+              type: string
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzDataSourcesResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzDataSourcesResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzDataSourcesResponse'
+        '403':
+          description: >-
+            If the server was started in read-only mode and so the operation
+            is not permitted.  This is also returned if the server was started
+            with a file-based configuration rather than a configuration stored
+            in the database (i.e.: `G2CONFIGFILE` is specified in an INI file)
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /data-sources/{dataSourceCode}:
+    get:
+      tags:
+        - Config
+      summary: Gets the details on the specified data source.
+      operationId: getDataSource
+      parameters:
+        - $ref: '#/components/parameters/dataSourceCodePathParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzDataSourceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzDataSourceResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzDataSourceResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /entity-types:
+    get:
+      tags:
+        - Config
+      summary: Get a list of configured entity types.
+      operationId: listEntityTypes
+      parameters:
+        - name: entityClass
+          description: >-
+            If specified, this filters the list of returned entity types to
+            those having the specified entity class.  If not specified then no
+            filtering on entity class is performed and all are returned.
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SzAttributeClass'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Config
+      summary: >-
+        Obtains the current default configuration, adds the specified entity
+        types and sets the modified configuration as the new default
+        configuration -- returning the set of all configured entity types.
+      operationId: addEntityTypes
+      parameters:
+        - name: entityType
+          description: >-
+            The multi-valued query parameter where each value is an entity type
+            code identifying entity types to be created.
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entityClass
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            The optional single-valued query parameter to specify the entity
+            class to use for all created entity types (i.e.: it is associated
+            with all values of `entityType` specified).  This can be omitted
+            if the entity types are fully described by an array of
+            `SzEntityType` objects in the request body.
+      requestBody:
+        description: >-
+          The optional request body to describe the entity types to be created.
+          This can be specified as an alternative to the `entityType` parameter
+          or in addition to it.  The content must be an array of string entity
+          type codes or `SzEntityType` objects.  It may also be a plain-text
+          unquoted string that is simply a single entity type code.
+        required: false
+        content:
+          application/json; charset=UTF-8:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/SzEntityTypeDescriptor'
+                - $ref: '#/components/schemas/SzEntityTypeDescriptor'
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/SzEntityTypeDescriptor'
+                - $ref: '#/components/schemas/SzEntityTypeDescriptor'
+          text/plain; charset=UTF=8:
+            schema:
+              type: string
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+        '403':
+          description: >-
+            If the server was started in read-only mode and so the operation
+            is not permitted.  This is also returned if the server was started
+            with a file-based configuration rather than a configuration stored
+            in the database (i.e.: `G2CONFIGFILE` is specified in an INI file)
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /entity-types/{entityTypeCode}:
+    get:
+      tags:
+        - Config
+      summary: Gets the details on the specified entity type.
+      operationId: getEntityType
+      parameters:
+        - $ref: '#/components/parameters/entityTypeCodePathParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypeResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypeResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypeResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /entity-classes:
+    get:
+      tags:
+        - Config
+      summary: Get a list of configured entity classes.
+      operationId: listEntityClasses
+      parameters:
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityClassesResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityClassesResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityClassesResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Config
+      summary: >-
+        Obtains the current default configuration, adds the specified entity
+        classes and sets the modified configuration as the new default
+        configuration -- returning the set of all configured entity classes.
+      operationId: addEntityClasses
+      parameters:
+        - name: entityClass
+          description: >-
+            The multi-valued query parameter where each value is an entity class
+            code identifying entity classes to be created.
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: resolving
+          description: >-
+            Optional parameter to specify whether or not entities having an
+            entity type belonging to this entity class will resolve against
+            each other.  This is `true` if they will resolve and `false` if
+            they will not.  If entity classes are specified in the request
+            body then the value for this parameter is used for the default
+            value if the `resolving` property is absent or `null` on any of
+            those entity classes.  If this parameter is not provided then it
+            defaults to `true`.
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+      requestBody:
+        description: >-
+          The optional request body to describe the entity classes to be
+          created.  This can be specified as an alternative to the `entityClass`
+          parameter or in addition to it.  The content can be an array of string
+          entity class codes or `SzEntityClass` objects.
+        required: false
+        content:
+          application/json; charset=UTF-8:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SzEntityClassDescriptor'
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SzEntityClassDescriptor'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityClassesResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityClassesResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityClassesResponse'
+        '403':
+          description: >-
+            If the server was started in read-only mode and so the operation
+            is not permitted.  This is also returned if the server was started
+            with a file-based configuration rather than a configuration stored
+            in the database (i.e.: `G2CONFIGFILE` is specified in an INI file)
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /entity-classes/{entityClassCode}:
+    get:
+      tags:
+        - Config
+      summary: Gets the details on the specified entity class.
+      operationId: getEntityClass
+      parameters:
+        - $ref: '#/components/parameters/entityClassCodePathParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityClassResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityClassResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityClassResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /entity-classes/{entityClassCode}/entity-types:
+    get:
+      tags:
+        - Config
+      summary: >-
+        Get a list of configured entity types for the identified entity class.
+      operationId: listEntityTypesByClass
+      parameters:
+        - $ref: '#/components/parameters/entityClassCodePathParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Config
+      summary: >-
+        Obtains the current default configuration, adds the specified entity
+        types and sets the modified configuration as the new default
+        configuration -- returning the set of all configured entity types.
+      operationId: addEntityTypesForClass
+      parameters:
+        - $ref: '#/components/parameters/entityClassCodePathParam'
+        - name: entityType
+          description: >-
+            The multi-valued query parameter where each value is an entity type
+            code identifying entity types to be created.
+          in: query
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: >-
+          The optional request body to describe the entity types to be created.
+          This can be specified as an alternative to the `entityType` parameter
+          or in addition to it.  The content must be an array of `SzEntityType`
+          objects and the entity classes in the `SzEntityType` objects must
+          match the entity class in the path.
+        required: false
+        content:
+          application/json; charset=UTF-8:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SzEntityTypeDescriptor'
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SzEntityTypeDescriptor'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypesResponse'
+        '403':
+          description: >-
+            If the server was started in read-only mode and so the operation
+            is not permitted.  This is also returned if the server was started
+            with a file-based configuration rather than a configuration stored
+            in the database (i.e.: `G2CONFIGFILE` is specified in an INI file)
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /entity-classes/{entityClassCode}/entity-types/{entityTypeCode}:
+    get:
+      tags:
+        - Config
+      summary: Gets the details on the specified entity type.
+      operationId: getEntityTypeByClass
+      parameters:
+        - $ref: '#/components/parameters/entityClassCodePathParam'
+        - $ref: '#/components/parameters/entityTypeCodePathParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypeResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypeResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityTypeResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /config/current:
     get:
       tags:
@@ -284,6 +808,20 @@ paths:
             If the specified data contains a DATA_SOURCE field that is not
             consistent with the dataSourceCode in the path of the request
             or if the specified content body is not formatted as JSON.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '403':
+          description: >-
+            If the server was started in read-only mode and so the operation
+            is not permitted.
           content:
             application/json; charset=UTF-8:
               schema:
@@ -399,6 +937,20 @@ paths:
             If the specified data contains a DATA_SOURCE field that is not
             consistent with the dataSourceCode in the path of the request
             or if the specified content body is not formatted as JSON.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '403':
+          description: >-
+            If the server was started in read-only mode and so the operation
+            is not permitted.
           content:
             application/json; charset=UTF-8:
               schema:
@@ -863,6 +1415,186 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
+  /bulk-data/analyze:
+    post:
+      tags:
+        - Bulk Data
+      summary: Analyze a bulk data set of records. (Supports SSE)
+      operationId: analyzeBulkRecords
+      parameters:
+        - $ref: '#/components/parameters/progressPeriodParam'
+      requestBody:
+        description: >-
+          The bulk record data as a single JSON record per line, a JSON array,
+          or a CSV.  Further, multipart/form-data can be provided with the
+          "data" property representing the record data as described above.  Set
+          your content type accordingly.  The data should be in pre-mapped
+          format using JSON property names or CSV column names as described by
+          the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+        required: true
+        content:
+          application/x-jsonlines; charset=UTF-8:
+            schema:
+              type: string
+          application/x-jsonlines:
+            schema:
+              type: string
+          application/json; charset=UTF-8:
+            schema:
+              type: array
+              items:
+                type: object
+                additionalProperties: {}
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                additionalProperties: {}
+          text/csv; charset=UTF-8:
+            schema:
+              type: string
+          text/csv:
+            schema:
+              type: string
+          text/plain; charset=UTF-8:
+            schema:
+              type: string
+          text/plain:
+            schema:
+              type: string
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                  data:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzBulkDataAnalysisResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzBulkDataAnalysisResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzBulkDataAnalysisResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulk-data/load:
+    post:
+      tags:
+        - Bulk Data
+      summary: Load the records in the provided bulk data set. (supports SSE)
+      operationId: loadBulkRecords
+      parameters:
+        - name: dataSource
+          description: >-
+            Used to set the overriding data source for the records.  This data source
+            will be assigned to every record unless the record already has a data source
+            and that data source has a specific override specified by a `dataSource_xxxx`
+            parameter.  For example `dataSource_EMPL` will map the `EMPL` data source
+            to the specified value.  If no override is provided then the data source
+            specified for the record is used directly and if the record has no data
+            source then it will fail to load.
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entityType
+          description: >-
+            Used to set the overriding entity type for the records.  This entity type
+            will be assigned to every record unless the record already has an entity type
+            and that data source has a specific override specified by a `entityType_xxxx`
+            parameter.  For example `entityType_PERSON` will map the `PERSON` entity type
+            to the specified value.  If no override is provided then the entity type
+            specified for the record is used directly, unless the record has no entity
+            type in which case an entity type by the same name as the data source is used.
+          in: query
+          required: false
+          schema:
+            type: string
+        - $ref: '#/components/parameters/progressPeriodParam'
+      requestBody:
+        description: >-
+          The bulk record data as a single JSON record per line, a JSON array,
+          or a CSV.  Further, multipart/form-data can be provided with the
+          "data" property representing the record data as described above.  Set
+          your content type accordingly.  The data should be in pre-mapped
+          format using JSON property names or CSV column names as described by
+          the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+        required: true
+        content:
+          application/x-jsonlines; charset=UTF-8:
+            schema:
+              type: string
+          application/x-jsonlines:
+            schema:
+              type: string
+          application/json; charset=UTF-8:
+            schema:
+              type: array
+              items:
+                type: object
+                additionalProperties: {}
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                additionalProperties: {}
+          text/csv; charset=UTF-8:
+            schema:
+              type: string
+          text/csv:
+            schema:
+              type: string
+          text/plain; charset=UTF-8:
+            schema:
+              type: string
+          text/plain:
+            schema:
+              type: string
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzBulkLoadResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzBulkLoadResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzBulkLoadResponse'
+        '403':
+          description: >-
+            If the server was started in read-only mode and so the operation
+            is not permitted.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
 components:
   parameters:
     withRawQueryParam:
@@ -933,8 +1665,23 @@ components:
       name: dataSourceCode
       required: true
       description: >-
-        The data source code identifying the data source with which
-        the requested record is associated.
+        The data source code identifying the data source.
+      schema:
+        type: string
+    entityTypeCodePathParam:
+      in: path
+      name: entityTypeCode
+      required: true
+      description: >-
+        The entity type code identifying the entity type.
+      schema:
+        type: string
+    entityClassCodePathParam:
+      in: path
+      name: entityClassCode
+      required: true
+      description: >-
+        The entity class code identifying the entity class.
       schema:
         type: string
     recordIdPathParam:
@@ -947,6 +1694,19 @@ components:
         when the record was loaded or generated automatically.
       schema:
         type: string
+    progressPeriodParam:
+      in: query
+      name: progressPeriod
+      required: false
+      description: >-
+        The suggested maximum time between SSE `progress` events specified in
+        milliseconds.  If not specified then the default of `3000` milliseconds
+        (i.e.: 3 seconds) is used.  This parameter is NOT used if the operation
+        is not producing an SSE response (i.e.: `text/event-stream` media type
+        was not requested via the `Accept` header).
+      schema:
+        type: string
+        default: 3000
   responses:
     ServerError:
       description: Unexpected server error occurred.
@@ -1054,6 +1814,15 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/SzVersionInfo'
+    SzServerInfoResponse:
+      description: >-
+        The response containing the server info.
+      allOf:
+        - $ref: '#/components/schemas/SzBaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/SzServerInfo'
     SzAttributeTypesResponse:
       description: >-
         The response containing attribute type information.
@@ -1082,6 +1851,22 @@ components:
               properties:
                 attributeType:
                   $ref: '#/components/schemas/SzAttributeType'
+    SzDataSourceResponse:
+      description: >-
+        The response describing a data source.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                dataSource:
+                  description: >-
+                    The requested data source as an `SzDataSource` object.
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SzDataSource'
     SzDataSourcesResponse:
       description: >-
         The response describing the configured data sources.
@@ -1094,10 +1879,98 @@ components:
               properties:
                 dataSources:
                   description: >-
-                    The list of data source codes that are configured.
+                    The list of data source codes for the configured data
+                    sources.
                   type: array
                   items:
                     type: string
+                dataSourceDetails:
+                  description: >-
+                    The list of `SzDataSource` instances describing the data
+                    sources that are configured.
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/SzDataSource'
+    SzEntityTypeResponse:
+      description: >-
+        The response describing an entity type.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                entityType:
+                  description: >-
+                    The requested entity type as an `SzEntityType` object.
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SzEntityType'
+    SzEntityTypesResponse:
+      description: >-
+        The response describing the configured entity types.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                entityTypes:
+                  description: >-
+                    The list of entity type codes for the configured entity
+                    types.
+                  type: array
+                  items:
+                    type: string
+                entityTypeDetails:
+                  description: >-
+                    The list of `SzEntityType` instances describing the
+                    configured entity types.
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/SzEntityType'
+    SzEntityClassResponse:
+      description: >-
+        The response describing an entity class.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                dataSource:
+                  description: >-
+                    The requested data source as an `SzEntityClass` object.
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SzEntityClass'
+    SzEntityClassesResponse:
+      description: >-
+        The response describing the configured entity classes.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                entityClasses:
+                  description: >-
+                    The list of entity classes codes for the configured entity
+                    classes.
+                  type: array
+                  items:
+                    type: string
+                entityClassDetails:
+                  description: >-
+                    The list of `SzEntityClass` instances describing the
+                    configured entity classes.
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/SzEntityClass'
     SzConfigResponse:
       description: >-
         The response containing raw configuration in the rawData field.
@@ -1175,6 +2048,30 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/SzEntityNetworkData'
+    SzBulkDataAnalysisResponse:
+      description: >-
+        The response describing the analysis of bulk data records.
+      allOf:
+        - $ref: '#/components/schemas/SzBaseResponse'
+        - type: object
+          properties:
+            data:
+              description: >-
+                The SzBulkDataAnalysis describing the analysis of the bulk
+                records.
+              $ref: '#/components/schemas/SzBulkDataAnalysis'
+    SzBulkLoadResponse:
+      description: >-
+        The response describing the result of loading bulk data.
+      allOf:
+        - $ref: '#/components/schemas/SzBaseResponse'
+        - type: object
+          properties:
+            data:
+              description: >-
+                The `SzBulkLoadResult` describing the load statistics from
+                loading a bulk data set.
+              $ref: '#/components/schemas/SzBulkLoadResult'
     SzError:
       description: >-
         Describes an error.
@@ -1187,6 +2084,21 @@ components:
         message:
           description: The message describing the error.
           type: string
+    SzBulkLoadError:
+      description: >-
+        Describes an error and the number of times it occurred.
+      type: object
+      properties:
+        error:
+          description: >-
+            The error that occurred.
+          $ref: '#/components/schemas/SzError'
+        occurrenceCount:
+          description: >-
+            The number of times the error occurred while loading data
+            from the bulk data set.
+          type: integer
+          format: int32
     SzAttributeClass:
       description: >-
         Enumerates the various classes of attribute types (and features).
@@ -1870,6 +2782,383 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzEntityData'
+    SzServerInfo:
+      description: >-
+        Provides information about which server features are enabled and which
+        are not enabled.
+      type: object
+      properties:
+        concurrency:
+          description: >-
+            The number of Senzing worker threads pooled for handling requests.
+          type: integer
+          format: int32
+          nullable: false
+        activeConfigId:
+          description: >-
+            The active configuration ID being used by the API server.  This
+            is still available if the server was started with a static file
+            configuration via the `G2CONFIGFILE` initialization property.
+          type: integer
+          format: int32
+          nullable: false
+        dynamicConfig:
+          description: >-
+            Whether or not the server will automatically pickup the latest
+            default configuration if it changes.
+          type: boolean
+          nullable: false
+        readOnly:
+          description: >-
+            Whether or not the server was started in read-only mode.  If in
+            read-only mode then operations that modify the repository (e.g.:
+            loading records or configuring new data sources) are not allowed.
+          type: boolean
+          nullable: false
+        adminEnabled:
+          description: >-
+            Whether or not admin features are enabled.  If admin features are
+            not enabled then the configuration cannot be modified.
+          type: boolean
+          nullable: false
+    SzDataSource:
+      description: Describes a data source.
+      type: object
+      properties:
+        dataSourceCode:
+          description: The data source code.
+          type: string
+          nullable: false
+        dataSourceId:
+          description: >-
+            The data source ID. The value can be null when used for input in
+            creating a data source to indicate that the data source ID should
+            be auto-generated.
+          type: integer
+          format: int32
+          nullable: true
+    SzEntityType:
+      description: Describes an entity type.
+      type: object
+      properties:
+        entityTypeCode:
+          description: The entity type code.
+          type: string
+          nullable: false
+        entityClassCode:
+          description: The entity class code associated with the entity type.
+          type: string
+          nullable: false
+        entityTypeId:
+          description: >-
+            The entity type ID.  The value can be null when used for input in
+            creating an entity type to indicate that the entity type ID should
+            be auto-generated.
+          type: integer
+          format: int32
+          nullable: true
+    SzEntityClass:
+      description: Describes an entity class.
+      type: object
+      properties:
+        entityClassCode:
+          description: The entity class code.
+          type: string
+          nullable: false
+        entityClassId:
+          description: >-
+            The entity class ID.  The value can be null when used for input in
+             creating an entity class to indicate that the entity class ID
+             should be auto-generated.
+          type: integer
+          format: int32
+          nullable: true
+        resolving:
+          description: >-
+            Whether or not entities having entity types belong to this entity
+            class will resolve with each other.  This is `true` if they will
+            resolve and `false` if they will not.
+          type: boolean
+          nullable: true
+    SzDataSourceDescriptor:
+      description: >-
+        Describes a data source either as only its data source code or as an
+        `SzDataSource` object.
+      oneOf:
+        - type: string
+        - $ref: '#/components/schemas/SzDataSource'
+    SzEntityTypeDescriptor:
+      description: >-
+        Describes an entity type either as only its entity type code or as an
+        `SzEntityType` object.
+      oneOf:
+        - type: string
+        - $ref: '#/components/schemas/SzEntityType'
+    SzEntityClassDescriptor:
+      description: >-
+        Describes an entity class either as only its entity class code or as an
+        `SzEntityClass` object.
+      oneOf:
+        - type: string
+        - $ref: '#/components/schemas/SzEntityClass'
+    SzDataSourceRecordAnalysis:
+      description: >-
+        Provides statistics specific to a given data source of the records
+        found in bulk data.
+      type: object
+      properties:
+        dataSource:
+          description: >-
+            The data source code identifying the data source for which the
+            statistics are being provided.  This is `null` if the statistics
+            pertain to those records with no data source defined in the
+            source data.
+          type: string
+          nullable: true
+        recordCount:
+          description: >-
+            The number of records having the associated data source.
+          type: integer
+          format: int32
+        recordsWithRecordIdCount:
+          description: >-
+            The number of records having the associated data source that
+            include a `RECORD_ID` value.
+          nullable: false
+          type: integer
+          format: int32
+        recordsWithEntityTypeCount:
+          description: >-
+            The number of records having the associated data source that
+            include an `ENTITY_TYPE` value.
+          nullable: false
+          type: integer
+          format: int32
+    SzEntityTypeRecordAnalysis:
+      description: >-
+        Provides statistics specific to a given entity type of the records
+        found in bulk data.
+      type: object
+      properties:
+        entityType:
+          description: >-
+            The entity type code identifying the entity type for which the
+            statistics are being provided.  This is `null` if the statistics
+            pertain to those records with no entity type defined in the
+            source data.
+          type: string
+          nullable: true
+        recordCount:
+          description: >-
+            The number of records having the associated entity type.
+          type: integer
+          format: int32
+        recordsWithRecordIdCount:
+          description: >-
+            The number of records having the associated entity type that
+            include a `RECORD_ID` value.
+          nullable: false
+          type: integer
+          format: int32
+        recordsWithDataSourceCount:
+          description: >-
+            The number of records having the associated entity type that
+            include a `DATA_SOURCE` value.
+          nullable: false
+          type: integer
+          format: int32
+    SzBaseBulkLoadResult:
+      description: >-
+        Provides statistics specific common to all bulk load results regardless
+        of how they are aggregated.
+      type: object
+      properties:
+        recordCount:
+          description: >-
+            The number of records found in the bulk data set with the aggregate
+            group.  This may not match the number of "observed entities" once
+            loaded since some records may be exact duplicates.
+          type: integer
+          format: int32
+        loadedRecordCount:
+          description: >-
+            The number of records successfully loaded from the bulk data set
+            within the aggregate group.  This may not match the number
+            of "observed entities" loaded since some records may be exact
+            duplicates.
+          type: integer
+          format: int32
+        incompleteRecordCount:
+          description: >-
+            The number of records from the bulk data set within the aggregate
+            group that are missing either a `DATA_SOURCE` value or `ENTITY_TYPE`
+            value.
+          type: integer
+          format: int32
+        failedRecordCount:
+          description: >-
+            The number of records from the bulk data set within the aggregate
+            group that failed to load.
+          type: integer
+          format: int32
+        topErrors:
+          description: >-
+            The array of top error occurrences with the number of times they
+            occurred when loading records with the associated data source.
+          type: array
+          items:
+            $ref: '#/components/schemas/SzBulkLoadError'
+    SzDataSourceBulkLoadResult:
+      description: >-
+        Provides bulk data load statistics specific to a given data source.
+      allOf:
+        - $ref: '#/components/schemas/SzBaseBulkLoadResult'
+        - type: object
+          properties:
+            dataSource:
+              description: >-
+                The data source code identifying the data source for which the
+                load statistics are being provided.
+              type: string
+              nullable: false
+    SzEntityTypeBulkLoadResult:
+      description: >-
+        Provides bulk data load statistics specific to a given enitty type.
+      allOf:
+        - $ref: '#/components/schemas/SzBaseBulkLoadResult'
+        - type: object
+          properties:
+            entityType:
+              description: >-
+                The entity type code identifying the entity type for which the
+                load statistics are being provided.
+              type: string
+              nullable: false
+    SzBulkDataStatus:
+      description: >-
+        Describes the status of a bulk data operation:
+          * `NOT_STARTED` - The bulk data operation has not started.
+          * `IN_PROGRESS` - If bulk data operation is in progress.
+          * `ABORTED` - The bulk data operation was aborted.
+          * `COMPLETED` - The bulk data operation completed normally.
+      type: string
+      enum:
+        - NOT_STARTED
+        - IN_PROGRESS
+        - ABORTED
+        - COMPLETED
+    SzBulkDataAnalysis:
+      description: >-
+        Describes the analysis performed against a set of bulk data records
+        described as a JSON array, JSON Lines format or CSV format.
+      type: object
+      properties:
+        status:
+          description: >-
+            The state of the bulk load.
+          $ref: '#/components/schemas/SzBulkDataStatus'
+        characterEncoding:
+          description: >-
+            The character encoding used to process the bulk data.
+          nullable: false
+          type: string
+        mediaType:
+          description: >-
+            The media type of the bulk data.
+          nullable: false
+          type: string
+        recordCount:
+          description: >-
+            The number of records found in the bulk data.  This may not match
+            the number of "observed entities" once loaded since some records
+            may be exact duplicates.
+          nullable: false
+          type: integer
+          format: int32
+        recordsWithRecordIdCount:
+          description: >-
+            The number of records provided that include a `RECORD_ID` value.
+          nullable: false
+          type: integer
+          format: int32
+        recordsWithDataSourceCount:
+          description: >-
+            The number of records provided that include a `DATA_SOURCE` value.
+          nullable: false
+          type: integer
+          format: int32
+        recordsWithEntityTypeCount:
+          description: >-
+            The number of records provided that include a `ENTITY_TYPE` value.
+          nullable: false
+          type: integer
+          format: int32
+        analysisByDataSource:
+          description: >-
+            The array of `SzDataSourceRecordAnalysis` elements providing statistics on the records by data source.
+          nullable: false
+          type: array
+          items:
+            $ref: '#/components/schemas/SzDataSourceRecordAnalysis'
+        analysisByEntityType:
+          description: >-
+            The array of `SzEntityTypeRecordAnalysis` elements providing statistics on the records by entity type.
+          nullable: false
+          type: array
+          items:
+            $ref: '#/components/schemas/SzEntityTypeRecordAnalysis'
+    SzBulkLoadResult:
+      description: >-
+        Describes the result from loading a set of bulk data records
+        described as a JSON array, JSON Lines format or CSV format.
+      allOf:
+        - $ref: '#/components/schemas/SzBaseBulkLoadResult'
+        - type: object
+          properties:
+            status:
+              description: >-
+                The state of the bulk load.
+              $ref: '#/components/schemas/SzBulkDataStatus'
+            characterEncoding:
+              description: >-
+                The character encoding used to process the bulk data.
+              nullable: false
+              type: string
+            mediaType:
+              description: >-
+                The media type of the bulk data.
+              nullable: false
+              type: string
+            missingDataSourceCount:
+              description: >-
+                The number of records that are incomplete because they are
+                missing the `DATA_SOURCE` field.
+              nullable: false
+              type: integer
+              format: int32
+            missingEntityTypeCount:
+              description: >-
+                The number of records that are incomplete because they are
+                missing the `ENTITY_TYPE` field.
+              nullable: false
+              type: integer
+              format: int32
+            resultsByDataSource:
+              description: >-
+                The array of `SzDataSourceBulkDataResult` elements describing
+                the load statistics by data source.
+              nullable: false
+              type: array
+              items:
+                $ref: '#/components/schemas/SzDataSourceBulkLoadResult'
+            resultsByEntityType:
+              description: >-
+                The array of `SzEntityTypeBulkDataResult` elements describing
+                the load statistics by entity type.
+              nullable: false
+              type: array
+              items:
+                $ref: '#/components/schemas/SzEntityTypeBulkLoadResult'
 tags:
   - name: Admin
     description: Administrative operations.
@@ -1879,4 +3168,6 @@ tags:
     description: Entity and record data operations.
   - name: Entity Graph
     description: Entity relationship connections for graphing.
+  - name: Bulk Data
+    description: Preparation and loading of bulk data.
 
