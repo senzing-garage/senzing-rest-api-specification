@@ -1572,13 +1572,13 @@ paths:
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/SzBulkDataLoadResponse'
+                $ref: '#/components/schemas/SzBulkLoadResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/SzBulkDataLoadResponse'
+                $ref: '#/components/schemas/SzBulkLoadResponse'
             default:
               schema:
-                $ref: '#/components/schemas/SzBulkDataLoadResponse'
+                $ref: '#/components/schemas/SzBulkLoadResponse'
         '403':
           description: >-
             If the server was started in read-only mode and so the operation
@@ -2063,19 +2063,6 @@ components:
     SzBulkLoadResponse:
       description: >-
         The response describing the result of loading bulk data.
-      allOf:
-        - $ref: '#/components/schemas/SzBaseResponse'
-        - type: object
-          properties:
-            data:
-              description: >-
-                The SzBulkDataAnalysis describing the analysis of the bulk
-                records.
-              $ref: '#/components/schemas/SzBulkDataAnalysis'
-    SzBulkDataLoadResponse:
-      description: >-
-        The response describing the load statistics from loading a bulk data
-        set.
       allOf:
         - $ref: '#/components/schemas/SzBaseResponse'
         - type: object
