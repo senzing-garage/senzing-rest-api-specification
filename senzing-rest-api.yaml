@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "1.8.0"
+  version: "1.8.1"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -993,6 +993,8 @@ paths:
           format: int64
       - $ref: '#/components/parameters/featureModeQueryParam'
       - $ref: '#/components/parameters/forceMinimalQueryParam'
+      - $ref: '#/components/parameters/withFeatureStatsQueryParam'
+      - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
       - $ref: '#/components/parameters/withRelatedQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -1022,6 +1024,56 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
+  /entities/{entityId}/why:
+    get:
+      tags:
+        - Entity Data
+      summary: >-
+        Returns an analysis of why the entity for the respective
+        entity ID resolved.
+      operationId: whyEntityByEntityID
+      parameters:
+        - name: entityId
+          description: >-
+            The unique numeric ID that identifies that entity being requested.
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - $ref: '#/components/parameters/whyWithRelationshipsQueryParam'
+        - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
+        - $ref: '#/components/parameters/whyWithDerivedFeaturesQueryParam'
+        - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/forceMinimalQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successul response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntityResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntityResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntityResponse'
+        '404':
+          description: If entity ID is not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}/entity:
     get:
       tags:
@@ -1032,6 +1084,8 @@ paths:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
         - $ref: '#/components/parameters/recordIdPathParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/withFeatureStatsQueryParam'
+        - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRelatedQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -1048,6 +1102,120 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzEntityResponse'
+        '404':
+          description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /data-sources/{dataSourceCode}/records/{recordId}/entity/why:
+    get:
+      tags:
+        - Entity Data
+      summary: >-
+        Returns an analysis of why the entity for the record with the
+        respective data source code and record ID resolved.
+      operationId: whyEntityByRecordID
+      parameters:
+        - $ref: '#/components/parameters/dataSourceCodePathParam'
+        - $ref: '#/components/parameters/recordIdPathParam'
+        - $ref: '#/components/parameters/whyWithRelationshipsQueryParam'
+        - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
+        - $ref: '#/components/parameters/whyWithDerivedFeaturesQueryParam'
+        - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/forceMinimalQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successul response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntityResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntityResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntityResponse'
+        '404':
+          description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /why/records:
+    get:
+      tags:
+        - Entity Data
+      summary: >-
+        Returns an analysis of why the records identified by the data source
+        and record ID's in the query parameters resolved or did not resolve.
+      operationId: whyRecords
+      parameters:
+        - name: dataSource1
+          description: >-
+            The data source for the first record.
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: recordId1
+          description: >-
+            The record ID for the first record.
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: dataSource2
+          description: >-
+            The data source for the second record.
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: recordId2
+          description: >-
+            The data source for the second record.
+          required: true
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/whyWithRelationshipsQueryParam'
+        - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
+        - $ref: '#/components/parameters/whyWithDerivedFeaturesQueryParam'
+        - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/forceMinimalQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successul response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzWhyRecordsResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzWhyRecordsResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzWhyRecordsResponse'
         '404':
           description: If data source or record ID are not found.
           content:
@@ -1113,6 +1281,8 @@ paths:
           type: boolean
           default: true
       - $ref: '#/components/parameters/featureModeQueryParam'
+      - $ref: '#/components/parameters/withFeatureStatsQueryParam'
+      - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
       - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -1157,10 +1327,10 @@ paths:
       parameters:
       - name: from
         description: >-
-          The SzEntityIdentifier for the first entity for the path either as an
-          entity ID or an encoded SzRecordId for the constituent record.
-          Whatever format is used for the "from" parameter must match the
-          format of the "to" parameter.  NOTE: An encoded SzRecordId can EITHER
+          The `SzEntityIdentifier` for the first entity for the path either as
+          an entity ID or an encoded `SzRecordId` for the constituent record.
+          Whatever format is used for the "from" parameter must match the format
+          of the "to" parameter.  NOTE: An encoded `SzRecordId` can EITHER
           be encoded as JSON or as a delimited string where the first character
           is the delimiter and the remainder is parsed as a data source prefix
           (up to the second occurrence of the delimiter) and a record ID suffix
@@ -1172,10 +1342,10 @@ paths:
           $ref: '#/components/schemas/SzEntityIdentifier'
       - name: to
         description: >-
-          The SzEntityIdentifier for the last entity for the path either as an
-          entity ID or a encoded SzRecordId for the constituent record.
+          The `SzEntityIdentifier` for the last entity for the path either as
+          an entity ID or a encoded `SzRecordId` for the constituent record.
           Whatever format is used for the "to" parameter must match the
-          format of the "from" parameter.  NOTE: An encoded SzRecordId can
+          format of the "from" parameter.  NOTE: An encoded `SzRecordId` can
           EITHER be encoded as JSON or as a delimited string where the first
           character is the delimiter and the remainder is parsed as a data
           source prefix (up to the second occurrence of the delimiter) and a
@@ -1220,16 +1390,16 @@ paths:
           $ref: '#/components/schemas/SzEntityIdentifier'
       - name: avoidEntities
         description: >-
-          Single query parameter containing multiple SzEntityIdentifier
+          Single query parameter containing multiple `SzEntityIdentifier`
           definitions as a JSON array or a simple comma-separated array that
           identify entities to be avoided or forbidden from the path
           (depending on the forbidAvoided parameter).  The entity identifiers
           are either all 64-bit long integers representing entity IDs or they
-          are all encoded SzRecordId instances identifying records that are
+          are all encoded `SzRecordId` instances identifying records that are
           part of the resolved entities to exclude.  At least one entity
           identifier is required.  If both this parameter and one or more `x`
           parameters are specified then the values are merged.  NOTE: An
-          encoded SzRecordId can EITHER be encoded as JSON or as a delimited
+          encoded `SzRecordId` can EITHER be encoded as JSON or as a delimited
           string where the first character is the delimiter and the remainder
           is parsed as a data source prefix (up to the second occurrence of the
           delimiter) and a record ID suffix (all characters after the second
@@ -1262,6 +1432,8 @@ paths:
           items:
             type: string
       - $ref: '#/components/parameters/featureModeQueryParam'
+      - $ref: '#/components/parameters/withFeatureStatsQueryParam'
+      - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
       - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -1309,10 +1481,10 @@ paths:
       parameters:
       - name: e
         description: >-
-          Repeating query parameter containing SzEntityIdentifier definitions
+          Repeating query parameter containing `SzEntityIdentifier` definitions
           that identify entities to be included in the entity network.  The
           entity identifiers are either all 64-bit long integers representing
-          entity IDs or they are all encoded SzRecordId instances identifying
+          entity IDs or they are all encoded `SzRecordId` instances identifying
           records that are part of the resolved entities to avoid.  At least
           one entity identifier is required.  If both this parameter and the
           `entities` parameter are specified then the values are merged.
@@ -1332,11 +1504,11 @@ paths:
           definitions that identify entities to be included in the entity
           network as a JSON array or a simple comma-separated array.  The
           entity identifiers are either all 64-bit long integers representing
-          entity IDs or they are all encoded SzRecordId instances identifying
+          entity IDs or they are all encoded `SzRecordId` instances identifying
           records that are part of the resolved entities to avoid.  At least
           one entity identifier is required.  If both this parameter and one
           or more `e` parameters are specified then the values are merged.
-          NOTE: An encoded SzRecordId can EITHER be encoded as JSON or as a
+          NOTE: An encoded `SzRecordId` can EITHER be encoded as JSON or as a
           delimited string where the first character is the delimiter and the
           remainder is parsed as a data source prefix (up to the second
           occurrence of the delimiter) and a record ID suffix (all characters
@@ -1383,6 +1555,8 @@ paths:
           minimum: 0
           default: 1000
       - $ref: '#/components/parameters/featureModeQueryParam'
+      - $ref: '#/components/parameters/withFeatureStatsQueryParam'
+      - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
       - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -1628,8 +1802,8 @@ components:
       name: featureMode
       required: false
       description: >-
-        The method by which feature values should be included for entities.
-        The possible values are:
+        The method by which feature values should be included for entities
+        returned in the response.  The possible values are:
           * `NONE` - Do not include any feature values -- this is the fastest
                      option from a performance perspective because feature
                      values do not have to be retrieved.
@@ -1644,19 +1818,70 @@ components:
       schema:
         type: string
         enum:
+          - NONE
           - REPRESENTATIVE
           - WITH_DUPLICATES
-          - NONE
         default: WITH_DUPLICATES
+    whyWithRelationshipsQueryParam:
+      in: query
+      name: withRelationships
+      description: >-
+        Set to `true` to include partial information of related entities for
+        the returned entities.  This defaults to `false` for why operations.
+      required: false
+      schema:
+        type: boolean
+        default: false
+    whyWithFeatureStatsQueryParam:
+      in: query
+      name: withFeatureStats
+      description: >-
+        Set to `false` to suppress resolution statistics for features.  This
+        defaults to `true` for why operations.
+      required: false
+      schema:
+        type: boolean
+        default: true
+    whyWithDerivedFeaturesQueryParam:
+      in: query
+      name: withDerivedFeatures
+      description: >-
+        Set to `false` to suppress "expressed" features that are derived
+        composite keys such as `FULL_NAME` + `DATE_OF_BIRTH`.  This
+        defaults to `true` for why operations.
+      required: false
+      schema:
+        type: boolean
+        default: true
+    withFeatureStatsQueryParam:
+      in: query
+      name: withFeatureStats
+      description: >-
+        Set to `true` to include resolution statistics for features.  This
+        defaults to `false`.
+      required: false
+      schema:
+        type: boolean
+        default: false
+    withDerivedFeaturesQueryParam:
+      in: query
+      name: withDerivedFeatures
+      description: >-
+        Set to `true` to include "expressed" features that are derived composite
+        keys such as name + date of birth keys.  This defaults to `false`.
+      required: false
+      schema:
+        type: boolean
+        default: false
     forceMinimalQueryParam:
       in: query
       name: forceMinimal
       required: false
       description: >-
-        Whether or not to force the minimum entity detail response which may
-        consist of nothing more than an entity ID.  This provides the fastest
-        response to an entity query operation because no additional data needs
-        to be retrieved other than what is directly accessible.
+        Whether or not to force the minimum entity detail in the response which
+        may consist of nothing more than an entity ID.  This provides the
+        fastest response to an entity query operation because no additional data
+        needs to be retrieved other than what is directly accessible.
       schema:
         type: boolean
         default: false
@@ -2000,7 +2225,7 @@ components:
               properties:
                 record:
                   description: >-
-                    The SzEntityRecord describing the matching record.
+                    The `SzEntityRecord` describing the matching record.
                   $ref: '#/components/schemas/SzEntityRecord'
     SzEntityResponse:
       description: >-
@@ -2057,7 +2282,7 @@ components:
           properties:
             data:
               description: >-
-                The SzBulkDataAnalysis describing the analysis of the bulk
+                The `SzBulkDataAnalysis` describing the analysis of the bulk
                 records.
               $ref: '#/components/schemas/SzBulkDataAnalysis'
     SzBulkLoadResponse:
@@ -2072,6 +2297,56 @@ components:
                 The `SzBulkLoadResult` describing the load statistics from
                 loading a bulk data set.
               $ref: '#/components/schemas/SzBulkLoadResult'
+    SzWhyEntityResponse:
+      description: >-
+        The response describing the result of "why" operation.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                whyResults:
+                  description: >-
+                    The `SzWhyEntityResults` describing why from each
+                    evaluated perspective within the entity.
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SzWhyEntityResult'
+                entities:
+                  description: >-
+                    The array of `SzEntityData` objects describing the entities
+                    involved in the response.  This will include partial
+                    information on the first-degree related entities to the
+                    entity.
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SzEntityData'
+    SzWhyRecordsResponse:
+      description: >-
+        The response describing the result of "why" operation.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                whyResult:
+                  description: >-
+                    The `SzWhyRecordsResult` describing why from for the
+                    specified records.
+                  $ref: '#/components/schemas/SzWhyRecordsResult'
+                entities:
+                  description: >-
+                    The array of `SzEntityData` objects describing the entities
+                    involved in the response.  This will include partial
+                    information on the first-degree related entities to the
+                    entity.
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SzEntityData'
     SzError:
       description: >-
         Describes an error.
@@ -2477,6 +2752,63 @@ components:
           nullable: true
           items:
             type: string
+    SzEntityFeatureStatistics:
+      description: >-
+        Describes the entity resolution statistics for the feature value.
+      type: object
+      properties:
+        usedForCandidates:
+          description: >-
+            Indicates if the feature is used for finding candidates during
+            entity resolution.
+          type: boolean
+        usedForScoring:
+          description: >-
+            Indicates if the feature is used for scoring during entity
+            resolution.
+          type: boolean
+        entityCount:
+          description: >-
+            The number of entities having this feature value.
+          type: integer
+          format: int64
+        candidateCapReached:
+          description: >-
+            Indicates if this feature value is no longer being used to find
+            candidates because too many entities share the same value.
+          type: boolean
+        scoringCapReached:
+          description: >-
+            Indicates if this feature value is no longer being used in entity
+            scoring because too many entities share the same value.
+          type: boolean
+        suppressed:
+          description: >-
+            Indicates if this value was suppressed in favor of a more complete
+            value.
+          type: boolean
+    SzEntityFeatureDetail:
+      description: >-
+        Describes the details of an entity feature value, optionally including
+        statistics if they have been requested.
+      type: object
+      properties:
+        internalId:
+          description: >-
+            The internal ID for the feature value.
+          type: integer
+          format: int64
+        featureValue:
+          description: >-
+            The feature value.
+          type: string
+        statistics:
+          description: >-
+            The `SzEntityFeatureStatistics` describing the statistics for the
+            feature value.  This may be `null` if the statistics were not
+            requested.
+          nullable: true
+          $ref: ''#/components/schemas/SzEntityFeatureStatistics'
     SzEntityFeature:
       description: >-
         Describes a feature for an entity as well as including any close values
@@ -2484,7 +2816,14 @@ components:
         entity resolution purposes.
       type: object
       properties:
+        primaryId:
+          description: >-
+            The internal ID for the primary feature value.
+          type: integer
+          format: int64
         primaryValue:
+          description: >-
+            The primary value for the feature.
           type: string
         usageType:
           description: >-
@@ -2499,6 +2838,13 @@ components:
           type: array
           items:
             type: string
+        featureDetails:
+          description: >-
+            The array of `SzEntityFeatureDetail` instances describing the each
+            of the clustered feature values in detail.
+          type: array
+          items:
+            $ref: ''#/components/schemas/SzEntityFeatureDetail'
     SzResolvedEntity:
       description: >-
         Describes a resolved entity that is made up of one or more
@@ -2574,7 +2920,7 @@ components:
             type: string
         records:
           description: >-
-            The array of SzMatchedRecord instances describing the records
+            The array of `SzMatchedRecord` instances describing the records
             associated with this entity.
           type: array
           items:
@@ -2590,7 +2936,7 @@ components:
               $ref: '#/components/schemas/SzEntityFeature'
         partial:
           description: >-
-            If true then this SzResolvedEntity has complete features and
+            If true then this `SzResolvedEntity` has complete features and
             records, otherwise they are not provided.  Also, the
             recordSummary items may be missing the topRecordIds if partial
             is true.  This can be true for partially retrieved related
@@ -2754,7 +3100,7 @@ components:
           $ref: '#/components/schemas/SzEntityPath'
         entities:
           description: >-
-            The array of SzEntityData objects describing the entities on the
+            The array of `SzEntityData` objects describing the entities on the
             path.  This will include partial information on the first-degree
             related entities to the entity.
           type: array
@@ -2769,14 +3115,14 @@ components:
       properties:
         entityPaths:
           description: >-
-            The array of SzEntityPath objects describing the paths that make up
-            the entity network (including island networks).
+            The array of `SzEntityPath` objects describing the paths that make
+            up the entity network (including island networks).
           type: array
           items:
             $ref: '#/components/schemas/SzEntityPath'
         entities:
           description: >-
-            The array of SzEntityData objects describing the entities on the
+            The array of `SzEntityData` objects describing the entities on the
             path.  This may only include partial information on the entities at
             the edge of the network.
           type: array
@@ -3159,6 +3505,279 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/SzEntityTypeBulkLoadResult'
+    SzFocusRecordId:
+      description: >-
+        Identifies a focus record for an `SzWhyResult`.
+      type: object
+      properties:
+        dataSource:
+          description: >-
+            The data source code that uniquely identifies the data source
+            associated with the record.
+          type: string
+        recordId:
+          description: >-
+            The record ID that uniquely identifies a record within the
+            respective data source.
+          type: string
+    SzScoringFrequency:
+      description: >-
+        Enumerates the various scoring behavior frequencies for entity features.
+        This indicates the number of entities that would typically share the
+        same value for a feature of this type.  The possible values are:
+          * `ALWAYS_ONE` - The feature value belongs to exactly one entity so
+                           if two records share this value they will always
+                           merge together.
+          * `ONE` - The feature value typically belongs to one entity (like a
+                    Social Security Number, Tax ID or Drivers License Number)
+          * `FEW` - The feature value typically belongs to at most a few
+                    entities (like an Address or Phone Number).
+          * `MANY` - The feature value can belong to many entities (like a
+                     date of birth)
+          * `VERY_MANY` - The feature can belong to very many entities (like
+                          a gender).
+          * `NAME` - A special frequency used for name features since they have
+                     unique properties.
+      type: string
+      enum:
+        - ALWAYS_ONE
+        - ONE
+        - FEW
+        - MANY
+        - VERY_MANY
+        - NAME
+    SzScoringBehavior:
+      description: >-
+        Describes the scoring behavior for a feature / feature type.
+      type: object
+      properties:
+        code:
+          description: >-
+            The code identifying the behavior.
+          type: string
+        frequency:
+          description: >-
+            The number of entities that that would typically share the same
+            value for a feature of type.  This value can only be `null` if the
+            frequency is unknown for the scoring behavior code that is returned.
+          nullable: true
+          $ref: '#/components/schemas/SzScoringFrequency'
+        exclusive:
+          description: >-
+            `true` if an entity should typically have only one value for
+            a feature of this type (like a Social Security Number, Date of
+            Birth) and `false` if the entity can typically have multiple values
+            for the feature type (like Address or Phone Number).  This value is
+            `null` if exclusivity is not applicable to the scoring behavior such
+            as with special scoring behaviors like `NAME`.
+          type: boolean
+          nullable: true
+        stable:
+          description: >-
+            `true` if the feature value for the feature type remains constant
+            for an entity over time (like a Date of Birth), and `false` if it
+            can can change for the entity over time (like a Home Address).  This
+            is `null` if the stability is not applicable to the scoring behavior
+            such as with special behaviors like `NAME`.
+          type: boolean
+          nullable: true
+    SzScoringBucket:
+      description: >-
+        Describes the scoring bucket that a feature score falls into.  The
+        range of scores constitute different buckets depending on the feature
+        type..  The possible values are:
+            * `SAME` - The two feature values are considered to be the same.
+            * `CLOSE` - The two feature values are considered to be close.
+            * `LIKELY` - The two feature values are similar, but not enough to
+                         be considered `CLOSE`.
+            * `PLAUSIBLE` - It's possible that the two feature values are the
+                            same but almost just as likely that they are not.
+            * `UNLIKELY` - It's unlikely that the two feature values represent
+                           the same value.
+            * `NO_CHANCE` - The two feature values obviously represent different
+                            values.
+      type: string
+      enum:
+        - SAME
+        - CLOSE
+        - LIKELY
+        - PLAUSIBLE
+        - UNLIKELY
+        - NO_CHANCE
+    SzScoredFeature:
+      description: >-
+        A description of a feature that has been scored against another feature.
+      type: object
+      properties:
+        featureId:
+          description: >-
+            The identifier uniquely identifying the feature.
+          type: integer
+          format: int64
+        featureType:
+          description: >-
+            The feature type of the feature.
+          type: string
+        featureValue:
+          description: >-
+            The value of the feature that was scored.
+          type: string
+        usageType:
+          description: >-
+            The usage type assigned to the feature value.
+          type: string
+    SzFeatureScore:
+      description: >-
+        Describes the scoring between two `SzScoredFeature` instances.
+      type: object
+      properties:
+        featureType:
+          description: >-
+            The feature type of the features being scored.
+        inboundFeature:
+          description: >-
+            The inbound feature described as an `SzScoredFeature`.
+          $ref: '#/components/schemas/SzScoredFeature'
+        candidateFeature:
+          description: >-
+            The feature that was a candidate match for the inbound feature (also
+            described as an `SzScoredFeature`).
+          $ref: '#/components/schemas/SzScoredFeature'
+        score:
+          description: >-
+            The integer score between the two feature values (typically from 0
+            to 100)
+          type: integer
+          format: int32
+        bucket:
+          description: >-
+            The `SzScoringBucket` describing the meaning of the `score`.
+          $ref: '#/components/schemas/SzScoringBucket'
+        scoringBehavior:
+          description: >-
+            The `SzScoringBehavior` describing the scoring behavior for the
+            features.
+          $ref: '#/components/schemas/SzScoringBehavior'
+    SzCandidateKey:
+      description: >-
+        Describes a candidate key that triggered the scoring of two entities.
+      type: object
+      properties:
+        featureId:
+          description: >-
+            The identifier for the candidate feature.
+          type: integer
+          format: int64
+        featureType:
+          description: >-
+            The feature type for the candidate feature.
+          type: string
+        featureValue:
+          description: >-
+            The feature value for the candidate feature.
+          type: string
+    SzMatchInfo:
+      description: >-
+        The match info describing why two entities (or records) resolve or
+        relate to one another.
+      type: object
+      properties:
+        whyKey:
+          description: >-
+            The why key indicating the components of the match (similar to the
+            match key).
+          nullable: false
+          type: string
+        resolutionRule:
+          description: >-
+            The resolution rule that triggered the match.
+          nullable: false
+          type: string
+        candidateKeys:
+          description: >-
+            The map of feature types to arrays of `SzCandidateKey` instances
+            for that feature type.
+          nullable: false
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/SzCandidateKey'
+        featureScores:
+          description: >-
+            The map of feature types to arrays of `SzFeatureScore` instances
+            for that feature type.
+          nullable: false
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/SzFeatureScore'
+    SzWhyPerspective:
+      description: >-
+        Describes the perspective used in evaluating why an entity resolved
+        or why two records may or may not resolve.  The answer to "why" is
+        dependent on which "record" you are comparing against the other
+        "records".  Internally, it is not always based on "record" because
+        multiple records that are effectively identical collapse into a single
+        perspective.
+      properties:
+        internalId:
+          description: >-
+            The internal ID uniquely identifying this perspective from others
+            in the complete "why" response.
+          nullable: false
+          type: integer
+          format: int64
+        entityId:
+          description: >-
+            The associated entity ID for the perspective.
+          nullable: false
+          type: integer
+          format: int64
+        focusRecords:
+          description: >-
+            The array of `SzFocusRecordId` instances identifying the effectively
+            identical records that are being compared against the other records.
+          nullable: false
+          type: array
+          items:
+            $ref: '#/components/schemas/SzFocusRecordId'
+    SzWhyEntityResult:
+      description: >-
+        Describes why an entity resolved.
+      type: object
+      properties:
+        perspective:
+          description: >-
+            The `SzWhyPerspective` identifying and describing the perspective
+            for this why result.
+          $ref: '#/components/schemas/SzWhyPerspective'
+        matchInfo:
+          description: >-
+            The `SzMatchInfo` providing the details of the result.
+          nullable: false
+          $ref: '#/components/schemas/SzMatchInfo'
+    SzWhyRecordsResult:
+      description: >-
+        Describes why two records might resolve.
+      type: object
+      properties:
+        perspective1:
+          description: >-
+            The `SzWhyPerspective` identifying and describing the perspective
+            from the first record.
+          $ref: '#/components/schemas/SzWhyPerspective'
+        perspective2:
+          description: >-
+            The `SzWhyPerspective` identifying and describing the perspective
+            from the second record.
+          $ref: '#/components/schemas/SzWhyPerspective'
+        matchInfo:
+          description: >-
+            The `SzMatchInfo` providing the details of the result.
+          nullable: false
+          $ref: '#/components/schemas/SzMatchInfo'
 tags:
   - name: Admin
     description: Administrative operations.
