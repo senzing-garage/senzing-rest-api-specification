@@ -1280,19 +1280,22 @@ paths:
 
           ```
           **NOTE**: Normally, the `attrs` parameter is **required** and the JSON
-          value **must be URL-encoded**, but encoding that JSON value while
-          doing development, debugging or testing can be unwieldy.  Because of
-          this, as an alternative (typically for development and testing
-          purposes) you can provide short-hand parameters that begin with the
-          prefix `attr_` and a suffix that is the JSON property you want added
-          to the JSON.  For example, the parameter `attr_NAME_FULL` sets the
-          `NAME_FULL` property in the JSON.  This can be handy when you are
-          manually constructing the URL and you want to avoid having to URL
-          encode JSON.  The JSON constructed by this method is obviously flat.
-          If you want to group properties together by their "usage type"
-          (e.g.: `NAME_TYPE`, `PHONE_TYPE` or `ADDRESS_TYPE`) then you would
-          **also** prefix with the type.  Here are some examples of using the
-          alternative `attr_`-prefixed parameters
+          value **must be URL-encoded**.  If you are doing this programmatically
+          then you **SHOULD** use the `attrs` parameter.  But when manually
+          constructing a URL in the browser address bar, in a command-line tool
+          like `curl` or in a REST client browser extension for debugging or
+          testing purposes, encoding that JSON value can be unwieldy.  Because
+          of this, as an alternative for **manually constructed URLs** you can
+          provide short-hand parameters that begin with the prefix `attr_` and
+          a suffix that is the JSON property you want added to the JSON.  For
+          example, the parameter `attr_NAME_FULL` sets the `NAME_FULL` property
+          in the JSON.  This side-steps the need to URL-encode the structural
+          JSON characters and usually means you need only URL-encode basic
+          characters like spaces as `%20`.  The JSON constructed by this method
+          is obviously flat.  If you want to group properties together by their
+          "usage type" (e.g.: `NAME_TYPE`, `PHONE_TYPE` or `ADDRESS_TYPE`) then
+          you would **also** prefix with the type.  Here are some examples of
+          using the alternative `attr_`-prefixed parameters:
           - **Basic Example**
             ```
             /entities?attr_NAME_FULL=Joe%20Schmoe&attr_DATE_OF_BIRTH=03-SEP-1987
