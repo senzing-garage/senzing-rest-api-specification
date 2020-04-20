@@ -1318,10 +1318,8 @@ paths:
           additionalProperties: {}
         example: >-
           {
-            "NAME_TYPE": "PRIMARY",
             "NAME_FIRST": "JANE",
             "NAME_LAST": "SMITH",
-            "ADDR_TYPE": "HOME",
             "ADDR_LINE1": "653 STATE ROUTE 7",
             "ADDR_CITY": "FRESNO",
             "ADDR_STATE": "CA",
