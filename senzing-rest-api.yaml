@@ -1240,20 +1240,80 @@ paths:
       operationId: searchByAttributes
       parameters:
       - name: attrs
-        description: >-
-          The record JSON describing the entity attributes in the same
-          format as how an entity record would be loaded.  The specified
-          attributes will be treated as a hypothetical record being loaded
-          and the result will be anything that would have matched or related
-          to it.  *NOTE*: normally, this parameter is required and the JSON
-          value must be URL-encoded; however, you may instead provide short-hand
-          parameters that begin with the prefix `attr_` and a suffix that is
-          the JSON property you want added to the JSON.  For example the
-          parameter `attr_NAME_FULL` would set the `NAME_FULL` property in the
-          JSON.  This can be handy when you are manually constructing the URL
-          and you want to avoid having to URL encode JSON.  The short-hand
-          parameters that are formated as `attr_[JSON_PROPERTY]` will be
-          *ignored* if the `attrs` parameter is provided.
+        description: |
+          The JSON record describing the entity attributes in the same
+          format as how an entity record is loaded.  The specified
+          attributes are treated as a hypothetical record being loaded,
+          and the result is anything that would have matched or related
+          to it.  Here are some examples of encoding this parameter:
+
+          - **JavaScript Example**
+            ```javascript
+              var searchCriteria = {
+                "NAME_FULL": "Joe Schmoe",
+                "DATE_OF_BIRTH": "03-SEP-1987"
+              };
+              var searchAttrs = JSON.stringify(searchCriteria);
+              var urlPath = "/entities?attrs=" + encodeURIComponent(searchAttrs);
+            ```
+
+          - **Java Example**
+            ```java
+              JsonObjectBuilder builder = Json.createObjectBuilder();
+              builder.add("NAME_FULL", "Joe Schmoe");
+              builder.add("DATE_OF_BIRTH", "03-SEP-1987");
+              JsonObject searchCriteria = builder.build();
+
+              StringWriter stringWriter = new StringWriter();
+              JsonWriter jsonWriter = Json.createJsonWriter(stringWriter);
+              jsonWriter.write(searchCriteria);
+
+              String searchAttrs = stringWriter.toString();
+              String encodedAttrs = URLEncoder.encode(searchAttrs, "UTF-8");
+              String urlPath = "/entities?attrs=" + encodedAttrs;
+            ```
+
+          In both of the above examples the `urlPath` variable is set to:
+          ```json
+
+          /entities?attrs=%7B%22NAME_FULL%22%3A%22Joe%20Schmoe%22%2C%22DATE_OF_BIRTH%22%3A%2203-SEP-1987%22%7D
+
+          ```
+          **NOTE**: Normally, the `attrs` parameter is **required** and the JSON
+          value **must be URL-encoded**.  If you are doing this programmatically
+          then you **SHOULD** use the `attrs` parameter.  But when manually
+          constructing a URL in the browser address bar, in a command-line tool
+          like `curl` or in a REST client browser extension for debugging or
+          testing purposes, encoding that JSON value can be unwieldy.  Because
+          of this, as an alternative for **manually constructed URLs** you can
+          provide short-hand parameters that begin with the prefix `attr_` and
+          a suffix that is the JSON property you want added to the JSON.  For
+          example, the parameter `attr_NAME_FULL` sets the `NAME_FULL` property
+          in the JSON.  This side-steps the need to URL-encode the structural
+          JSON characters and usually means you need only URL-encode basic
+          characters like spaces as `%20`.  The JSON constructed by this method
+          is obviously flat.  If you want to group properties together by their
+          "usage type" (e.g.: `NAME_TYPE`, `PHONE_TYPE` or `ADDRESS_TYPE`) then
+          you would **also** prefix with the type.  Here are some examples of
+          using the alternative `attr_`-prefixed parameters:
+          - **Basic Example**
+            ```
+            /entities?attr_NAME_FULL=Joe%20Schmoe&attr_DATE_OF_BIRTH=03-SEP-1987
+            ```
+          - **Example with prefixed Phone Types**
+            ```
+            /entities?attr_HOME_PHONE_NUMBER=702-555-1212&attr_WORK_PHONE_NUMBER=702-555-1414
+            ```
+          - **Example with prefixed Address Types to group address parts**  *(with line breaks)*
+            ```
+            /entities?attr_HOME_ADDR_LINE1=101%20Main%20Street \
+              &attr_HOME_ADDR_CITY=Los%20Angeles&attr_HOME_ADDR_STATE=CA \
+              &attr_WORK_ADDR_LINE1=105%20Colorado%20Blvd \
+              &attr_WORK_ADDR_CITY=Pasadena&attrWORK_ADDR_STATE=CA
+            ```
+          **IMPORTANT**: The short-hand parameters that are formated as
+          `attr_[JSON_PROPERTY]` will be **ignored** if the **preferred**
+          `attrs` parameter is provided.
         in: query
         required: false
         schema:
@@ -1261,10 +1321,8 @@ paths:
           additionalProperties: {}
         example: >-
           {
-            "NAME_TYPE": "PRIMARY",
             "NAME_FIRST": "JANE",
             "NAME_LAST": "SMITH",
-            "ADDR_TYPE": "HOME",
             "ADDR_LINE1": "653 STATE ROUTE 7",
             "ADDR_CITY": "FRESNO",
             "ADDR_STATE": "CA",
