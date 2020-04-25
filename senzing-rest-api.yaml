@@ -1565,41 +1565,6 @@ paths:
           /entities?attrs=%7B%22NAME_FULL%22%3A%22Joe%20Schmoe%22%2C%22DATE_OF_BIRTH%22%3A%2203-SEP-1987%22%7D
 
           ```
-          **NOTE**: Normally, the `attrs` parameter is **required** and the JSON
-          value **must be URL-encoded**.  If you are doing this programmatically
-          then you **SHOULD** use the `attrs` parameter.  But when manually
-          constructing a URL in the browser address bar, in a command-line tool
-          like `curl` or in a REST client browser extension for debugging or
-          testing purposes, encoding that JSON value can be unwieldy.  Because
-          of this, as an alternative for **manually constructed URLs** you can
-          provide short-hand parameters that begin with the prefix `attr_` and
-          a suffix that is the JSON property you want added to the JSON.  For
-          example, the parameter `attr_NAME_FULL` sets the `NAME_FULL` property
-          in the JSON.  This side-steps the need to URL-encode the structural
-          JSON characters and usually means you need only URL-encode basic
-          characters like spaces as `%20`.  The JSON constructed by this method
-          is obviously flat.  If you want to group properties together by their
-          "usage type" (e.g.: `NAME_TYPE`, `PHONE_TYPE` or `ADDRESS_TYPE`) then
-          you would **also** prefix with the type.  Here are some examples of
-          using the alternative `attr_`-prefixed parameters:
-          - **Basic Example**
-            ```
-            /entities?attr_NAME_FULL=Joe%20Schmoe&attr_DATE_OF_BIRTH=03-SEP-1987
-            ```
-          - **Example with prefixed Phone Types**
-            ```
-            /entities?attr_HOME_PHONE_NUMBER=702-555-1212&attr_WORK_PHONE_NUMBER=702-555-1414
-            ```
-          - **Example with prefixed Address Types to group address parts**  *(with line breaks)*
-            ```
-            /entities?attr_HOME_ADDR_LINE1=101%20Main%20Street \
-              &attr_HOME_ADDR_CITY=Los%20Angeles&attr_HOME_ADDR_STATE=CA \
-              &attr_WORK_ADDR_LINE1=105%20Colorado%20Blvd \
-              &attr_WORK_ADDR_CITY=Pasadena&attrWORK_ADDR_STATE=CA
-            ```
-          **IMPORTANT**: The short-hand parameters that are formated as
-          `attr_[JSON_PROPERTY]` will be **ignored** if the **preferred**
-          `attrs` parameter is provided.
         in: query
         required: false
         content:
@@ -1610,13 +1575,57 @@ paths:
             example: >-
               {
                 "NAME_FIRST": "JANE",
-                "NAME_LAST": "SCHMOE",
-                "PHONE_NUMBER": "559-555-1212",
+                "NAME_LAST": "SMITH",
                 "ADDR_LINE1": "653 STATE ROUTE 7",
                 "ADDR_CITY": "FRESNO",
                 "ADDR_STATE": "CA",
                 "ADDR_POSTAL_CODE": "55073-1234"
               }
+      - name: attr
+        description: >-
+          Either the `attrs` or `attr` parameter is required, **however** if
+          the `attrs` parameter is provided it takes precedence and the `attr`
+          parameter will be ignored.  If you are using this API programmatically
+          then you should typically use the `attrs` parameter.  But when
+          manually constructing a URL in the browser address bar, in a
+          command-line tool like `curl` or in a REST client browser extension
+          for debugging or testing purposes, encoding that JSON value can be
+          unwieldy.  This parameter (which is multi-valued) lets you specify
+          colon-delimited strings that are prefixed with the JSON property name
+          and suffixed with the value.  For example, `NAME_FIRST:Joe` (url
+          encoded of course).  This side-steps the need to URL-encode the
+          structural JSON characters and usually means you need only URL-encode
+          basic characters like colons (`%3A`) and spaces (`%20`).  The JSON
+          constructed using this parameter is obviously flat.  If you want to
+          group properties together by their "usage type" (e.g.: `NAME_TYPE`,
+          `PHONE_TYPE` or `ADDRESS_TYPE`) then you would **also** prefix with
+          the type (e.g.: `HOME_PHONE_NUMBER:702-555-1212`).
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+        examples:
+          notSpecifiedExample:
+            summary: Not specified
+            value:
+          basicExample:
+            summary: Basic name and date of birth example
+            value: [ "NAME_FULL:Joe Schmoe", "DATE_OF_BIRTH:03-SEP-1987"]
+          basicUsageTypeExample:
+            summary: Basic phone search with usage types
+            value: [ "HOME_PHONE_NUMBER:702-555-1212", "WORK_PHONE_NUMBER:702-555-1414" ]
+          complexUsageTypeExample:
+            summary: Multiple address search with usage types
+            value: [
+                "HOME_ADDR_LINE1:101 Main Street",
+                "HOME_ADDR_CITY:Los Angeles",
+                "HOME_ADDR_STATE:CA",
+                "WORK_ADDR_LINE1:105 Colorado Blvd",
+                "WORK_ADDR_CITY:Pasadena",
+                "WORK_ADDR_STATE:CA"
+              ]
       - name: withRelationships
         description: >-
           Set to `false` to suppress inclusion of related entity information.
