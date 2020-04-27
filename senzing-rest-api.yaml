@@ -1804,10 +1804,8 @@ paths:
           `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
         in: query
         required: false
-        style: form
-        explode: true
         schema:
-          type: string
+          $ref: '#/components/schemas/SzEntityIdentifiers'
         examples:
           avoidNoEntitiesArrayExample:
             $ref: '#/components/examples/noEntitiesArrayExample'
@@ -3626,17 +3624,26 @@ components:
     SzEntityIdentifier:
       description: >-
         Identifies an entity by either its entity ID or by the data source
-        code and record ID of one of its constituent records.
+        code and record ID of one of its constituent records.  If a record ID
+        is specified then it is either as a JSON-encoded `SzRecordId` or a
+        delimited string where the first character is the delimiter, followed
+        by the data source code, then the delimiter and the record ID (e.g.:
+        `|CUSTOMERS|ABC123`).
       oneOf:
         - type: integer
           format: int64
         - $ref: '#/components/schemas/SzRecordId'
+        - type: string
     SzEntityIdentifiers:
       description: >-
         Identifies zero or more entities by either its entity ID or by the
         data source code and record ID of one of their constituent records.
         Identifiers in the array are homogeneous, either all entity IDs or
         all RecordId instances containing the data-source-code/record-id pair.
+        If specified as record IDs they are either JSON-encoded `SzRecordId`
+        instances or a delimited string where the first character is the
+        delimiter, followed by the data source code, then the delimiter and the
+        record ID (e.g.: `|CUSTOMERS|ABC123`).
       oneOf:
       - type: array
         items:
@@ -3644,7 +3651,9 @@ components:
           format: int64
       - type: array
         items:
-          $ref: '#/components/schemas/SzRecordId'
+          oneOf:
+            - $ref: '#/components/schemas/SzRecordId'
+            - type: string
     SzRecordId:
       description: >-
         Identifies a record by its data source code and record identifier.
