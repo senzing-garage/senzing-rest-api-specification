@@ -11,9 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed in 2.0.0
 
 - Added many examples to use use with Swagger Editor
-  - NOTE: some limitations and bugs with Swagger editor make some of these difficult to use with the “Try it Out” function — for example, necessary line breaks are removed from “JSON lines” input files when curl commands are generated.
+  - NOTE: some limitations and bugs with Swagger editor make some of these
+    difficult to use with the “Try it Out” function — for example, necessary
+    line breaks are removed from “JSON lines” input files when curl commands
+    are generated.
 
-- Changed `SzEntityIdentifier` and `SzEntittyIdentifiers` to more formerly define the string format for a string-delimited record ID (it is now part of the schema definition, not just noted in the parameters).
+- Changed `SzEntityIdentifier` and `SzEntittyIdentifiers` to more formerly
+  define the string format for a string-delimited record ID (it is now part of
+  the schema definition, not just noted in the parameters).
 
 - Potentially Backward-Compatibility Breaking Changes by API Endpoint:
   - `GET /entity-classes`
@@ -21,33 +26,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `POST /entity-types`
   - `POST /entity-classes/{entityClassCode}/entity-types`
   - `GET /entity-classes/{entityClassCode}/entity-types/{entityTypeCode}`
-    - Removed support for any entity class other than ACTOR as it was discovered that the underlying product does not properly support entity resolution when using entity classes other than ACTOR and it may not for some time.  This will change if and when additional entity classes are supported.
+    - Removed support for any entity class other than ACTOR as it was discovered
+      that the underlying product does not properly support entity resolution
+      when using entity classes other than ACTOR and it may not for some time.
+      This will change if and when additional entity classes are supported.
 
   - `POST /entity-classes`
-    - Removed this operation as it was discovered that the underlying product does not fully properly support entity resolution when using entity classes other than ACTOR and it may not for some time.  This will change if and when additional entity classes are supported.
+    - Removed this operation as it was discovered that the underlying product
+      does not fully properly support entity resolution when using entity
+      classes other than ACTOR and it may not for some time.  This will change
+      if and when additional entity classes are supported.
+
+  - `GET /entities/{entityId}`
+  - `GET /data-sources/{dataSourceCode}/records/{recordId}/entity`
+    - The `withRelated` parameter is no longer a `boolean` value that accepts
+      `true` or `false`.  It now accepts an enumerated value of `NONE`,
+      `PARTIAL` or `FULL`.
 
   - `GET /config/current`
-    - Renamed to `GET /configs/active` since “current” is ambiguous with regards to the “currently active config” versus the configuration managers currently configured “default config”
+    - Renamed to `GET /configs/active` since “current” is ambiguous with regards
+      to the “currently active config” versus the configuration managers
+      currently configured “default config”.
 
   - `GET /config/default`
-    - Renamed to `GET /configs/template` since “default” is ambiguous with the configuration managers “default config” setting
+    - Renamed to `GET /configs/template` since “default” is ambiguous with the
+      configuration managers “default config” setting.
 
   - `GET /entities`
-    - Removed the `attr_[PROPERTY_NAME]` parameters and replaced with the multi-valued `attir` parameter so that this parameter could better be documented in the Open API Spec and examples provided via Swagger Editor.
+    - Removed the `attr_[PROPERTY_NAME]` parameters and replaced with the
+      multi-valued `attir` parameter so that this parameter could better be
+      documented in the Open API Spec and examples provided via Swagger Editor.
 
   - `GET /entity-networks`
     - Changed the default value for `maxDegrees` parameter from 5 to 3
 
   - `POST /bulk-data/load`
-    - Removed the `dataSource_[DATA_SOURCE_CODE]` parameter and replaced with the multi-valued `mapDataSource` parameter so that this parameter could better be documented in Open API Spec and examples provided via Swagger Editor
-    - Removed the `entityType_[ENTITY_TYPE_CODE]` parameter and replaced with the multi-valued `mapEntityType` parameter so that this parameter could better be documented in Open API Spec and examples provided via Swagger Editor
+    - Removed the `dataSource_[DATA_SOURCE_CODE]` parameter and replaced with
+      the multi-valued `mapDataSource` parameter so that this parameter could
+      better be documented in Open API Spec and examples provided via
+      Swagger Editor.
+    - Removed the `entityType_[ENTITY_TYPE_CODE]` parameter and replaced with
+      the multi-valued `mapEntityType` parameter so that this parameter could
+      better be documented in Open API Spec and examples provided via
+      Swagger Editor.
 
 - Other Changes by API Endpoint:
   - `GET /license`
-    - Added the previously undocumented (but always-supported) the “withRaw” parameter
+    - Added the previously undocumented (but always-supported) the “withRaw”
+      parameter.
 
   - `GET /version`
-    - Added the previously undocumented (but always-supported) the “withRaw” parameter
+    - Added the previously undocumented (but always-supported) the “withRaw”
+      parameter.
 
 ## [1.8.1] - 2020-04-15
 
