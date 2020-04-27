@@ -1754,10 +1754,10 @@ paths:
           part of the resolved entities to exclude.  If this parameter is not
           provided, then the default is to NOT exclude any entities.  If both
           this parameter and the `avoidEntities` parameter are specified then
-          the values are merged.  NOTE: An encoded SzRecordId can EITHER be encoded
-          as JSON or as a delimited string where the first character is the
-          delimiter and the remainder is parsed as a data source prefix (up to
-          the second occurrence of the delimiter) and a record ID suffix (all
+          the values are merged.  NOTE: An encoded `SzRecordId` can EITHER be
+          encoded as JSON or as a delimited string where the first character is
+          the delimiter and the remainder is parsed as a data source prefix (up
+          to the second occurrence of the delimiter) and a record ID suffix (all
           characters after the second occurrence of the delimiter).  For
           example: `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
         in: query
@@ -1765,9 +1765,7 @@ paths:
         explode: true
         style: form
         schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/SzEntityIdentifier'
+          $ref: '#/components/schemas/SzEntityIdentifiers'
         examples:
           avoidNoEntitiesExample:
             $ref: '#/components/examples/noEntitiesExample'
