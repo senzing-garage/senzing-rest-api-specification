@@ -54,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   - `GET /entities`
     - Removed the `attr_[PROPERTY_NAME]` parameters and replaced with the
-      multi-valued `attir` parameter so that this parameter could better be
+      multi-valued `attr` parameter so that this parameter could better be
       documented in the Open API Spec and examples provided via Swagger Editor.
 
   - `GET /entity-networks`
