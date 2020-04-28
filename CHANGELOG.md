@@ -61,12 +61,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Changed the default value for `maxDegrees` parameter from 5 to 3
 
   - `POST /bulk-data/load`
-    - Removed the `dataSource_[DATA_SOURCE_CODE]` parameter and replaced with
-      the multi-valued `mapDataSource` parameter so that this parameter could
-      better be documented in Open API Spec and examples provided via
+    - Added the single-valued `mapDataSources` parameter which accepts 
+      URL-encoded JSON to map the original data sources to target data 
+      sources.
+    - Replaced the `dataSource_[DATA_SOURCE_CODE]` parameters with the 
+      multi-valued `mapDataSource` parameter so that this parameter 
+      could better be documented in Open API Spec and examples provided via
       Swagger Editor.
-    - Removed the `entityType_[ENTITY_TYPE_CODE]` parameter and replaced with
-      the multi-valued `mapEntityType` parameter so that this parameter could
+    - Added the single-valued `mapEntityTypes` parameter which accepts 
+      URL-encoded JSON to map the original entity types to target entity 
+      types.
+    - Replaced the `entityType_[ENTITY_TYPE_CODE]` parameters with the
+      multi-valued `mapEntityType` parameter so that this parameter could
       better be documented in Open API Spec and examples provided via
       Swagger Editor.
 
@@ -84,19 +90,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed in 1.8.1
 
 - Added WHY operations
-  - GET /data-sources/{dataSourceCode}/records/{recordId}/entity/why
-  - GET /entities/{entityId}/why
-  - GET /why/records
-- Added support for the "withFeatureStatistics" and "withDerivedFeatures"
+  - `GET /data-sources/{dataSourceCode}/records/{recordId}/entity/why`
+  - `GET /entities/{entityId}/why`
+  - `GET /why/records`
+- Added support for the `withFeatureStatistics` and `withDerivedFeatures`
   parameters across the following endpoints:
-  - GET /data-sources/{dataSourceCode}/records/{recordId}/entity
-  - GET /data-sources/{dataSourceCode}/records/{recordId}/entity/why
-  - GET /entities/{entityId
-  - GET /entities/{entityId}/why
-  - GET /why/records
-  - GET /entity-paths
-  - GET /entity-networks
-- Added the "featureDetails" property to entity results to support obtaining
+  - `GET /data-sources/{dataSourceCode}/records/{recordId}/entity`
+  - `GET /data-sources/{dataSourceCode}/records/{recordId}/entity/why`
+  - `GET /entities/{entityId}`
+  - `GET /entities/{entityId}/why`
+  - `GET /why/records`
+  - `GET /entity-paths`
+  - `GET /entity-networks`
+- Added the `featureDetails` property to entity results to support obtaining
   the feature ID as well as the feature statistics (if requested).
 
 ## [1.8.0] - 2020-03-27

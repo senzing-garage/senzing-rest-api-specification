@@ -2179,13 +2179,13 @@ paths:
         - name: dataSource
           description: >-
             Used to set the overriding data source for the records.  This data
-            source will be assigned to every record **unless** the record
-            already has a data source and that data source has a specific
-            override specified by a `mapDataSource` parameter.  If this
-            parameter is **not** provided and no specific overrides are provided
-            for a record then the data source specified in the inbound record
-            is used directly and if the record has no data source then it will
-            fail to load.
+            source will be assigned to every record **unless** the record's
+            data source (including blank data source) has a specific mapping
+            specified by a `mapDataSources` or `mapDataSource` parameters.  If
+            this parameter is **not** provided and no specific overrides are
+            provided for a record then the data source specified in the inbound
+            record is used directly.  If the record has no data source and no
+            override is provided then it will fail to load.
           in: query
           required: false
           schema:
@@ -2195,18 +2195,105 @@ paths:
               value: CUSTOMERS
             EMPLOYEES:
               value: EMPLOYEES
-        - name: mapDataSource
-          description: >-
-            Zero or more colon-separated strings describing mappings from an
-            inbound data sources to a overriding data sources to load with.
-            For example, `EMPL:EMPLOYEES` (url-encoded of course) would map all
+        - name: mapDataSources
+          description: |
+            A URL-encoded JSON object whose properties are interpreted as
+            data source codes to map from and whose corresponding values are
+            interpretted as data source codes to map to.  For example,
+            `{"EMPL": "EMPLOYEES"}` (url-encoded of course) would map all
             records with inbound data source `EMPL` to `EMPLOYEES`.  To map
             only inbound records with no data source to a specific data source
-            you would begin the value with a colon (e.g.: `:CUSTOMERS`).  If the
-            `dataSource` parameter is **not** provided and no specific overrides
-            are provided for a record with this parameter then the data source
-            specified in the inbound record is used directly and if the record
-            has no data source then it will fail to load.
+            you would use an empty JSON property (e.g.: `{"": "CUSTOMERS"}`).
+            If the `dataSource` parameter is **not** provided and no specific
+            overrides are provided for a record with this parameter or via
+            `mapDataSource` then the data source specified in the inbound
+            record is used directly.  If the record has no data source and no
+            overriding or mapped data source is provided for an empty data
+            source then the record will fail to load.
+
+            **NOTE**: If both this parameter and the `mapDataSource` parameter
+            is provided then the mappings are merged with the more ad-hoc
+            `mapDataSource` parameter taking precedence since it is likely being
+            used for debugging and diagnostic purposes to avoid the URL
+            encoding.
+
+            Here are some examples of encoding this parameter:
+
+            - **JavaScript Example**
+              ```javascript
+                var dataSourceMap = {
+                  "": "CUSTOMERS",
+                  "EMPL": "EMPLOYEES",
+                  "VEND": "VENDORS"
+                };
+                var mapDataSources = JSON.stringify(dataSourceMap);
+                var urlPath = "/bulk-data/load?mapDataSources="
+                            + encodeURIComponent(mapDataSources);
+              ```
+
+            - **Java Example**
+              ```java
+                JsonObjectBuilder builder = Json.createObjectBuilder();
+                builder.add("", "CUSTOMERS");
+                builder.add("EMPL", "EMPLOYEES");
+                builder.add("VEND", "VENDORS");
+                JsonObject dataSourceMap = builder.build();
+
+                StringWriter stringWriter = new StringWriter();
+                JsonWriter jsonWriter = Json.createJsonWriter(stringWriter);
+                jsonWriter.write(dataSourceMap);
+
+                String mapDataSources = stringWriter.toString();
+                String encodedMap     = URLEncoder.encode(mapDataSources, "UTF-8");
+                String urlPath = "/bulk-data/load?mapDataSources=" + encodedMap;
+              ```
+
+            In both of the above examples the `urlPath` variable is set to:
+            ```json
+
+            /bulk-data/load?mapDataSources=%7B%22%22%3A%22CUSTOMERS%22%2C%22EMPL%22%3A%22EMPLOYEES%22%2C%22VEND%22%3A%22VENDORS%22%7D
+
+            ```
+          in: query
+          required: false
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              example: >-
+                {
+                  "": "CUSTOMERS",
+                  "EMPL": "EMPLOYEES",
+                  "VEND": "VENDORS"
+                }
+        - name: mapDataSource
+          description: |
+            As an alternative to the `mapDataSources` parameter you may specify
+            the `mapDataSource` parameter zero or more times to add additional
+            data source mappings or **override** data source mappings from
+            `mapDataSources`.  If you are using this API programmatically
+            then you should typically use the `mapDataSources` parameter
+            instead of this one.  But when manually constructing a URL in the
+            browser address bar, in a command-line tool like `curl` or in a REST
+            client browser extension for debugging or testing purposes, encoding
+            the JSON value for `mapDataSources` can be unwieldy.  This parameter
+            (which is multi-valued) lets you specify delimited strings that
+            begin with the delimiter character, followed by the original
+            data source name, then the delimiter character and the new data
+            source name.  You should only have to URL-encode the delimiter you
+            choose and maybe spaces.  For example, `:EMPL:EMPLOYEES` or
+            `|EMPL|EMPLOYEES` (url-encoded of course) would map all records with
+            inbound data source `EMPL` to `EMPLOYEES`.  To map only inbound
+            records with no data source to a specific data source you would
+            begin the value with two repeated delimiter characters followed by
+            the new data source value (e.g.: `||CUSTOMERS` or `::CUSTOMERS`).
+            If the `dataSource` parameter is **not** provided and no specific
+            overrides are provided for a record with this parameter or the
+            `mapDataSources` parameter then the data source specified in the
+            inbound record is used directly.  If the record has no data source
+            and no overriding or mapped data source is provided for an empty
+            data source then the record will fail to load.
           in: query
           required: false
           schema:
@@ -2214,25 +2301,28 @@ paths:
             items:
               type: string
           examples:
+            noMappingsSpecified:
+              summary: No data source mappings specified
+              value: [ ]
             singleSpecificOverrideExample:
               summary: Map a single specific data source
-              value: [ "CUST:CUSTOMERS" ]
+              value: [ ":CUST:CUSTOMERS" ]
             multipleSpecificOverridesExample:
               summary: Map multiple specific data sources
-              value: [ "CUST:CUSTOMERS", "EMPL:EMPLOYEES" ]
+              value: [ ":CUST:CUSTOMERS", ":EMPL:EMPLOYEES" ]
             multipleSpecificOverridesWithEmptyExample:
               summary: Map multiple specific data sources with empty mapping
-              value: [ ":CUSTOMERS", "EMPL:EMPLOYEES", "VENDOR:VENDORS" ]
+              value: [ "::CUSTOMERS", ":EMPL:EMPLOYEES", ":VENDOR:VENDORS" ]
         - name: entityType
           description: >-
-            Used to set the overriding entity type for the records.  This data
-            source will be assigned to every record **unless** the record
-            already has an entity type and that entity type has a specific
-            override specified by a `mapEntityType` parameter.  If this
-            parameter is **not** provided and no specific overrides are provided
-            for a record then the entity type specified in the inbound record
-            is used directly and if the record has no entity type then it will
-            fail to load.
+            Used to set the overriding entity type for the records.  This entity
+            type will be assigned to every record **unless** the record's
+            entity type (including blank entity type) has a specific mapping
+            specified by a `mapEntityTypes` or `mapEntityType` parameters.  If
+            this parameter is **not** provided and no specific overrides are
+            provided for a record then the entity type specified in the inbound
+            record is used directly.  If the record has no entity type and no
+            override is provided then `GENERIC` will be used.
           in: query
           required: false
           schema:
@@ -2244,18 +2334,105 @@ paths:
               value: PERSON
             COMPANY:
               value: COMPANY
+        - name: mapEntityTypes
+          description: |
+            A URL-encoded JSON object whose properties are interpreted as
+            entity type codes to map from and whose corresponding values are
+            interpretted as entity type codes to map to.  For example,
+            `{"COMPANY": "ORGANIZATION"}` (url-encoded of course) would map all
+            records with inbound entity type `COMPANY` to `ORGANIZATION`.  To
+            map only inbound records with no entity type to a specific entity
+            type you would use an empty JSON property (e.g.: `{"": "PERSON"}`).
+            If the `entityType` parameter is **not** provided and no specific
+            overrides are provided for a record with this parameter or via
+            `mapEntityType` then the entity type specified in the inbound
+            record is used directly.  If the record has no entity type and no
+            overriding or mapped entity type is provided for an empty entity
+            type then `GENERIC` will be used.
+
+            **NOTE**: If both this parameter and the `mapEntityType` parameter
+            is provided then the mappings are merged with the more ad-hoc
+            `mapEntityType` parameter taking precedence since it is likely being
+            used for debugging and diagnostic purposes to avoid the URL
+            encoding.
+
+            Here are some examples of encoding this parameter:
+
+            - **JavaScript Example**
+              ```javascript
+                var entityTypeMap = {
+                  "": "PERSON",
+                  "ORG": "ORGANIZATION",
+                  "COMP": "ORGANIZATION"
+                };
+                var mapEntityTypes = JSON.stringify(entityTypeMap);
+                var urlPath = "/bulk-data/load?mapEntityTypes="
+                            + encodeURIComponent(mapEntityTypes);
+              ```
+
+            - **Java Example**
+              ```java
+                JsonObjectBuilder builder = Json.createObjectBuilder();
+                builder.add("", "PERSON");
+                builder.add("ORG", "ORGANIZATION");
+                builder.add("COMP", "ORGANIZATION");
+                JsonObject entityTypeMap = builder.build();
+
+                StringWriter stringWriter = new StringWriter();
+                JsonWriter jsonWriter = Json.createJsonWriter(stringWriter);
+                jsonWriter.write(entityTypeMap);
+
+                String mapEntityTypes = stringWriter.toString();
+                String encodedMap     = URLEncoder.encode(mapEntityTypes, "UTF-8");
+                String urlPath = "/bulk-data/load?mapEntityTypes=" + encodedMap;
+              ```
+
+            In both of the above examples the `urlPath` variable is set to:
+            ```json
+
+            /bulk-data/load?mapEntityTypes=%7B%22%22%3A%22PERSON%22%2C%22ORG%22%3A%22ORGANIZATION%22%2C%22COMP%22%3A%22ORGANIZATION%22%7D
+
+            ```
+          in: query
+          required: false
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              example: >-
+                {
+                  "": "PERSON",
+                  "ORG": "ORGANIZATION",
+                  "COMP": "ORGANIZATION"
+                };
         - name: mapEntityType
-          description: >-
-            Zero or more colon-separated strings describing mappings from
-            inbound entity types to entity types to load with.  For example,
-            `COMP:COMPANY` (url-encoded of course) would map all records
-            with inbound entity type `COMP` to `COMPANY`.  To map only inbound
-            records with no entity type to a specific entity type you would
-            begin the value with a colon (e.g.: `:GENERIC`).  If the
-            `entityType` parameter is **not** provided and no specific overrides
-            are provided for a record with this parameter then the entity type
-            specified in the inbound record is used directly and if the record
-            has no entity type then `GENERIC` is used.
+          description: |
+            As an alternative to the `mapEntityTypes` parameter you may specify
+            the `mapEntityType` parameter zero or more times to add additional
+            data source mappings or **override** data source mappings from
+            `mapDataSources`.  If you are using this API programmatically
+            then you should typically use the `mapDataSources` parameter
+            instead of this one.  But when manually constructing a URL in the
+            browser address bar, in a command-line tool like `curl` or in a REST
+            client browser extension for debugging or testing purposes, encoding
+            the JSON value for `mapDataSources` can be unwieldy.  This parameter
+            (which is multi-valued) lets you specify delimited strings that
+            begin with the delimiter character, followed by the original
+            data source name, then the delimiter character and the new data
+            source name.  You should only have to URL-encode the delimiter you
+            choose and maybe spaces.  For example, `:EMPL:EMPLOYEES` or
+            `|EMPL|EMPLOYEES` (url-encoded of course) would map all records with
+            inbound data source `EMPL` to `EMPLOYEES`.  To map only inbound
+            records with no data source to a specific data source you would
+            begin the value with two repeated delimiter characters followed by
+            the new data source value (e.g.: `||CUSTOMERS` or `::CUSTOMERS`).
+            If the `dataSource` parameter is **not** provided and no specific
+            overrides are provided for a record with this parameter or the
+            `mapDataSources` parameter then the data source specified in the
+            inbound record is used directly.  If the record has no entity type and no
+            overriding or mapped entity type is provided for an empty entity
+            type then `GENERIC` will be used.
           in: query
           required: false
           schema:
@@ -2263,15 +2440,18 @@ paths:
             items:
               type: string
           examples:
+            noMappingsSpecified:
+              summary: No data source mappings specified
+              value: [ ]
             singleSpecificOverrideExample:
               summary: Map a single specific data source
-              value: [ "COMP:COMPANY" ]
+              value: [ ":COMP:COMPANY" ]
             multipleSpecificOverridesExample:
               summary: Map multiple specific data sources
-              value: [ "COMP:COMPANY", "ORG:ORGANIZATION" ]
+              value: [ ":COMP:COMPANY", ":ORG:ORGANIZATION" ]
             multipleSpecificOverridesWithEmptyExample:
               summary: Map multiple specific data sources with empty mapping
-              value: [ ":GENERIC", "COMP:COMPANY", "ORG:ORGANIZATION" ]
+              value: [ "::GENERIC", ":COMP:COMPANY", ":ORG:ORGANIZATION" ]
         - $ref: '#/components/parameters/progressPeriodParam'
       requestBody:
         description: >-
