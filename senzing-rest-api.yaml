@@ -22,8 +22,15 @@ info:
     [https://docs.senzing.com](https://docs.senzing.com)
 
 servers:
-  - url: http://localhost:{port}
+  - url: '{protocol}://{host}:{port}'
     variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: http
+      host:
+        default: localhost
       port:
         default: '8250'
   - url: http://senzing-api.local
