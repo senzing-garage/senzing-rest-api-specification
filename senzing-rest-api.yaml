@@ -1550,11 +1550,7 @@ paths:
               builder.add("DATE_OF_BIRTH", "03-SEP-1987");
               JsonObject searchCriteria = builder.build();
 
-              StringWriter stringWriter = new StringWriter();
-              JsonWriter jsonWriter = Json.createJsonWriter(stringWriter);
-              jsonWriter.write(searchCriteria);
-
-              String searchAttrs = stringWriter.toString();
+              String searchAttrs = searchCriteria.toString();
               String encodedAttrs = URLEncoder.encode(searchAttrs, "UTF-8");
               String urlPath = "/entities?attrs=" + encodedAttrs;
             ```
@@ -1613,11 +1609,14 @@ paths:
           basicExample:
             summary: Basic name and date of birth example
             value: [ "NAME_FULL:Joe Schmoe", "DATE_OF_BIRTH:03-SEP-1987"]
+          basicArrayExample:
+            summary: Multiple phone numbers without usage types
+            value: [ "PHONE_NUMBER:702-555-1212", "PHONE_NUMBER:702-555-1414" ]
           basicUsageTypeExample:
-            summary: Basic phone search with usage types
+            summary: Multiple phone numbers with usage types
             value: [ "HOME_PHONE_NUMBER:702-555-1212", "WORK_PHONE_NUMBER:702-555-1414" ]
           complexUsageTypeExample:
-            summary: Multiple address search with usage types
+            summary: Multiple address search with usage types for grouping
             value: [
                 "HOME_ADDR_LINE1:101 Main Street",
                 "HOME_ADDR_CITY:Los Angeles",
@@ -2239,11 +2238,7 @@ paths:
                 builder.add("VEND", "VENDORS");
                 JsonObject dataSourceMap = builder.build();
 
-                StringWriter stringWriter = new StringWriter();
-                JsonWriter jsonWriter = Json.createJsonWriter(stringWriter);
-                jsonWriter.write(dataSourceMap);
-
-                String mapDataSources = stringWriter.toString();
+                String mapDataSources = dataSourceMap.toString();
                 String encodedMap     = URLEncoder.encode(mapDataSources, "UTF-8");
                 String urlPath = "/bulk-data/load?mapDataSources=" + encodedMap;
               ```
@@ -2378,11 +2373,7 @@ paths:
                 builder.add("COMP", "ORGANIZATION");
                 JsonObject entityTypeMap = builder.build();
 
-                StringWriter stringWriter = new StringWriter();
-                JsonWriter jsonWriter = Json.createJsonWriter(stringWriter);
-                jsonWriter.write(entityTypeMap);
-
-                String mapEntityTypes = stringWriter.toString();
+                String mapEntityTypes = entityTypeMap.toString();
                 String encodedMap     = URLEncoder.encode(mapEntityTypes, "UTF-8");
                 String urlPath = "/bulk-data/load?mapEntityTypes=" + encodedMap;
               ```
@@ -2405,7 +2396,7 @@ paths:
                   "": "PERSON",
                   "ORG": "ORGANIZATION",
                   "COMP": "ORGANIZATION"
-                };
+                }
         - name: mapEntityType
           description: |
             As an alternative to the `mapEntityTypes` parameter you may specify
