@@ -1570,15 +1570,30 @@ paths:
           ```
         in: query
         required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: {}
-            example: >-
+        schema:
+          type: string
+        examples:
+          notSpecifiedExample:
+            summary: Not specified
+            value:
+          ssnExample:
+            summary: Social security number
+            value: >-
               {
-                "NAME_FIRST": "JANE",
-                "NAME_LAST": "SMITH",
+                "SSN_NUMBER": "111-22-3333"
+              }
+          nameAndBirthDateExample:
+            summary: Name and date of birth
+            value: >-
+              {
+                "NAME_FULL": "JANE SMITH",
+                "DATE_OF_BIRTH": "03-SEP-1987"
+              }
+          nameAndAddressExample:
+            summary: Name and address
+            value: >-
+              {
+                "NAME_FULL": "JANE SMITH",
                 "ADDR_LINE1": "653 STATE ROUTE 7",
                 "ADDR_CITY": "FRESNO",
                 "ADDR_STATE": "CA",
@@ -2258,12 +2273,21 @@ paths:
             ```
           in: query
           required: false
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-              example: >-
+          schema:
+            type: string
+          examples:
+            notSpecifiedExample:
+              summary: Not specified
+              value:
+            mapEmptyExample:
+              summary: Single mapping for missing data source
+              value: >-
+                {
+                  "": "CUSTOMERS"
+                }
+            mapMultipleExample:
+              summary: Multiple data source mappings
+              value: >-
                 {
                   "": "CUSTOMERS",
                   "EMPL": "EMPLOYEES",
@@ -2393,12 +2417,21 @@ paths:
             ```
           in: query
           required: false
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-              example: >-
+          schema:
+            type: string
+          examples:
+            notSpecifiedExample:
+              summary: Not specified
+              value:
+            mapEmptyExample:
+              summary: Single mapping for missing entity types
+              value: >-
+                {
+                  "": "PERSON"
+                }
+            mapMultipleExample:
+              summary: Multiple entity type mappings
+              value: >-
                 {
                   "": "PERSON",
                   "ORG": "ORGANIZATION",
