@@ -4158,7 +4158,7 @@ components:
             feature value.  This may be `null` if the statistics were not
             requested.
           nullable: true
-          $ref: ''#/components/schemas/SzEntityFeatureStatistics'
+          $ref: '#/components/schemas/SzEntityFeatureStatistics'
     SzEntityFeature:
       description: >-
         Describes a feature for an entity as well as including any close values
