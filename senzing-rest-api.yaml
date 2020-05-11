@@ -4396,11 +4396,11 @@ components:
         ResolvedEntity.  This describes how the entity is related and may
         be missing the complete features and record list of a ResolvedEntity.
       allOf:
+        - $ref: '#/components/schemas/SzBaseRelatedEntity'
         - type: object
           properties:
             relationType:
               $ref: '#/components/schemas/SzRelationshipType'
-        - $ref: '#/components/schemas/SzBaseRelatedEntity'
     SzEntityData:
       description: >-
         Describes an entity and the entities related to that entity at
