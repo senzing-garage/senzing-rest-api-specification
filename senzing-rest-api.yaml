@@ -4293,10 +4293,26 @@ components:
             type: string
         identifierData:
           description: >-
-            An array of entity data associated with the record where the items
+            An array of entity data associated with the entity where the items
             are formatted for readability.  These will be prefixed by an
             identifier type and may be prefixed by a "usage type" if one was
             provided (e.g.: "ID: 123456789" or "EMAIL: WORK: joe@nowhere.com")
+          type: array
+          items:
+            type: string
+        relationshipData:
+          description: >-
+            An array of relationship data items associated with the entity that
+            describes disclosed relationships.
+          type: array
+          items:
+            type: string
+        otherData:
+          description: >-
+            An array of associated data items that were loaded with the entity's
+            records but not normally recognized or used for entity resolution.
+            This array usually contains useful information from the source
+            systems.
           type: array
           items:
             type: string
