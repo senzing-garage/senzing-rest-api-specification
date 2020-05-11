@@ -3094,12 +3094,8 @@ components:
              `false`.  Related entities beyond the first 1000 will be left
              incomplete and have their `partial` property will be set to `true`.
       schema:
-        type: string
-        enum:
-          - NONE
-          - PARTIAL
-          - FULL
         default: PARTIAL
+        $ref: '#/components/schemas/SzRelationshipMode'
     featureModeQueryParam:
       in: query
       name: featureMode
@@ -3119,12 +3115,8 @@ components:
                                 a representative value along with its near
                                 duplicate values.
       schema:
-        type: string
-        enum:
-          - NONE
-          - REPRESENTATIVE
-          - WITH_DUPLICATES
         default: WITH_DUPLICATES
+        $ref: '#/components/schemas/SzFeatureMode'
     whyWithRelationshipsQueryParam:
       in: query
       name: withRelationships
@@ -3283,15 +3275,7 @@ components:
           type: object
           properties:
             httpMethod:
-              description: >-
-                The HTTP method that was used for the operation.
-              type: string
-              enum:
-                - GET
-                - POST
-                - PUT
-                - PATCH
-                - DELETE
+              $ref: '#/components/schemas/SzHttpMethod'
             httpStatusCode:
               description: >-
                 The HTTP status response code.
@@ -3701,6 +3685,22 @@ components:
             from the bulk data set.
           type: integer
           format: int32
+    SzHttpMethod:
+      description: >-
+        The HTTP method that was used for the operation.  The possible values
+        are"
+          * `GET` - An HTTP GET operation.
+          * `POST` - An HTTP POST operation.
+          * `PUT` - An HTTP PUT operation.
+          * `PATCH` - An HTTP PATCH operation.
+          * `DELETE` - An HTTP DELETE operation.
+      type: string
+      enum:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
     SzAttributeClass:
       description: >-
         Enumerates the various classes of attribute types (and features).
@@ -3738,6 +3738,50 @@ components:
         - PHONE
         - RELATIONSHIP
         - OTHER
+    SzFeatureMode:
+      description: >-
+        The method by which feature values should be included for entities
+        returned in the response.  The possible values are:
+          * `NONE` - Do not include any feature values -- this is the fastest
+                     option from a performance perspective because feature
+                     values do not have to be retrieved.
+          * `REPRESENTATIVE` - Include only a single representative value per
+                               "unique" value of a feature.  If there are
+                               multiple values that are near duplicates then
+                               only one value is included and the others are
+                               suppressed.
+          * `WITH_DUPLICATES` - ** (default value) ** Group near-duplicate
+                                feature values and return a representative value
+                                along with its near duplicate values.
+      type: string
+      enum:
+        - NONE
+        - REPRESENTATIVE
+        - WITH_DUPLICATES
+      default: WITH_DUPLICATES
+    SzRelationshipMode:
+      description: >-
+        Controls how to handle the first-degree related entities.  The possible
+        values are:
+          * `NONE` - Do not include any data on first-degree related entities --
+             this is the fastest option from a performance perspective because
+             related entities do not have to be retrieved.
+          * `PARTIAL` - **(default value)** Include only partial stub
+             information for related entities with the `partial` property of the
+             `SzRelatedEntity` instances set to `true`.  Obtaining additional
+             information requires subsequent API calls.
+          * `FULL` - Include full data on the first-degree related entities.
+             This option obtains entity network at one degree for the requested
+             entity and will fully populate up to 1000 related entities and sets
+             the `partial` property of those `SzRelatedEntity` instances to
+             `false`.  Related entities beyond the first 1000 will be left
+             incomplete and have their `partial` property will be set to `true`.
+      type: string
+      enum:
+        - NONE
+        - PARTIAL
+        - FULL
+      default: PARTIAL
     SzAttributeNecessity:
       description: >-
         Describes the necessity for this attribute type within the
