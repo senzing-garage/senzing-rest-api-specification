@@ -22,6 +22,7 @@ info:
     [https://docs.senzing.com](https://docs.senzing.com)
 
 servers:
+  - url: http://localhost:8250
   - url: '{protocol}://{host}:{port}'
     variables:
       protocol:
@@ -33,7 +34,6 @@ servers:
         default: localhost
       port:
         default: '8250'
-  - url: http://senzing-api.local
 
 paths:
   /heartbeat:
@@ -2108,10 +2108,7 @@ paths:
                 $ref: '#/components/examples/bulkDataJsonLinesExample'
           application/json; charset=UTF-8:
             schema:
-              type: array
-              items:
-                type: object
-                additionalProperties: {}
+              type: string
             examples:
               chooseExample:
                 $ref: '#/components/examples/chooseExample'
@@ -2119,10 +2116,7 @@ paths:
                 $ref: '#/components/examples/bulkDataJsonExample'
           application/json:
             schema:
-              type: array
-              items:
-                type: object
-                additionalProperties: {}
+              type: string
             examples:
               chooseExample:
                 $ref: '#/components/examples/chooseExample'
@@ -2172,7 +2166,7 @@ paths:
             schema:
               type: object
               properties:
-                  data:
+                  body:
                     type: string
                     format: binary
       responses:
@@ -2512,10 +2506,7 @@ paths:
                 $ref: '#/components/examples/bulkDataJsonLinesExample'
           application/json; charset=UTF-8:
             schema:
-              type: array
-              items:
-                type: object
-                additionalProperties: {}
+              type: string
             examples:
               chooseExample:
                 $ref: '#/components/examples/chooseExample'
@@ -2523,10 +2514,7 @@ paths:
                 $ref: '#/components/examples/bulkDataJsonExample'
           application/json:
             schema:
-              type: array
-              items:
-                type: object
-                additionalProperties: {}
+              type: string
             examples:
               chooseExample:
                 $ref: '#/components/examples/chooseExample'
@@ -2576,7 +2564,7 @@ paths:
             schema:
               type: object
               properties:
-                data:
+                body:
                   type: string
                   format: binary
       responses:
@@ -4403,6 +4391,8 @@ components:
       allOf:
         - type: object
           properties:
+            resultType:
+              $ref: '#/components/schemas/SzAttributeSearchResultType'
             relatedEntities:
               description: >-
                 The array of RelatedEntity instances describing the possible
@@ -4410,8 +4400,6 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/SzRelatedEntity'
-            resultType:
-              $ref: '#/components/schemas/SzAttributeSearchResultType'
         - $ref: '#/components/schemas/SzBaseRelatedEntity'
     SzEntityPath:
       description: >-
