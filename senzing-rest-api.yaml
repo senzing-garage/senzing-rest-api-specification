@@ -495,7 +495,7 @@ paths:
           in: query
           required: false
           schema:
-            $ref: '#/components/schemas/SzAttributeClass'
+            type: string
           examples:
             ACTOR:
               summary: >-
