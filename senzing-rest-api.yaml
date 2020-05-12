@@ -283,7 +283,7 @@ paths:
       tags:
         - Config
       summary: Get a list of configured data sources.
-      operationId: listDataSources
+      operationId: getDataSources
       parameters:
         - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -483,7 +483,7 @@ paths:
       tags:
         - Config
       summary: Get a list of configured entity types.
-      operationId: listEntityTypes
+      operationId: getEntityTypes
       parameters:
         - name: entityClass
           description: >-
@@ -722,7 +722,7 @@ paths:
       summary: >-
         Get a list of configured entity classes.  Currently the only supported
         entity class is `ACTOR`.
-      operationId: listEntityClasses
+      operationId: getEntityClasses
       parameters:
         - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -775,7 +775,7 @@ paths:
         Get a list of configured entity types for the identified entity class.
         NOTE: Currently the only supported entity class is `ACTOR`, but this
         will change in the future.
-      operationId: listEntityTypesByClass
+      operationId: getEntityTypesByClass
       parameters:
         - $ref: '#/components/parameters/entityClassCodePathParam'
         - $ref: '#/components/parameters/withRawQueryParam'
