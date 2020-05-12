@@ -3400,9 +3400,7 @@ components:
                 dataSource:
                   description: >-
                     The requested data source as an `SzDataSource` object.
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SzDataSource'
+                  $ref: '#/components/schemas/SzDataSource'
     SzDataSourcesResponse:
       description: >-
         The response describing the configured data sources.
@@ -3440,9 +3438,7 @@ components:
                 entityType:
                   description: >-
                     The requested entity type as an `SzEntityType` object.
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SzEntityType'
+                  $ref: '#/components/schemas/SzEntityType'
     SzEntityTypesResponse:
       description: >-
         The response describing the configured entity types.
@@ -3480,9 +3476,7 @@ components:
                 entityClass:
                   description: >-
                     The requested data source as an `SzEntityClass` object.
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SzEntityClass'
+                  $ref: '#/components/schemas/SzEntityClass'
     SzEntityClassesResponse:
       description: >-
         The response describing the configured entity classes.
