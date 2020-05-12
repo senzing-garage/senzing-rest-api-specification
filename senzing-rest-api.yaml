@@ -4443,6 +4443,7 @@ components:
         Describes an entity that matched attribute search criteria and how
         it matched against that criteria.
       allOf:
+        - $ref: '#/components/schemas/SzBaseRelatedEntity'
         - type: object
           properties:
             resultType:
@@ -4454,7 +4455,6 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/SzRelatedEntity'
-        - $ref: '#/components/schemas/SzBaseRelatedEntity'
     SzEntityPath:
       description: >-
         Describes a path between two entities using the entity IDs of the
