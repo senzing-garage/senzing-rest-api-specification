@@ -1023,13 +1023,8 @@ paths:
       operationId: addRecordWithReturnedRecordId
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
-        - name: loadId
-          description: >-
-            The optional load ID to associate with the loaded record.
-          in: query
-          required: false
-          schema:
-            type: string
+        - $ref: '#/components/parameters/loadIdQueryParam'
+        - $ref: '#/components/parameters/withInfoQueryParam'
       requestBody:
         description: >-
           The record data as JSON.  The format of the JSON is described
@@ -1169,13 +1164,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
         - $ref: '#/components/parameters/recordIdPathParam'
-        - name: loadId
-          description: >-
-            The optional load ID to associate with the loaded record.
-          in: query
-          required: false
-          schema:
-            type: string
+        - $ref: '#/components/parameters/loadIdQueryParam'
+        - $ref: '#/components/parameters/withInfoQueryParam'
       requestBody:
         description: >-
           The record data as JSON.  The format of the JSON is described
@@ -1287,7 +1277,7 @@ paths:
       - $ref: '#/components/parameters/featureModeQueryParam'
       - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withFeatureStatsQueryParam'
-      - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
+      - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
       - $ref: '#/components/parameters/withRelatedQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -1367,6 +1357,44 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
+  /data-sources/{dataSourceCode}/records/{recordId}/reevaluate:
+    post:
+      tags:
+        - Entity Data
+      summary: Get a resolved entity by data source and record ID.
+      operationId: reevaluateRecord
+      parameters:
+        - $ref: '#/components/parameters/dataSourceCodePathParam'
+        - $ref: '#/components/parameters/recordIdPathParam'
+        - $ref: '#/components/parameters/withInfoQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzReevaluateResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzReevaluateResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzReevaluateResponse'
+        '404':
+          description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /data-sources/{dataSourceCode}/records/{recordId}/entity:
     get:
       tags:
@@ -1378,7 +1406,7 @@ paths:
         - $ref: '#/components/parameters/recordIdPathParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/withFeatureStatsQueryParam'
-        - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
+        - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRelatedQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -1659,7 +1687,7 @@ paths:
           default: true
       - $ref: '#/components/parameters/featureModeQueryParam'
       - $ref: '#/components/parameters/withFeatureStatsQueryParam'
-      - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
+      - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
       - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -1878,7 +1906,7 @@ paths:
             value: [ VIPS, PARTNERS ]
       - $ref: '#/components/parameters/featureModeQueryParam'
       - $ref: '#/components/parameters/withFeatureStatsQueryParam'
-      - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
+      - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
       - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -2039,7 +2067,7 @@ paths:
           default: 1000
       - $ref: '#/components/parameters/featureModeQueryParam'
       - $ref: '#/components/parameters/withFeatureStatsQueryParam'
-      - $ref: '#/components/parameters/withDerivedFeaturesQueryParam'
+      - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
       - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
@@ -3139,7 +3167,7 @@ components:
         default: true
     whyWithDerivedFeaturesQueryParam:
       in: query
-      name: withDerivedFeatures
+      name: withInternalFeatures
       description: >-
         Set to `false` to suppress "expressed" features that are derived
         composite keys such as `FULL_NAME` + `DATE_OF_BIRTH`.  This
@@ -3158,9 +3186,9 @@ components:
       schema:
         type: boolean
         default: false
-    withDerivedFeaturesQueryParam:
+    withInternalFeaturesQueryParam:
       in: query
-      name: withDerivedFeatures
+      name: withInternalFeatures
       description: >-
         Set to `true` to include "expressed" features that are derived composite
         keys such as name + date of birth keys.  This defaults to `false`.
@@ -3168,6 +3196,24 @@ components:
       schema:
         type: boolean
         default: false
+    withInfoQueryParam:
+      in: query
+      name: withInfo
+      description: >-
+        Set to `true` to include resolution information related to loading, and
+        `false` to exclude it.  This defaults to `false`.
+      required: false
+      schema:
+        type: boolean
+        default: false
+    loadIdQueryParam:
+      in: query
+      name: loadId
+      required: false
+      description: >-
+        The optional load ID to associate with the loaded record.
+      schema:
+        type: string
     forceMinimalQueryParam:
       in: query
       name: forceMinimal
@@ -3508,7 +3554,7 @@ components:
         - $ref: '#/components/schemas/SzResponseWithRawData'
     SzLoadRecordResponse:
       allOf:
-        - $ref: '#/components/schemas/SzBaseResponse'
+        - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
@@ -3518,6 +3564,23 @@ components:
                   description: >-
                     The record ID of the record that was loaded.
                   type: string
+                info:
+                  description: >-
+                    The optionally requested info associated with the load.
+                  $ref: '#/components/schemas/SzResolutionInfo'
+    SzReevaluateResponse:
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                info:
+                  description: >-
+                    The optionally requested info associated with the
+                    reevaluation.
+                  $ref: '#/components/schemas/SzResolutionInfo'
     SzRecordResponse:
       description: >-
         The response describing an entity record.
@@ -3880,15 +3943,15 @@ components:
         delimiter, followed by the data source code, then the delimiter and the
         record ID (e.g.: `|CUSTOMERS|ABC123`).
       oneOf:
-      - type: array
-        items:
-          type: integer
-          format: int64
-      - type: array
-        items:
-          oneOf:
-            - $ref: '#/components/schemas/SzRecordId'
-            - type: string
+        - type: array
+          items:
+            type: integer
+            format: int64
+        - type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/SzRecordId'
+              - type: string
     SzRecordId:
       description: >-
         Identifies a record by its data source code and record identifier.
@@ -3977,6 +4040,87 @@ components:
           description: >-
             The configuration compatibility version for the underlying runtime
             native Senzing API.
+    SzFlaggedRecord:
+      description: >-
+        Describes a sample record from an `SzFlaggedEntity` including the
+        triggered flags for that record.
+      type: object
+      properties:
+        dataSource:
+          description: >-
+            The data source code associated with the sample record.
+            type: string
+          type: string
+        recordId:
+          description: >-
+            The record ID identifying with the same record.
+          type: string
+        flags:
+          description: >-
+            The array of flags triggered by the sample record.
+          type: array
+          items:
+            type: string
+    SzFlaggedEntity:
+      description: >-
+        An entity that was flagged as relevant due to the resolution operation.
+      type: object
+      properties:
+        entityId:
+          description: >-
+            The entity ID of the relevant entity.
+          type: integer
+          format: int64
+        degrees:
+          description: >-
+            The number of degrees this entity is separated from the
+            entity that was affected.
+          type: integer
+          format: int8
+        flags:
+          description: >-
+            The array of flags that were triggered making this entity
+            relevant.
+          type: array
+          items:
+            type: string
+        sampleRecords:
+          description: >-
+             An array of objects describing sample records from the
+             relevant entity and the triggered flags for that record.
+          type: array
+          items:
+            $ref: '#/components/schemas/SzFlaggedRecord'
+    SzResolutionInfo:
+      description: >-
+        Provides information relevant to resolution of an entity either when
+        loading a record or reevaluating an entity.
+      type: object
+      properties:
+        dataSource:
+          description: >-
+            The data source for the record that was focus of the load or
+            reevaluate operation.
+          type: string
+        recordId:
+          description: >-
+            The record ID for the record that was focus of the load or
+            reevaluate operation.
+          type: string
+        affectedEntities:
+          description: >-
+            The array of entity ID's for the affected entities.
+          type: array
+          items:
+            type: integer
+            format: int64
+        flaggedEntities:
+          description: >-
+            The entities that were flagged as relevant due to the resolution
+            operation.
+          type: array
+          items:
+            $ref: '#/components/schemas/SzFlaggedEntity'
     SzEntityRecord:
       description: >-
         Describes a record (aka: observed entity) that has been loaded for
