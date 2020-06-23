@@ -1719,6 +1719,50 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
+  /reevaluate-entity:
+    post:
+      tags:
+        - Entity Data
+      summary: Get a resolved entity by data source and record ID.
+      operationId: reevaluateEntity
+      parameters:
+        - name: entityId
+          in: query
+          required: true
+          description: >-
+            The entity ID of the entity to reevaluate.
+          schema:
+            type: integer
+            format: int64
+        - $ref: '#/components/parameters/withInfoQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: default response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzReevaluateResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzReevaluateResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzReevaluateResponse'
+        '404':
+          description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /entity-paths:
     get:
       tags:
