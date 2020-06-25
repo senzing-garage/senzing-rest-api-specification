@@ -1122,7 +1122,7 @@ paths:
       tags:
         - Entity Data
       summary: Get an entity record by data source and record ID.
-      operationId: getDataSourceRecord
+      operationId: getRecord
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
         - $ref: '#/components/parameters/recordIdPathParam'
