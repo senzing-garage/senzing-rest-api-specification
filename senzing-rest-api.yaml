@@ -1275,9 +1275,9 @@ paths:
           type: integer
           format: int64
       - $ref: '#/components/parameters/featureModeQueryParam'
-      - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withFeatureStatsQueryParam'
       - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
+      - $ref: '#/components/parameters/forceMinimalQueryParam'
       - $ref: '#/components/parameters/withRelatedQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
