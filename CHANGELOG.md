@@ -56,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Removed the `attr_[PROPERTY_NAME]` parameters and replaced with the
       multi-valued `attr` parameter so that this parameter could better be
       documented in the Open API Spec and examples provided via Swagger Editor.
+    - The `withRelationships` query parameter now default to `false` instead
+      of `true`.
 
   - `GET /entity-networks`
     - Changed the default value for `maxDegrees` parameter from 5 to 3

@@ -1324,7 +1324,7 @@ paths:
           schema:
             type: integer
             format: int64
-        - $ref: '#/components/parameters/whyWithRelationshipsQueryParam'
+        - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
         - $ref: '#/components/parameters/whyWithDerivedFeaturesQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
@@ -1448,7 +1448,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
         - $ref: '#/components/parameters/recordIdPathParam'
-        - $ref: '#/components/parameters/whyWithRelationshipsQueryParam'
+        - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
         - $ref: '#/components/parameters/whyWithDerivedFeaturesQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
@@ -1518,7 +1518,7 @@ paths:
           in: query
           schema:
             type: string
-        - $ref: '#/components/parameters/whyWithRelationshipsQueryParam'
+        - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
         - $ref: '#/components/parameters/whyWithDerivedFeaturesQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
@@ -1675,20 +1675,11 @@ paths:
                 "WORK_ADDR_CITY:Pasadena",
                 "WORK_ADDR_STATE:CA"
               ]
-      - name: withRelationships
-        description: >-
-          Set to `false` to suppress inclusion of related entity information.
-          This defaults to `true` for backwards compatibility with previous
-          implementations.
-        in: query
-        required: false
-        schema:
-          type: boolean
-          default: true
       - $ref: '#/components/parameters/featureModeQueryParam'
       - $ref: '#/components/parameters/withFeatureStatsQueryParam'
       - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
       - $ref: '#/components/parameters/forceMinimalQueryParam'
+      - $ref: '#/components/parameters/withRelationshipsQueryParam'
       - $ref: '#/components/parameters/withRawQueryParam'
       responses:
         '200':
@@ -3189,12 +3180,12 @@ components:
       schema:
         default: WITH_DUPLICATES
         $ref: '#/components/schemas/SzFeatureMode'
-    whyWithRelationshipsQueryParam:
+    withRelationshipsQueryParam:
       in: query
       name: withRelationships
       description: >-
         Set to `true` to include partial information of related entities for
-        the returned entities.  This defaults to `false` for why operations.
+        the returned entities.  This defaults to `false`.
       required: false
       schema:
         type: boolean
