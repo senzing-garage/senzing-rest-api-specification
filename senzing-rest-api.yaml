@@ -4450,7 +4450,7 @@ components:
             type: string
         characteristicData:
           description: >-
-            An array of characteristiics associated with the entity that are
+            An array of characteristics associated with the entity that are
             formatted for readability.  These will be prefixed by a
             characteristic type and optionally by a "usage type" if one was
             provided.
