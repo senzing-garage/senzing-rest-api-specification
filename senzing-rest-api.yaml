@@ -4553,16 +4553,6 @@ components:
               type: integer
               format: int32
               nullable: true
-            disclosed:
-              description: >-
-                A boolean flag indicating if this related entity
-                represents a disclosed relationship.
-              type: boolean
-            ambiguous:
-              description: >-
-                A boolean flag indicating if this related entity
-                represents an ambiguous relationship.
-              type: boolean
             matchKey:
               description: >-
                 The match key describing what features matched between
@@ -4597,6 +4587,16 @@ components:
         - $ref: '#/components/schemas/SzBaseRelatedEntity'
         - type: object
           properties:
+            disclosed:
+              description: >-
+                A boolean flag indicating if this related entity
+                represents a disclosed relationship.
+              type: boolean
+            ambiguous:
+              description: >-
+                A boolean flag indicating if this related entity
+                represents an ambiguous relationship.
+              type: boolean
             relationType:
               $ref: '#/components/schemas/SzRelationshipType'
     SzEntityData:
