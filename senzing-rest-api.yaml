@@ -1025,6 +1025,7 @@ paths:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
         - $ref: '#/components/parameters/loadIdQueryParam'
         - $ref: '#/components/parameters/withInfoQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
       requestBody:
         description: >-
           The record data as JSON.  The format of the JSON is described
@@ -1166,6 +1167,7 @@ paths:
         - $ref: '#/components/parameters/recordIdPathParam'
         - $ref: '#/components/parameters/loadIdQueryParam'
         - $ref: '#/components/parameters/withInfoQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
       requestBody:
         description: >-
           The record data as JSON.  The format of the JSON is described
