@@ -1328,7 +1328,7 @@ paths:
             format: int64
         - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
-        - $ref: '#/components/parameters/whyWithDerivedFeaturesQueryParam'
+        - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -1452,7 +1452,7 @@ paths:
         - $ref: '#/components/parameters/recordIdPathParam'
         - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
-        - $ref: '#/components/parameters/whyWithDerivedFeaturesQueryParam'
+        - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -1522,7 +1522,7 @@ paths:
             type: string
         - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
-        - $ref: '#/components/parameters/whyWithDerivedFeaturesQueryParam'
+        - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -3202,7 +3202,7 @@ components:
       schema:
         type: boolean
         default: true
-    whyWithDerivedFeaturesQueryParam:
+    whyWithInternalFeaturesQueryParam:
       in: query
       name: withInternalFeatures
       description: >-
@@ -5223,7 +5223,7 @@ components:
             to 100)
           type: integer
           format: int32
-        bucket:
+        scoringBucket:
           description: >-
             The `SzScoringBucket` describing the meaning of the `score`.
           $ref: '#/components/schemas/SzScoringBucket'
