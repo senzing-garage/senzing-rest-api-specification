@@ -319,12 +319,12 @@ paths:
             to specify the data source ID, then use the request body instead.
           in: query
           required: false
+          style: form
+          explode: true
           schema:
             type: array
             items:
               type: string
-          style: form
-          explode: true
           examples:
             singleDataSourceExample:
               summary: Specify a single data source
@@ -532,12 +532,12 @@ paths:
             code identifying entity types to be created.
           in: query
           required: false
+          style: form
+          explode: true
           schema:
             type: array
             items:
               type: string
-          style: form
-          explode: true
           examples:
             singleDataSourceExample:
               summary: Specify a single entity type
@@ -810,12 +810,12 @@ paths:
             code identifying entity types to be created.
           in: query
           required: false
+          style: form
+          explode: true
           schema:
             type: array
             items:
               type: string
-          style: form
-          explode: true
           examples:
             singleDataSourceExample:
               summary: Specify a single entity type
@@ -1765,7 +1765,7 @@ paths:
         data sources and record IDs of constituent records.  You may provide
         entity IDs or data source and record IDs to identify the from/to
         entities in the path, but you may not mix and match.
-      operationId: findPathByEntityID
+      operationId: findEntityPath
       parameters:
       - name: from
         description: >-
@@ -1851,7 +1851,9 @@ paths:
         explode: true
         style: form
         schema:
-          $ref: '#/components/schemas/SzEntityIdentifiers'
+          type: array
+          items:
+            $ref: '#/components/schemas/SzEntityIdentifier'
         examples:
           avoidNoEntitiesExample:
             $ref: '#/components/examples/noEntitiesExample'
@@ -1987,7 +1989,7 @@ paths:
         entities.  If no paths exist, then island networks are returned
         with each island network containing up to a specified number of
         related entities.
-      operationId: findNetworkByEntityID
+      operationId: findEntityNetwork
       parameters:
       - name: e
         description: >-
@@ -2006,10 +2008,12 @@ paths:
           `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
         in: query
         required: false
+        style: form
+        explode: true
         schema:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/SzEntityIdentifier'
         examples:
           noEntitiesExample:
             $ref: '#/components/examples/noEntitiesExample'
@@ -2046,7 +2050,7 @@ paths:
         in: query
         required: false
         schema:
-          type: string
+          $ref: '#/components/schemas/SzEntityIdentifiers'
         examples:
           noEntitiesArrayExample:
             $ref: '#/components/examples/noEntitiesArrayExample'
@@ -4652,7 +4656,7 @@ components:
           nullable: false
           type: integer
           format: int64
-        entityIDs:
+        entityIds:
           description: >-
             The array of entity IDs identifying the entities on the path
             in order of how are they are connected on the path.  This is
