@@ -1261,92 +1261,32 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
-  /entities/{entityId}:
-    get:
+    delete:
       tags:
         - Entity Data
-      summary: Get a resolved entity by entity ID.
-      operationId: getEntityByEntityId
+      summary: Delete a record given its data source and record ID.
+      operationId: deleteRecord
       parameters:
-      - name: entityId
-        description: >-
-          The unique numeric ID that identifies that entity being requested.
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - $ref: '#/components/parameters/featureModeQueryParam'
-      - $ref: '#/components/parameters/withFeatureStatsQueryParam'
-      - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
-      - $ref: '#/components/parameters/forceMinimalQueryParam'
-      - $ref: '#/components/parameters/withRelatedQueryParam'
-      - $ref: '#/components/parameters/withRawQueryParam'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzEntityResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzEntityResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzEntityResponse'
-        '404':
-          description: If the entity ID is not found.
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-        '500':
-          $ref: '#/components/responses/ServerError'
-  /entities/{entityId}/why:
-    get:
-      tags:
-        - Entity Data
-      summary: >-
-        Returns an analysis of why the entity for the respective
-        entity ID resolved.
-      operationId: whyEntityByEntityID
-      parameters:
-        - name: entityId
-          description: >-
-            The unique numeric ID that identifies that entity being requested.
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - $ref: '#/components/parameters/withRelationshipsQueryParam'
-        - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
-        - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
-        - $ref: '#/components/parameters/featureModeQueryParam'
-        - $ref: '#/components/parameters/forceMinimalQueryParam'
+        - $ref: '#/components/parameters/dataSourceCodePathParam'
+        - $ref: '#/components/parameters/recordIdPathParam'
+        - $ref: '#/components/parameters/loadIdQueryParam'
+        - $ref: '#/components/parameters/withInfoQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
       responses:
         '200':
-          description: Successul response
+          description: default response
           content:
             application/json; charset=UTF-8:
               schema:
-                $ref: '#/components/schemas/SzWhyEntityResponse'
+                $ref: '#/components/schemas/SzDeleteRecordResponse'
             application/json:
               schema:
-                $ref: '#/components/schemas/SzWhyEntityResponse'
+                $ref: '#/components/schemas/SzDeleteRecordResponse'
             default:
               schema:
-                $ref: '#/components/schemas/SzWhyEntityResponse'
+                $ref: '#/components/schemas/SzDeleteRecordResponse'
         '404':
-          description: If entity ID is not found.
+          description: If data source is not found.
           content:
             application/json; charset=UTF-8:
               schema:
@@ -1363,7 +1303,7 @@ paths:
     post:
       tags:
         - Entity Data
-      summary: Get a resolved entity by data source and record ID.
+      summary: Reevaluate a record identified by a data source and record ID.
       operationId: reevaluateRecord
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
@@ -1483,6 +1423,263 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
+  /entities:
+    get:
+      tags:
+        - Entity Data
+      summary: >-
+        Search for entities that would match or relate to the provided
+        entity features.
+      operationId: searchByAttributes
+      parameters:
+        - name: attrs
+          description: |
+            The JSON record describing the entity attributes in the same
+            format as how an entity record is loaded.  The specified
+            attributes are treated as a hypothetical record being loaded,
+            and the result is anything that would have matched or related
+            to it.  Here are some examples of encoding this parameter:
+
+            - **JavaScript Example**
+              ```javascript
+                var searchCriteria = {
+                  "NAME_FULL": "Joe Schmoe",
+                  "DATE_OF_BIRTH": "03-SEP-1987"
+                };
+                var searchAttrs = JSON.stringify(searchCriteria);
+                var urlPath = "/entities?attrs=" + encodeURIComponent(searchAttrs);
+              ```
+
+            - **Java Example**
+              ```java
+                JsonObjectBuilder builder = Json.createObjectBuilder();
+                builder.add("NAME_FULL", "Joe Schmoe");
+                builder.add("DATE_OF_BIRTH", "03-SEP-1987");
+                JsonObject searchCriteria = builder.build();
+
+                String searchAttrs = searchCriteria.toString();
+                String encodedAttrs = URLEncoder.encode(searchAttrs, "UTF-8");
+                String urlPath = "/entities?attrs=" + encodedAttrs;
+              ```
+
+            In both of the above examples the `urlPath` variable is set to:
+            ```json
+
+            /entities?attrs=%7B%22NAME_FULL%22%3A%22Joe%20Schmoe%22%2C%22DATE_OF_BIRTH%22%3A%2203-SEP-1987%22%7D
+
+            ```
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            notSpecifiedExample:
+              summary: Not specified
+              value:
+            ssnExample:
+              summary: Social security number
+              value: >-
+                {
+                  "SSN_NUMBER": "111-22-3333"
+                }
+            nameAndBirthDateExample:
+              summary: Name and date of birth
+              value: >-
+                {
+                  "NAME_FULL": "JANE SMITH",
+                  "DATE_OF_BIRTH": "03-SEP-1987"
+                }
+            nameAndAddressExample:
+              summary: Name and address
+              value: >-
+                {
+                  "NAME_FULL": "JANE SMITH",
+                  "ADDR_LINE1": "653 STATE ROUTE 7",
+                  "ADDR_CITY": "FRESNO",
+                  "ADDR_STATE": "CA",
+                  "ADDR_POSTAL_CODE": "55073-1234"
+                }
+        - name: attr
+          description: >-
+            Either the `attrs` or `attr` parameter is required, **however** if
+            the `attrs` parameter is provided it takes precedence and the `attr`
+            parameter will be ignored.  If you are using this API programmatically
+            then you should typically use the `attrs` parameter.  But when
+            manually constructing a URL in the browser address bar, in a
+            command-line tool like `curl` or in a REST client browser extension
+            for debugging or testing purposes, encoding that JSON value can be
+            unwieldy.  This parameter (which is multi-valued) lets you specify
+            colon-delimited strings that are prefixed with the JSON property name
+            and suffixed with the value.  For example, `NAME_FIRST:Joe` (url
+            encoded of course).  This side-steps the need to URL-encode the
+            structural JSON characters and usually means you need only URL-encode
+            basic characters like colons (`%3A`) and spaces (`%20`).  The JSON
+            constructed using this parameter is obviously flat.  If you want to
+            group properties together by their "usage type" (e.g.: `NAME_TYPE`,
+            `PHONE_TYPE` or `ADDRESS_TYPE`) then you would **also** prefix with
+            the type (e.g.: `HOME_PHONE_NUMBER:702-555-1212`).
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          examples:
+            notSpecifiedExample:
+              summary: Not specified
+              value:
+            basicExample:
+              summary: Basic name and date of birth example
+              value: [ "NAME_FULL:Joe Schmoe", "DATE_OF_BIRTH:03-SEP-1987"]
+            basicArrayExample:
+              summary: Multiple phone numbers without usage types
+              value: [ "PHONE_NUMBER:702-555-1212", "PHONE_NUMBER:702-555-1414" ]
+            basicUsageTypeExample:
+              summary: Multiple phone numbers with usage types
+              value: [ "HOME_PHONE_NUMBER:702-555-1212", "WORK_PHONE_NUMBER:702-555-1414" ]
+            complexUsageTypeExample:
+              summary: Multiple address search with usage types for grouping
+              value: [
+                "HOME_ADDR_LINE1:101 Main Street",
+                "HOME_ADDR_CITY:Los Angeles",
+                "HOME_ADDR_STATE:CA",
+                "WORK_ADDR_LINE1:105 Colorado Blvd",
+                "WORK_ADDR_CITY:Pasadena",
+                "WORK_ADDR_STATE:CA"
+              ]
+        - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/withFeatureStatsQueryParam'
+        - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
+        - $ref: '#/components/parameters/forceMinimalQueryParam'
+        - $ref: '#/components/parameters/withRelationshipsQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzAttributeSearchResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzAttributeSearchResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzAttributeSearchResponse'
+        '400':
+          description: >-
+            If the specified attrs parameter is missing or is not formatted
+            properly.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /entities/{entityId}:
+    get:
+      tags:
+        - Entity Data
+      summary: Get a resolved entity by entity ID.
+      operationId: getEntityByEntityId
+      parameters:
+      - name: entityId
+        description: >-
+          The unique numeric ID that identifies that entity being requested.
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - $ref: '#/components/parameters/featureModeQueryParam'
+      - $ref: '#/components/parameters/withFeatureStatsQueryParam'
+      - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
+      - $ref: '#/components/parameters/forceMinimalQueryParam'
+      - $ref: '#/components/parameters/withRelatedQueryParam'
+      - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzEntityResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzEntityResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzEntityResponse'
+        '404':
+          description: If the entity ID is not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /entities/{entityId}/why:
+    get:
+      tags:
+        - Entity Data
+      summary: >-
+        Returns an analysis of why the entity for the respective
+        entity ID resolved.
+      operationId: whyEntityByEntityID
+      parameters:
+        - name: entityId
+          description: >-
+            The unique numeric ID that identifies that entity being requested.
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - $ref: '#/components/parameters/withRelationshipsQueryParam'
+        - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
+        - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
+        - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/forceMinimalQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successul response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntityResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntityResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntityResponse'
+        '404':
+          description: If entity ID is not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /why/records:
     get:
       tags:
@@ -1553,170 +1750,11 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
-  /entities:
-    get:
-      tags:
-        - Entity Data
-      summary: >-
-        Search for entities that would match or relate to the provided
-        entity features.
-      operationId: searchByAttributes
-      parameters:
-      - name: attrs
-        description: |
-          The JSON record describing the entity attributes in the same
-          format as how an entity record is loaded.  The specified
-          attributes are treated as a hypothetical record being loaded,
-          and the result is anything that would have matched or related
-          to it.  Here are some examples of encoding this parameter:
-
-          - **JavaScript Example**
-            ```javascript
-              var searchCriteria = {
-                "NAME_FULL": "Joe Schmoe",
-                "DATE_OF_BIRTH": "03-SEP-1987"
-              };
-              var searchAttrs = JSON.stringify(searchCriteria);
-              var urlPath = "/entities?attrs=" + encodeURIComponent(searchAttrs);
-            ```
-
-          - **Java Example**
-            ```java
-              JsonObjectBuilder builder = Json.createObjectBuilder();
-              builder.add("NAME_FULL", "Joe Schmoe");
-              builder.add("DATE_OF_BIRTH", "03-SEP-1987");
-              JsonObject searchCriteria = builder.build();
-
-              String searchAttrs = searchCriteria.toString();
-              String encodedAttrs = URLEncoder.encode(searchAttrs, "UTF-8");
-              String urlPath = "/entities?attrs=" + encodedAttrs;
-            ```
-
-          In both of the above examples the `urlPath` variable is set to:
-          ```json
-
-          /entities?attrs=%7B%22NAME_FULL%22%3A%22Joe%20Schmoe%22%2C%22DATE_OF_BIRTH%22%3A%2203-SEP-1987%22%7D
-
-          ```
-        in: query
-        required: false
-        schema:
-          type: string
-        examples:
-          notSpecifiedExample:
-            summary: Not specified
-            value:
-          ssnExample:
-            summary: Social security number
-            value: >-
-              {
-                "SSN_NUMBER": "111-22-3333"
-              }
-          nameAndBirthDateExample:
-            summary: Name and date of birth
-            value: >-
-              {
-                "NAME_FULL": "JANE SMITH",
-                "DATE_OF_BIRTH": "03-SEP-1987"
-              }
-          nameAndAddressExample:
-            summary: Name and address
-            value: >-
-              {
-                "NAME_FULL": "JANE SMITH",
-                "ADDR_LINE1": "653 STATE ROUTE 7",
-                "ADDR_CITY": "FRESNO",
-                "ADDR_STATE": "CA",
-                "ADDR_POSTAL_CODE": "55073-1234"
-              }
-      - name: attr
-        description: >-
-          Either the `attrs` or `attr` parameter is required, **however** if
-          the `attrs` parameter is provided it takes precedence and the `attr`
-          parameter will be ignored.  If you are using this API programmatically
-          then you should typically use the `attrs` parameter.  But when
-          manually constructing a URL in the browser address bar, in a
-          command-line tool like `curl` or in a REST client browser extension
-          for debugging or testing purposes, encoding that JSON value can be
-          unwieldy.  This parameter (which is multi-valued) lets you specify
-          colon-delimited strings that are prefixed with the JSON property name
-          and suffixed with the value.  For example, `NAME_FIRST:Joe` (url
-          encoded of course).  This side-steps the need to URL-encode the
-          structural JSON characters and usually means you need only URL-encode
-          basic characters like colons (`%3A`) and spaces (`%20`).  The JSON
-          constructed using this parameter is obviously flat.  If you want to
-          group properties together by their "usage type" (e.g.: `NAME_TYPE`,
-          `PHONE_TYPE` or `ADDRESS_TYPE`) then you would **also** prefix with
-          the type (e.g.: `HOME_PHONE_NUMBER:702-555-1212`).
-        in: query
-        required: false
-        schema:
-          type: array
-          items:
-            type: string
-        examples:
-          notSpecifiedExample:
-            summary: Not specified
-            value:
-          basicExample:
-            summary: Basic name and date of birth example
-            value: [ "NAME_FULL:Joe Schmoe", "DATE_OF_BIRTH:03-SEP-1987"]
-          basicArrayExample:
-            summary: Multiple phone numbers without usage types
-            value: [ "PHONE_NUMBER:702-555-1212", "PHONE_NUMBER:702-555-1414" ]
-          basicUsageTypeExample:
-            summary: Multiple phone numbers with usage types
-            value: [ "HOME_PHONE_NUMBER:702-555-1212", "WORK_PHONE_NUMBER:702-555-1414" ]
-          complexUsageTypeExample:
-            summary: Multiple address search with usage types for grouping
-            value: [
-                "HOME_ADDR_LINE1:101 Main Street",
-                "HOME_ADDR_CITY:Los Angeles",
-                "HOME_ADDR_STATE:CA",
-                "WORK_ADDR_LINE1:105 Colorado Blvd",
-                "WORK_ADDR_CITY:Pasadena",
-                "WORK_ADDR_STATE:CA"
-              ]
-      - $ref: '#/components/parameters/featureModeQueryParam'
-      - $ref: '#/components/parameters/withFeatureStatsQueryParam'
-      - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
-      - $ref: '#/components/parameters/forceMinimalQueryParam'
-      - $ref: '#/components/parameters/withRelationshipsQueryParam'
-      - $ref: '#/components/parameters/withRawQueryParam'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzAttributeSearchResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzAttributeSearchResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzAttributeSearchResponse'
-        '400':
-          description: >-
-              If the specified attrs parameter is missing or is not formatted
-              properly.
-          content:
-            application/json; charset=UTF-8:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-            default:
-              schema:
-                $ref: '#/components/schemas/SzErrorResponse'
-        '500':
-          $ref: '#/components/responses/ServerError'
   /reevaluate-entity:
     post:
       tags:
         - Entity Data
-      summary: Get a resolved entity by data source and record ID.
+      summary: Reevaluate an entity identified by its entity ID.
       operationId: reevaluateEntity
       parameters:
         - name: entityId
@@ -3621,6 +3659,19 @@ components:
                   description: >-
                     The optionally requested info associated with the
                     reevaluation.
+                  $ref: '#/components/schemas/SzResolutionInfo'
+    SzDeleteRecordResponse:
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                info:
+                  description: >-
+                    The optionally requested info associated with the
+                    record deletion.
                   $ref: '#/components/schemas/SzResolutionInfo'
     SzRecordResponse:
       description: >-
