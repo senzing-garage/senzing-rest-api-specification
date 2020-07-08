@@ -87,14 +87,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         `?attr_NAME_FIRST=Joe` or use the `attrs` parameter with a JSON value.
     - The `withRelationships` query parameter now defaults to `false` instead
       of `true`.
-      - *MIGRATION*: Use `?withRelationships=true` if relationships are desired. 
+      - *MIGRATION*: Use `?withRelationships=true` if relationships are desired.
 
   - `GET /entity-networks`
     - Changed the default value for `maxDegrees` parameter from 5 to 3
 
   - `POST /bulk-data/load`
-    - Replaced the `dataSource_[DATA_SOURCE_CODE]` parameters with the 
-      multi-valued `mapDataSource` parameter so that this parameter 
+    - Replaced the `dataSource_[DATA_SOURCE_CODE]` parameters with the
+      multi-valued `mapDataSource` parameter so that this parameter
       could better be documented in Open API Spec and examples provided via
       Swagger Editor.
       - *MIGRATION*: Use `?mapDataSource=FOO:BAR` in place of
@@ -116,11 +116,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       parameter to the specification.
 
   - `POST /bulk-data/load`
-    - Added the single-valued `mapDataSources` parameter which accepts 
-      URL-encoded JSON to map the original data sources to target data 
+    - Added the single-valued `mapDataSources` parameter which accepts
+      URL-encoded JSON to map the original data sources to target data
       sources.
-    - Added the single-valued `mapEntityTypes` parameter which accepts 
-      URL-encoded JSON to map the original entity types to target entity 
+    - Added the single-valued `mapEntityTypes` parameter which accepts
+      URL-encoded JSON to map the original entity types to target entity
       types.
 
 ## [1.8.1] - 2020-04-15
