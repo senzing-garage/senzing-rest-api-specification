@@ -13,10 +13,11 @@ Viewing the Senzing REST API OpenAPI specification:
 - In [Swagger validator](http://validator.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml)
 - In [Swagger editor](http://editor.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml)
 - In [GitHub](senzing-rest-api.yaml)
-- Using Docker
+- Using Docker.
+  Example:
 
     ```console
-    docker run \
+    sudo docker run \
       --env URL=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml \
       --name senzing-swagger-ui \
       --publish 9180:8080 \
@@ -24,7 +25,7 @@ Viewing the Senzing REST API OpenAPI specification:
       swaggerapi/swagger-ui
     ```
 
-   then open browser to [localhost:9180](http://localhost:9180)
+   Open browser to [localhost:9180](http://localhost:9180)
 
 ## Submitting comments
 
