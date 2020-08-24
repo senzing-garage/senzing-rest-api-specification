@@ -12,7 +12,6 @@ Viewing the Senzing REST API OpenAPI specification:
 1. In [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml)
 1. In [Swagger validator](http://validator.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml)
 1. In [Swagger editor](http://editor.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml)
-1. In [GitHub](senzing-rest-api.yaml)
 1. Using Docker.
   Example:
 
@@ -26,6 +25,7 @@ Viewing the Senzing REST API OpenAPI specification:
     ```
 
    Open browser to [localhost:9180](http://localhost:9180)
+1. In [GitHub](senzing-rest-api.yaml)
 
 ## Submitting comments
 
