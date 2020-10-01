@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2020-10-01
+
+### Changed in 2.1.0
+
+- Added `SzMatchLevel` type to enumerate and describe the various match levels.
+- Added `matchLevel` field to `SzMatchInfo` to include the match level from
+  `MATCH_LEVEL_CODE` in the responses from the "why" endpoints.
+- Added `lastSeenTimestamp` field to `SzResolvedEntity` and `SzEntityRecord` to
+  include `LAST_SEEN_DT` field in the primary schema rather than only the raw.
+
 ## [2.0.0] - 2020-07-13
 
 ### Changed in 2.0.0
