@@ -5246,6 +5246,7 @@ components:
         Describes the scoring bucket that a feature score falls into.  The
         range of scores constitute different buckets depending on the feature
         type..  The possible values are:
+            * `NOT_SCORED` - The respective features were not scored.
             * `SAME` - The two feature values are considered to be the same.
             * `CLOSE` - The two feature values are considered to be close.
             * `LIKELY` - The two feature values are similar, but not enough to
@@ -5258,6 +5259,7 @@ components:
                             values.
       type: string
       enum:
+        - NOT_SCORED
         - SAME
         - CLOSE
         - LIKELY
