@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed in 2.1.1
 
-- Added the NOT_SCORED value for SzScoringBucket enum.
+- Added the `NOT_SCORED` value for `SzScoringBucket` enum.
 
 ## [2.1.0] - 2020-10-01
 
