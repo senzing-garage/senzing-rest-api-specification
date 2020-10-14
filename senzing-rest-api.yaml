@@ -4597,13 +4597,6 @@ components:
                 matched to the primary resolved entity.
               type: integer
               format: int32
-            fullNameScore:
-              description: >-
-                The full name score between the primary resolved entity and
-                this related entity.  The higher the score the closer the
-                name match.
-              type: integer
-              format: int32
             matchScore:
               description: >-
                 The match score between the primary resolved entity and
@@ -4716,6 +4709,25 @@ components:
           properties:
             resultType:
               $ref: '#/components/schemas/SzAttributeSearchResultType'
+            bestNameScore:
+              description: >-
+                The best name score between the search criteria and this
+                matched search entity.  The higher the score the closer the
+                name match.  This uses either the full name score or
+                organization name score.  If none exist then this filed is
+                omitted.
+              type: integer
+              format: int32
+            featureScores:
+              description: >-
+                The map of feature types to arrays of `SzSearchFeatureScore`
+                instances for that feature type.
+              nullable: true
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SzSearchFeatureScore'
             relatedEntities:
               description: >-
                 The array of RelatedEntity instances describing the possible
@@ -5288,6 +5300,44 @@ components:
           description: >-
             The usage type assigned to the feature value.
           type: string
+    SzNameScoring:
+      description: >-
+        Describes the scoring details between two names.
+      type: object
+      properties:
+        fullNameScore:
+          description: >-
+            The full name score.  This field is omitted if there is not a
+            full name score (e.g.: with an organization name)
+          type: integer
+          format: int32
+        surnameScore:
+          description: >-
+            The surname score.  This field is omitted if there is not a
+            surname score (e.g.: with an organization name or if there were no
+            surnames to compare)
+          type: integer
+          format: int32
+        givenNameScore:
+          description: >-
+            The given name score.  This field is omitted if there is not a
+            given name score (e.g.: with an organization name or if there were
+            no given names to compare)
+          type: integer
+          format: int32
+        generationScore:
+          description: >-
+            The generation match score.  This field is omitted if there is not a
+            generation match score (e.g.: with an organization name or if there
+            were no generations to compare)
+          type: integer
+          format: int32
+        orgNameScore:
+          description: >-
+            The organization name score.  This field is omitted if there is not
+            a organization name score (e.g.: with an personal name)
+          type: integer
+          format: int32
     SzFeatureScore:
       description: >-
         Describes the scoring between two `SzScoredFeature` instances.
@@ -5309,9 +5359,18 @@ components:
         score:
           description: >-
             The integer score between the two feature values (typically from 0
-            to 100)
+            to 100).  If this is a name feature, then this value is the "best"
+            value from the `SzNameScoring` instance described by
+            `nameScoringDetails` (in order of precedence the first of these
+            values that exists: `orgNameScore`, `fullNameScore`,
+            `surnameScore` and then `givenNameScore`).
           type: integer
           format: int32
+        nameScoringDetails:
+          description: >-
+            The name scoring values if this score is for a name feature.  This
+            property is omitted if not a name feature.
+          $ref: '#/components/schemas/SzNameScoring'
         scoringBucket:
           description: >-
             The `SzScoringBucket` describing the meaning of the `score`.
@@ -5321,6 +5380,39 @@ components:
             The `SzScoringBehavior` describing the scoring behavior for the
             features.
           $ref: '#/components/schemas/SzScoringBehavior'
+    SzSearchFeatureScore:
+      description: >-
+        Describes the scoring between two search features.
+      type: object
+      properties:
+        featureType:
+          description: >-
+            The feature type of the features being scored.
+          type: string
+        inboundFeature:
+          description: >-
+            The inbound feature value as a string.
+          type: string
+        candidateFeature:
+          description: >-
+            The feature value that was a candidate match for the inbound
+            feature as a string.
+          type: string
+        score:
+          description: >-
+            The integer score between the two feature values (typically from 0
+            to 100).  If this is a name feature, then this value is the "best"
+            value from the `SzNameScoring` instance described by
+            `nameScoringDetails` (in order of precedence the first of these
+            values that exists: `orgNameScore`, `fullNameScore`,
+            `surnameScore` and then `givenNameScore`).
+          type: integer
+          format: int32
+        nameScoringDetails:
+          description: >-
+            The name scoring values if this score is for a name feature.  This
+            property is omitted if not a name feature.
+          $ref: '#/components/schemas/SzNameScoring'
     SzCandidateKey:
       description: >-
         Describes a candidate key that triggered the scoring of two entities.
@@ -5446,6 +5538,7 @@ components:
             The `SzMatchInfo` providing the details of the result.
           nullable: false
           $ref: '#/components/schemas/SzMatchInfo'
+
 tags:
   - name: Admin
     description: Administrative operations.
