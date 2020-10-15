@@ -5538,7 +5538,6 @@ components:
             The `SzMatchInfo` providing the details of the result.
           nullable: false
           $ref: '#/components/schemas/SzMatchInfo'
-
 tags:
   - name: Admin
     description: Administrative operations.
