@@ -1750,6 +1750,80 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
+  /why/entities:
+    get:
+      tags:
+        - Entity Data
+      summary: >-
+        Returns an analysis of why the two entities related, did not relate, or
+        did not resolve.
+      operationId: whyEntities
+      parameters:
+        - name: entity1
+          description: >-
+            The `SzEntityIdentifier` for the first entity as an entity ID or an
+            encoded `SzRecordId` for the constituent record.  Whatever format is
+            used for the "entity1" parameter must match the format of the
+            "entity2" parameter.  NOTE: An encoded `SzRecordId` can EITHER be
+            encoded as JSON or as a delimited string where the first character
+            is the delimiter and the remainder is parsed as a data source prefix
+            (up to the second occurrence of the delimiter) and a record ID
+            suffix (all characters after the second occurrence of the
+            delimiter).  For example: `{"src":"PEOPLE","id":"12345ABC"}` or
+            `:PEOPLE:12345ABC`.
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: entity2
+          description: >-
+            The `SzEntityIdentifier` for the second entity as an entity ID or an
+            encoded `SzRecordId` for the constituent record.  Whatever format is
+            used for the "entity2" parameter must match the format of the
+            "entity1" parameter.  NOTE: An encoded `SzRecordId` can EITHER be
+            encoded as JSON or as a delimited string where the first character
+            is the delimiter and the remainder is parsed as a data source prefix
+            (up to the second occurrence of the delimiter) and a record ID
+            suffix (all characters after the second occurrence of the
+            delimiter).  For example: `{"src":"PEOPLE","id":"12345ABC"}` or
+            `:PEOPLE:12345ABC`.
+          required: true
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/withRelationshipsQueryParam'
+        - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
+        - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
+        - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/forceMinimalQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successul response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntitiesResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntitiesResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzWhyEntitiesResponse'
+        '404':
+          description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /reevaluate-entity:
     post:
       tags:
@@ -3769,8 +3843,8 @@ components:
               properties:
                 whyResults:
                   description: >-
-                    The `SzWhyEntityResults` describing why from each
-                    evaluated perspective within the entity.
+                    The array of `SzWhyEntityResult` instances describing why
+                    from each evaluated perspective within the entity.
                   type: array
                   items:
                     $ref: '#/components/schemas/SzWhyEntityResult'
@@ -3798,6 +3872,30 @@ components:
                     The `SzWhyRecordsResult` describing why from for the
                     specified records.
                   $ref: '#/components/schemas/SzWhyRecordsResult'
+                entities:
+                  description: >-
+                    The array of `SzEntityData` objects describing the entities
+                    involved in the response.  This will include partial
+                    information on the first-degree related entities to the
+                    entity.
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SzEntityData'
+    SzWhyEntitiesResponse:
+      description: >-
+        The response describing the result of "why entities" operation.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                whyResult:
+                  description: >-
+                    The `SzWhyEntitiesResult` describing why the two entities
+                    did not resolve or why they related.
+                  $ref: '#/components/schemas/SzWhyEntitiesResult'
                 entities:
                   description: >-
                     The array of `SzEntityData` objects describing the entities
@@ -5298,7 +5396,8 @@ components:
           type: string
         usageType:
           description: >-
-            The usage type assigned to the feature value.
+            The usage type assigned to the feature value.  This field is
+            optional and may be excluded if the value is missing.
           type: string
     SzNameScoring:
       description: >-
@@ -5431,6 +5530,74 @@ components:
           description: >-
             The feature value for the candidate feature.
           type: string
+    SzRelationDirection:
+      description: >-
+        The HTTP method that was used for the operation.  The possible values
+        are:
+          * `OUTBOUND` - The relationship goes in the direction from the first
+                         entity to the second entity.
+          * `INBOUND` - The relationship goes in the direction from the second
+                        entity to the first entity.
+          * `BIDIRECTIONAL` - The relationship goes in both directions between
+                              the two entities.
+      type: string
+      enum:
+        - INBOUND
+        - OUTBOUND
+        - BIDIRECTIONAL
+    SzRelatedFeatures:
+      description: >
+        Describes a pair of features that triggered a relationship between the
+        respective records.
+      type: object
+      properties:
+        feature1:
+          description: >-
+            The first related feature.
+          $ref: '#/components/schemas/SzScoredFeature'
+        feature2:
+          description: >-
+            The second related feature.
+          $ref: '#/components/schemas/SzScoredFeature'
+    SzDisclosedRelation:
+      description: >-
+        Describes a relationship that is disclosed between two records so that
+        the respective entities are related.
+      type: object
+      properties:
+        domain:
+          description: >-
+            The domain of the relationship (e.g.: spouses, parent/child,
+            employer/employee, corporate hierarchy, etc...)
+          nullable: false
+          type: string
+        direction:
+          description: >-
+            The direction of the relationship.
+          $ref: '#/components/schemas/SzRelationDirection'
+        roles1:
+          description: >-
+            The relationship roles (aka: usage types) assigned to the first
+            entity in the relationship.
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        roles2:
+          description: >-
+            The relationship roles (aka: usage types) assigned to the second
+            entity in the relationship.
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        relatedFeatures:
+          description: >-
+            The array of `SzRelatedFeatures` instances that the disclosed
+            relationship is composed of.
+          type: array
+          items:
+            $ref: '#/components/schemas/SzRelatedFeatures'
     SzMatchInfo:
       description: >-
         The match info describing why two entities (or records) resolve or
@@ -5473,6 +5640,16 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SzFeatureScore'
+        disclosedRelations:
+          description: >-
+            The list of `SzDisclosedRelation` instances describing any
+            disclosed relationships between two entities.  If the match info
+            pertains to a single entity or if there are no disclosed relations
+            between the two entities then this property is absent.
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/SzDisclosedRelation'
     SzWhyPerspective:
       description: >-
         Describes the perspective used in evaluating why an entity resolved
@@ -5513,6 +5690,28 @@ components:
             The `SzWhyPerspective` identifying and describing the perspective
             for this why result.
           $ref: '#/components/schemas/SzWhyPerspective'
+        matchInfo:
+          description: >-
+            The `SzMatchInfo` providing the details of the result.
+          nullable: false
+          $ref: '#/components/schemas/SzMatchInfo'
+    SzWhyEntitiesResult:
+      description: >-
+        Describes why two entities did not resolve or why they related.
+      type: object
+      properties:
+        entityId1:
+          description: >-
+            The entity ID of the first entity.
+          nullable: false
+          type: integer
+          format: int64
+        entityId2:
+          description: >-
+            The entity ID of the second entity.
+          nullable: false
+          type: integer
+          format: int64
         matchInfo:
           description: >-
             The `SzMatchInfo` providing the details of the result.
