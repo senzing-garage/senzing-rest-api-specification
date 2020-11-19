@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [2.3.0] - 2020-11-18
+
+### Changed in 2.3.0
+
+- Added `GET /why/entities` operation
+- Modified `SzMatchInfo` to support disclosed relationships
+- Added `SzWhyEntitiesResponse` model schema
+- Added `SzWhyEntitiesResult` model schema
+- Added `SzDisclosedRelation` model schema
+- Added `SzRelationDirection` model schema
+- Added `SzRelatedFeatures`  model schema
+- Updated some documentation for clarification.
+
 ## [2.2.0] - 2020-10-15
 
 ### Changed in 2.2.0
