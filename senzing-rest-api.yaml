@@ -4239,7 +4239,6 @@ components:
         dataSource:
           description: >-
             The data source code associated with the sample record.
-            type: string
           type: string
         recordId:
           description: >-
