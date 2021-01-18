@@ -27,7 +27,7 @@ Viewing the Senzing REST API OpenAPI specification:
    Open browser to [localhost:9180](http://localhost:9180)
 1. In [GitHub](senzing-rest-api.yaml)
 
-## View (Past Versions)
+## View (Previous Versions)
 
 View previous versions of the Senzing REST API OpenAPI specification:
 
