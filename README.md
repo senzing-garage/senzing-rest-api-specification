@@ -29,15 +29,15 @@ Viewing the Senzing REST API OpenAPI specification:
 
 ## View (Past Versions)
 
-Viewing the Senzing REST API OpenAPI specification:
+View previous versions of the Senzing REST API OpenAPI specification:
 
-1. [Version 2.2.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.2.0/senzing-rest-api.yaml)
-1. [Version 2.1.1](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.1.1/senzing-rest-api.yaml)
-1. [Version 2.1.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.1.0/senzing-rest-api.yaml)
-1. [Version 2.0.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.0.0/senzing-rest-api.yaml)
-1. [Version 1.8.2](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/1.8.2/senzing-rest-api.yaml)
-1. [Version 1.8.1](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/1.8.1/senzing-rest-api.yaml)
-1. [Version 1.7.5](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/1.7.5/senzing-rest-api.yaml)
+- [Version 2.2.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.2.0/senzing-rest-api.yaml)
+- [Version 2.1.1](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.1.1/senzing-rest-api.yaml)
+- [Version 2.1.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.1.0/senzing-rest-api.yaml)
+- [Version 2.0.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.0.0/senzing-rest-api.yaml)
+- [Version 1.8.2](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/1.8.2/senzing-rest-api.yaml)
+- [Version 1.8.1](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/1.8.1/senzing-rest-api.yaml)
+- [Version 1.7.5](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/1.7.5/senzing-rest-api.yaml)
 
 ## Submitting comments
 
