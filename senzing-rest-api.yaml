@@ -1552,7 +1552,8 @@ paths:
             Optional parameter that can be specified zero or more times to
             indicate which `SzAttributeSearchResultType`'s should be included
             in the search results.  If not specified then all match types are
-            included.
+            included.  *NOTE*: This parameter is ignored unless the underlying
+            native Senzing API is version 2.4.1 or later.
           in: query
           required: false
           schema:
