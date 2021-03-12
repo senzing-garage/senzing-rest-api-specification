@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "2.3.0"
+  version: "2.4.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -1547,6 +1547,35 @@ paths:
                 "WORK_ADDR_CITY:Pasadena",
                 "WORK_ADDR_STATE:CA"
               ]
+        - name: includeOnly
+          description: >-
+            Optional parameter that can be specified zero or more times to
+            indicate which `SzAttributeSearchResultType`'s should be included
+            in the search results.  If not specified then all match types are
+            included.  *NOTE*: This parameter is ignored unless the underlying
+            native Senzing API is version 2.4.1 or later.
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SzAttributeSearchResultType'
+          examples:
+            notSpecifiedExample:
+              summary: Not specified - include all search results
+              value:
+            includeOnlyMatches:
+              summary: Only include matches
+              value: [ "MATCH" ]
+            includeOnlyMatchesAndPossibleMatches:
+              summary: Only include matches and possible matches.
+              value: [ "MATCH", "POSSIBLE_MATCH" ]
+            includeAllButNameOnlyMatches:
+              summary: Include all but name-only matches.
+              value: [ "MATCH", "POSSIBLE_MATCH", "POSSIBLE_RELATION" ]
+            includeOnlyNameOnlyMatches:
+              summary: Only include name-only matches.
+              value: [ "NAME_ONLY_MATCH" ]
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/withFeatureStatsQueryParam'
         - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
@@ -3489,6 +3518,15 @@ components:
               type: string
             restApiVersion:
               type: string
+            nativeApiVersion:
+              type: string
+            nativeApiBuildNumber:
+              type: string
+            nativeApiBuildDate:
+              type: string
+              format: date-time
+            configCompatibilityVersion:
+              type: string
             timings:
               description: >-
                 The timing measurements that were taken where the keys are
@@ -4239,6 +4277,7 @@ components:
         dataSource:
           description: >-
             The data source code associated with the sample record.
+            type: string
           type: string
         recordId:
           description: >-
@@ -4789,7 +4828,17 @@ components:
       description: >-
         Describes how the entity matching the search attributes would have
         entity resolved against those attributes (either a match, possible
-        match, discovered relationship or name only match).
+        match, discovered relationship or name only match).  The possible values
+        are:
+           * `MATCH` - The search criteria matches the entity and would resolve
+             against it.
+           * `POSSIBLE_MATCH` - The search criteria comes close to matching the
+             entity but not close enough that it would resolve against it.
+           * `POSSIBLE_RELATION` - The search criteria would not match against
+             the entity but some features are the same and relate them.
+           * `NAME_ONLY_MATCH` - The search criteria matches the entity in name
+             only which is not strong enough for a relationship, but provides
+             for a weak search match.
       type: string
       enum:
         - MATCH
