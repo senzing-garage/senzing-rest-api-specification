@@ -5,7 +5,7 @@
 The Senzing REST API specification is an OpenAPI 3.0 Specification of the RESTful API supported by the
 [Senzing API server](https://github.com/Senzing/senzing-api-server).
 
-## View
+## View (Latest version)
 
 Viewing the Senzing REST API OpenAPI specification:
 
@@ -26,6 +26,19 @@ Viewing the Senzing REST API OpenAPI specification:
 
    Open browser to [localhost:9180](http://localhost:9180)
 1. In [GitHub](senzing-rest-api.yaml)
+
+## View (Previous Versions)
+
+View previous versions of the Senzing REST API OpenAPI specification:
+
+- [Version 2.3.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.3.0/senzing-rest-api.yaml)
+- [Version 2.2.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.2.0/senzing-rest-api.yaml)
+- [Version 2.1.1](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.1.1/senzing-rest-api.yaml)
+- [Version 2.1.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.1.0/senzing-rest-api.yaml)
+- [Version 2.0.0](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/2.0.0/senzing-rest-api.yaml)
+- [Version 1.8.2](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/1.8.2/senzing-rest-api.yaml)
+- [Version 1.8.1](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/1.8.1/senzing-rest-api.yaml)
+- [Version 1.7.5](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/1.7.5/senzing-rest-api.yaml)
 
 ## Submitting comments
 
