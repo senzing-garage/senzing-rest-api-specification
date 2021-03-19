@@ -3477,7 +3477,8 @@ components:
         is not producing an SSE response (i.e.: `text/event-stream` media type
         was not requested via the `Accept` header).
       schema:
-        type: string
+        type: integer
+        format: int64
         default: 3000
   responses:
     ServerError:
