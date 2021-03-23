@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "2.4.0"
+  version: "2.5.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -3521,6 +3521,8 @@ components:
               type: string
             nativeApiVersion:
               type: string
+            nativeApiBuildVersion:
+              type: string
             nativeApiBuildNumber:
               type: string
             nativeApiBuildDate:
@@ -4255,6 +4257,10 @@ components:
           type: string
           description: >-
             The version for the underlying runtime native Senzing API.
+        nativeApiBuildVersion:
+          type: string
+          description: >-
+            The build version for the underlying runtime native Senzing API.
         nativeApiBuildNumber:
           type: string
           description: >-
