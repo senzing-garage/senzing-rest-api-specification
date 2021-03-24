@@ -23,7 +23,7 @@ info:
 
 servers:
   - url: http://localhost:8250
-  - url: '{protocol}://{host}:{port}'
+  - url: '{protocol}://{host}:{port}{path}'
     variables:
       protocol:
         enum:
@@ -34,6 +34,8 @@ servers:
         default: localhost
       port:
         default: '8250'
+      path:
+        default: '/'
 
 paths:
   /heartbeat:
@@ -3158,7 +3160,7 @@ components:
         {
           "SSN_NUMBER": "111-22-3333"
         }
-    nameAndBirthDateSeachExample:
+    nameAndBirthDateSearchExample:
       summary: Name and date of birth
       value: >-
         {
