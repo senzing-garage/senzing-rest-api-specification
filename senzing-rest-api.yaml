@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "2.4.0"
+  version: "2.5.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -23,7 +23,7 @@ info:
 
 servers:
   - url: http://localhost:8250
-  - url: '{protocol}://{host}:{port}'
+  - url: '{protocol}://{host}:{port}{path}'
     variables:
       protocol:
         enum:
@@ -34,6 +34,8 @@ servers:
         default: localhost
       port:
         default: '8250'
+      path:
+        default: '/'
 
 paths:
   /heartbeat:
@@ -1430,7 +1432,7 @@ paths:
       summary: >-
         Search for entities that would match or relate to the provided
         entity features.
-      operationId: searchByAttributes
+      operationId: searchEntitiesByGet
       parameters:
         - name: attrs
           description: |
@@ -1477,28 +1479,11 @@ paths:
               summary: Not specified
               value:
             ssnExample:
-              summary: Social security number
-              value: >-
-                {
-                  "SSN_NUMBER": "111-22-3333"
-                }
+              $ref: '#/components/examples/ssnSearchExample'
             nameAndBirthDateExample:
-              summary: Name and date of birth
-              value: >-
-                {
-                  "NAME_FULL": "JANE SMITH",
-                  "DATE_OF_BIRTH": "03-SEP-1987"
-                }
+              $ref: '#/components/examples/nameAndBirthDateSearchExample'
             nameAndAddressExample:
-              summary: Name and address
-              value: >-
-                {
-                  "NAME_FULL": "JANE SMITH",
-                  "ADDR_LINE1": "653 STATE ROUTE 7",
-                  "ADDR_CITY": "FRESNO",
-                  "ADDR_STATE": "CA",
-                  "ADDR_POSTAL_CODE": "55073-1234"
-                }
+              $ref: '#/components/examples/nameAndAddressSearchExample'
         - name: attr
           description: >-
             Either the `attrs` or `attr` parameter is required, **however** if
@@ -1547,41 +1532,91 @@ paths:
                 "WORK_ADDR_CITY:Pasadena",
                 "WORK_ADDR_STATE:CA"
               ]
-        - name: includeOnly
-          description: >-
-            Optional parameter that can be specified zero or more times to
-            indicate which `SzAttributeSearchResultType`'s should be included
-            in the search results.  If not specified then all match types are
-            included.  *NOTE*: This parameter is ignored unless the underlying
-            native Senzing API is version 2.4.1 or later.
-          in: query
-          required: false
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/SzAttributeSearchResultType'
-          examples:
-            notSpecifiedExample:
-              summary: Not specified - include all search results
-              value:
-            includeOnlyMatches:
-              summary: Only include matches
-              value: [ "MATCH" ]
-            includeOnlyMatchesAndPossibleMatches:
-              summary: Only include matches and possible matches.
-              value: [ "MATCH", "POSSIBLE_MATCH" ]
-            includeAllButNameOnlyMatches:
-              summary: Include all but name-only matches.
-              value: [ "MATCH", "POSSIBLE_MATCH", "POSSIBLE_RELATION" ]
-            includeOnlyNameOnlyMatches:
-              summary: Only include name-only matches.
-              value: [ "NAME_ONLY_MATCH" ]
+        - $ref: '#/components/parameters/includeOnlyQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/withFeatureStatsQueryParam'
         - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzAttributeSearchResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzAttributeSearchResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzAttributeSearchResponse'
+        '400':
+          description: >-
+            If the specified attrs parameter is missing or is not formatted
+            properly.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /search-entities:
+    post:
+      tags:
+        - Entity Data
+      summary: >-
+        Search for entities that would match or relate to the provided
+        entity features.  This is similar to `GET /entities` except it requires
+        the caller to specify the search criteria as JSON in the request body.
+      operationId: searchEntitiesByPost
+      parameters:
+        - $ref: '#/components/parameters/includeOnlyQueryParam'
+        - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/withFeatureStatsQueryParam'
+        - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
+        - $ref: '#/components/parameters/forceMinimalQueryParam'
+        - $ref: '#/components/parameters/withRelationshipsQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      requestBody:
+        description: >-
+          The JSON record describing the entity attributes in the same format as
+          how an entity record is loaded The format of the JSON is described by
+          the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+          The specified attributes are treated as a hypothetical record being
+          loaded, and the result is anything that would have matched or related
+          to it.
+        required: true
+        content:
+          application/json; charset=UTF-8:
+            schema:
+              type: object
+              additionalProperties: {}
+            examples:
+              ssnExample:
+                $ref: '#/components/examples/ssnSearchExample'
+              nameAndBirthDateExample:
+                $ref: '#/components/examples/nameAndBirthDateSearchExample'
+              nameAndAddressExample:
+                $ref: '#/components/examples/nameAndAddressSearchExample'
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+            examples:
+              ssnExample:
+                $ref: '#/components/examples/ssnSearchExample'
+              nameAndBirthDateExample:
+                $ref: '#/components/examples/nameAndBirthDateSearchExample'
+              nameAndAddressExample:
+                $ref: '#/components/examples/nameAndAddressSearchExample'
       responses:
         '200':
           description: Successful response
@@ -3119,6 +3154,29 @@ components:
     multipleEntitiesByMixedRecordIdArrayExample:
       summary: Multiple entities by mixed-encoded record ID
       value: '[":CUSTOMERS:GHI789",{"src":"EMPLOYEES","id":"JKL321"}]'
+    ssnSearchExample:
+      summary: Social security number
+      value: >-
+        {
+          "SSN_NUMBER": "111-22-3333"
+        }
+    nameAndBirthDateSearchExample:
+      summary: Name and date of birth
+      value: >-
+        {
+          "NAME_FULL": "JANE SMITH",
+          "DATE_OF_BIRTH": "03-SEP-1987"
+        }
+    nameAndAddressSearchExample:
+      summary: Name and address
+      value: >-
+        {
+          "NAME_FULL": "JANE SMITH",
+          "ADDR_LINE1": "653 STATE ROUTE 7",
+          "ADDR_CITY": "FRESNO",
+          "ADDR_STATE": "CA",
+          "ADDR_POSTAL_CODE": "55073-1234"
+        }
     bulkDataCSVExample:
       summary: Bulk records in CSV format
       value: >-
@@ -3378,6 +3436,36 @@ components:
       schema:
         type: boolean
         default: false
+    includeOnlyQueryParam:
+      in: query
+      name: includeOnly
+      description: >-
+        Optional parameter that can be specified zero or more times to
+        indicate which `SzAttributeSearchResultType`'s should be included
+        in the search results.  If not specified then all match types are
+        included.  *NOTE*: This parameter is ignored unless the underlying
+        native Senzing API is version 2.4.1 or later.
+      required: false
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/SzAttributeSearchResultType'
+      examples:
+        notSpecifiedExample:
+          summary: Not specified - include all search results
+          value:
+        includeOnlyMatches:
+          summary: Only include matches
+          value: [ "MATCH" ]
+        includeOnlyMatchesAndPossibleMatches:
+          summary: Only include matches and possible matches.
+          value: [ "MATCH", "POSSIBLE_MATCH" ]
+        includeAllButNameOnlyMatches:
+          summary: Include all but name-only matches.
+          value: [ "MATCH", "POSSIBLE_MATCH", "POSSIBLE_RELATION" ]
+        includeOnlyNameOnlyMatches:
+          summary: Only include name-only matches.
+          value: [ "NAME_ONLY_MATCH" ]
     withInfoQueryParam:
       in: query
       name: withInfo
@@ -3477,7 +3565,8 @@ components:
         is not producing an SSE response (i.e.: `text/event-stream` media type
         was not requested via the `Accept` header).
       schema:
-        type: string
+        type: integer
+        format: int64
         default: 3000
   responses:
     ServerError:
@@ -3519,6 +3608,8 @@ components:
             restApiVersion:
               type: string
             nativeApiVersion:
+              type: string
+            nativeApiBuildVersion:
               type: string
             nativeApiBuildNumber:
               type: string
@@ -4254,6 +4345,10 @@ components:
           type: string
           description: >-
             The version for the underlying runtime native Senzing API.
+        nativeApiBuildVersion:
+          type: string
+          description: >-
+            The build version for the underlying runtime native Senzing API.
         nativeApiBuildNumber:
           type: string
           description: >-
