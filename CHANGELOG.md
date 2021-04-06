@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2021-03-24
+
+### Changed in 2.5.0
+
+- Added `nativeApiBuildVersion` to meta (`SzMeta`)
+- Added `nativeApiBuildVersion` to `SzVersionInfo`
+- Added `POST /search-entities` endpoint to provide a `POST` variant of
+  `GET /entities` that uses the request body instead of the `attr` and `attrs`
+  query parameters
+- Fixed type of `progressPeriod` parameter
 
 ## [2.4.0] - 2021-03-11
 
