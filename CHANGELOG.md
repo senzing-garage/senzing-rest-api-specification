@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `POST /bulk-data/load` endpoint.
 - Added information for invoking Bulk Data endpoints via Web Sockets.
 - Added detailed descriptions for all operations.
+- Added additional documentation tying the `characteristicData` field to the
+  `ATTRIBUTE_DATA` field in the raw data.
 
 ## [2.5.0] - 2021-03-24
 
