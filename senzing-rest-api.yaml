@@ -1,25 +1,34 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "2.5.0"
+  version: "2.6.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
     Senzing native API which is documented at
     [https://docs.senzing.com](https://docs.senzing.com).
     <br><br>
-    <b>NOTE:</b> Some end-points described here will indicate "(Supports SSE)" to
+    <b>SSE NOTE:</b> Some end-points described here will indicate "(Supports SSE)" to
     indicate that they support "Server-sent Events" via the `text/event-stream`
     media type.  This support is activated by adding the
     `Accept: text/event-stream` header to a request to override the
     default `application/json` media type.  Further, the end-point will behave
-    the similarly to its stand operation but will produce `progress` events
+    similarly to its standard operation but will produce `progress` events
     at regular intervals that are equivalent to its `200` response schema.
     Upon success, the final event will be `completed` with the same response
     schema as a `200` response.  Upon failure, the final event will be
     `failed` with same schema as the `4xx` or `5xx` response (typically the
     `SzErrorResponse`)
-    [https://docs.senzing.com](https://docs.senzing.com)
+    <br><br>
+    <b>WEB SOCKETS NOTE:</b> Some end-points described here will indicate "(Supports
+    WebSockets)" to indicate that they can invoked via the Web Sockets protocol.
+    This support is activated by invoking the end-point using the `ws://`
+    protocol in the URL.  Any request query parameters can still be sent on the
+    URL and the request body can be sent as one or more message from the client
+    (as documented).  The end-point response will be sent as one or more
+    response messages as documented (sometimes describing progress as with SSE
+    end-points).  Upon failure responses will follow the same schema as the
+    `4xx` or `5xx` response (typically the `SzErrorResponse`)
 
 servers:
   - url: http://localhost:8250
@@ -45,6 +54,11 @@ paths:
       summary: >-
         Gets a heartbeat from the server to make sure it is up and
         running.  The response will include the current timestamp.
+      description: |
+        The heartbeat operation can be used to ensure that the HTTP server is
+        indeed running, but this operation does not call upon the underlying
+        native Senzing API and therefore does not ensure the Senzing
+        initialization or configuration is valid.
       operationId: heartbeat
       responses:
         '200':
@@ -64,6 +78,9 @@ paths:
       tags:
         - Admin
       summary: Get the license information.
+      description: |
+        This operation will obtain license information for the underlying
+        native Senzing API.
       operationId: license
       parameters:
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -85,6 +102,10 @@ paths:
       tags:
         - Admin
       summary: Get the full version information.
+      description: |
+        This operation will obtain the full version information for the server.
+        Much of the same information is available in the `meta` segment of
+        every JSON response.
       operationId: version
       parameters:
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -106,6 +127,12 @@ paths:
       tags:
         - Admin
       summary: Get info regarding the server's state and supported features.
+      description: |
+        This operation will provides server information describing the options
+        with which the server was started.  This can be used to determine if
+        the admin operations are enabled or if only read operations may be
+        invoked.  This also allows the client to know the maximum message size
+        for Web Sockets communication.
       operationId: getServerInfo
       responses:
         '200':
@@ -125,6 +152,10 @@ paths:
       tags:
         - Config
       summary: Get a list of configured attribute types.
+      description: |
+        This operation will provide a list of attribute types that are
+        configured.  The client can filter the returned list of attribute types
+        using various query parameters.
       operationId: getAttributeTypes
       parameters:
         - name: withInternal
@@ -201,6 +232,9 @@ paths:
       tags:
         - Config
       summary: Get the attribute type identified by the attribute code.
+      description: |
+        This operation will provide a description of a single attribute type for
+        the specified attribute type code.
       operationId: getAttributeType
       parameters:
         - name: attributeCode
@@ -285,6 +319,9 @@ paths:
       tags:
         - Config
       summary: Get a list of configured data sources.
+      description: |
+        This operation will provide a list of data source codes as well as a
+        list of detailed descriptions of each data source.
       operationId: getDataSources
       parameters:
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -307,9 +344,22 @@ paths:
       tags:
         - Config
       summary: >-
+        Adds one or more new data sources to the current default configuration
+        and reinitializes with the newly modified configuration.
+      description: |
         Obtains the current default configuration, adds the specified data
         sources and sets the modified configuration as the new default
         configuration -- returning the set of all configured data sources.
+
+        **NOTE:** This operation may not be allowed.  Some conditions that
+        might cause this operation to be forbidden are:
+          1. The server does not have administrative functions enabled.
+          2. The server is running in "read-only" mode.
+          3. The server is started with a file-based configuration specified
+             by `G2CONFIGFILE` property in the initialziation parameters.
+          4. The server is started with a specific configuration ID and
+             therefore cannot modify the configuration and change to a new
+             configuration.
       operationId: addDataSources
       parameters:
         - name: dataSource
@@ -461,6 +511,9 @@ paths:
       tags:
         - Config
       summary: Gets the details on the specified data source.
+      description: |
+        This operation provides details on a specific data source identified
+        by the data source code in the requested path.
       operationId: getDataSource
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
@@ -485,6 +538,9 @@ paths:
       tags:
         - Config
       summary: Get a list of configured entity types.
+      description: |
+        This operation will provide a list of entity type codes as well as a
+        list of detailed descriptions of each entity type.
       operationId: getEntityTypes
       parameters:
         - name: entityClass
@@ -523,9 +579,21 @@ paths:
       tags:
         - Config
       summary: >-
-        Obtains the current default configuration, adds the specified entity
+        Adds one or more new entity types to the current active configuration.
+      description: |
+        Obtains the current active configuration, adds the specified entity
         types and sets the modified configuration as the new default
         configuration -- returning the set of all configured entity types.
+
+        **NOTE:** This operation may not be allowed.  Some conditions that
+        might cause this operation to be forbidden are:
+          1. The server does not have administrative functions enabled.
+          2. The server is running in "read-only" mode.
+          3. The server is started with a file-based configuration specified
+             by `G2CONFIGFILE` property in the initialziation parameters.
+          4. The server is started with a specific configuration ID and
+             therefore cannot modify the configuration and change to a new
+             configuration.
       operationId: addEntityTypes
       parameters:
         - name: entityType
@@ -555,10 +623,10 @@ paths:
             value of `ACTOR` which is the only valid value at this time.  In
             the future additional values may be allowed.
 
-            *NOTE*: In the future, when other values are allowed and if creating
-            entity types with different classes then you can fully described
-            each entity type with its class using an array of `SzEntityType`
-            objects in the request body.
+            **NOTE**: In the future, when other values are allowed and if
+            creating entity types with different classes then you can fully
+            described each entity type with its class using an array of
+            `SzEntityType` objects in the request body.
           in: query
           required: false
           schema:
@@ -698,6 +766,9 @@ paths:
       tags:
         - Config
       summary: Gets the details on the specified entity type.
+      description: |
+        This operation provides details on a specific entity type identified
+        by the entity type code in the requested path.
       operationId: getEntityType
       parameters:
         - $ref: '#/components/parameters/entityTypeCodePathParam'
@@ -722,8 +793,14 @@ paths:
       tags:
         - Config
       summary: >-
-        Get a list of configured entity classes.  Currently the only supported
+        Get a list of configured entity classes.  Currently, the only supported
         entity class is `ACTOR`.
+      description: |
+        This operation will provide a list of entity class codes as well as a
+        list of detailed descriptions of each entity class.
+
+        **NOTE:** Currently, the only supported entity class is `ACTOR`, though
+        others may be supported in the future.
       operationId: getEntityClasses
       parameters:
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -747,9 +824,15 @@ paths:
       tags:
         - Config
       summary: >-
-        Gets the details on the specified entity class.  NOTE: Currently the
-        only supported entity class is `ACTOR`, but this will change in the
+        Gets the details on the specified entity class.  **NOTE:** Currently,
+        the only supported entity class is `ACTOR`, but this may change in the
         future.
+      description: |
+        This operation provides details on a specific entity class identified
+        by the entity class code in the requested path.
+
+        **NOTE:** Currently, the only supported entity class is `ACTOR`, but
+        this may change in the future.
       operationId: getEntityClass
       parameters:
         - $ref: '#/components/parameters/entityClassCodePathParam'
@@ -774,9 +857,16 @@ paths:
       tags:
         - Config
       summary: >-
-        Get a list of configured entity types for the identified entity class.
-        NOTE: Currently the only supported entity class is `ACTOR`, but this
-        will change in the future.
+        Get a list of configured entity types for an entity class.
+        **NOTE:** Currently the only supported entity class is `ACTOR`, but
+        this may change in the future.
+      description: |
+        This operation will provide a list of entity type codes as well as a
+        list of detailed descriptions of each entity type that has the entity
+        class identified by the entity class in the request path.
+
+        **NOTE:** Currently the only supported entity class is `ACTOR`, but
+        this may change in the future.
       operationId: getEntityTypesByClass
       parameters:
         - $ref: '#/components/parameters/entityClassCodePathParam'
@@ -800,9 +890,26 @@ paths:
       tags:
         - Config
       summary: >-
-        Obtains the current default configuration, adds the specified entity
-        types and sets the modified configuration as the new default
-        configuration -- returning the set of all configured entity types.
+        Creates one more entity types with the given entity class on the
+        currently active config.
+      description: |
+        This operation will obtain the current default configuration, adds the
+        specified entity types using the given entity class and then set the
+        modified configuration as the new default configuration -- returning
+        the set of all configured entity types.
+
+        **NOTE:** Currently the only supported entity class is `ACTOR`, but
+        this may change in the future.
+
+        **ALSO NOTE:** This operation may not be allowed.  Some conditions that
+        might cause this operation to be forbidden are:
+          1. The server does not have administrative functions enabled.
+          2. The server is running in "read-only" mode.
+          3. The server is started with a file-based configuration specified
+             by `G2CONFIGFILE` property in the initialziation parameters.
+          4. The server is started with a specific configuration ID and
+             therefore cannot modify the configuration and change to a new
+             configuration.
       operationId: addEntityTypesForClass
       parameters:
         - $ref: '#/components/parameters/entityClassCodePathParam'
@@ -950,6 +1057,14 @@ paths:
       tags:
         - Config
       summary: Gets the details on the specified entity type.
+      description: |
+        This operation provides details on a specific entity type identified
+        by the entity type code in the requested path.  The entity type must
+        have the entity class identified by the entity class code in the
+        request path as well.
+
+        **NOTE:** Currently the only supported entity class is `ACTOR`, but
+        this may change in the future.
       operationId: getEntityTypeByClass
       parameters:
         - $ref: '#/components/parameters/entityClassCodePathParam'
@@ -976,6 +1091,12 @@ paths:
         - Config
       summary: >-
         Gets the current active configuration as raw JSON, no interpretation.
+      description: |
+        This operation returns the JSON configuration that is currently being
+        used by the native Senzing API initialized by the running server.  No
+        processing or interpretation is performed on the JSON.  This may differ
+        from the registered "default configuration" which the server would
+        use if no other configuration were provided.
       operationId: getActiveConfig
       responses:
         '200':
@@ -999,6 +1120,14 @@ paths:
       summary: >-
         Gets the base template configuration as raw JSON, no interpretation.
         This is the initial configuration for a new repository.
+      description: |
+        This operation returns a template base JSON configuration that can be
+        modified or customized by the caller.  The returned template is
+        according to the underlying native Senzing API and may change between
+        version upgrades to Senzing.  No processing or interpretation is
+        performed on the JSON.  This will likely differ from the registered
+        "default configuration" or currently "active configuration" being used
+        by the running API server.
       operationId: getTemplateConfig
       responses:
         '200':
@@ -1021,7 +1150,24 @@ paths:
         - Entity Data
       summary: >-
         Load a new record specified in a data source with either an
-        auto-generated record ID or a RECORD_ID specified in the payload.
+        auto-generated record ID or a `RECORD_ID` specified in the payload.
+      description: |
+        This operation loads a single record using the data source identified by
+        the data source code in the request path.  The provided record in the
+        request body is described in JSON using the
+        [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+        The provided record may contain a `RECORD_ID` to identify it uniquely
+        among other records in the same data source, but if it does not then a
+        record ID will be automatically generated.  The record ID is returned
+        as part of the response.
+
+        **NOTE:** The `withInfo` parameter will return the entity resolution
+        info pertaining to the load.  This can be used to update a search index
+        or external data mart.   Additionally, Senzing API Server provides a
+        means to have the "raw" entity resolution info (from the underlying
+        native Senzing API) automatically sent to a messaging service such as
+        those provided by Amazon SQS, Rabbit MQ or Kafka regardless of the
+        `withInfo` query parameter value.
       operationId: addRecordWithReturnedRecordId
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
@@ -1125,6 +1271,9 @@ paths:
       tags:
         - Entity Data
       summary: Get an entity record by data source and record ID.
+      description: |
+        Gets details on a specific entity record identified by the data source
+        code and record ID specified in the request path.
       operationId: getRecord
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
@@ -1163,6 +1312,23 @@ paths:
       summary: >-
         Load a new record or replace a record in a data source with a
         specific record ID.
+      description: |
+        This operation loads a single record using the data source identified by
+        the data source code in the request path.  The record will be identified
+        uniquely within the data source by the record ID provided in the request
+        path.  The provided record in the request body is described in JSON
+        using the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+        The provided JSON record may omit the `RECORD_ID`, but if it contains a
+        `RECORD_ID` then it **must** match the record ID provided on the request
+        path.  The record ID is returned as part of the response.
+
+        **NOTE:** The `withInfo` parameter will return the entity resolution
+        info pertaining to the load.  This can be used to update a search index
+        or external data mart.   Additionally, Senzing API Server provides a
+        means to have the "raw" entity resolution info (from the underlying
+        native Senzing API) automatically sent to a messaging service such as
+        those provided by Amazon SQS, Rabbit MQ or Kafka regardless of the
+        `withInfo` query parameter value.
       operationId: addRecord
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
@@ -1267,6 +1433,17 @@ paths:
       tags:
         - Entity Data
       summary: Delete a record given its data source and record ID.
+      description: |
+        This operation deletes a single record identified by the data source
+        code and record ID in the request path.
+
+        **NOTE:** The `withInfo` parameter will return the entity resolution
+        info pertaining to the delete.  This can be used to update a search
+        index or external data mart.   Additionally, Senzing API Server provides
+        a means to have the "raw" entity resolution info (from the underlying
+        native Senzing API) automatically sent to a messaging service such as
+        those provided by Amazon SQS, Rabbit MQ or Kafka regardless of the
+        `withInfo` query parameter value.
       operationId: deleteRecord
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
@@ -1306,6 +1483,17 @@ paths:
       tags:
         - Entity Data
       summary: Reevaluate a record identified by a data source and record ID.
+      description: |
+        This operation reevaluates a single record identified by the data source
+        code and record ID in the request path.
+
+        **NOTE:** The `withInfo` parameter will return the entity resolution
+        info pertaining to the reevaluation.  This can be used to update a
+        search index or external data mart.   Additionally, Senzing API Server
+        provides a means to have the "raw" entity resolution info (from the
+        underlying native Senzing API) automatically sent to a messaging service
+        such as those provided by Amazon SQS, Rabbit MQ or Kafka regardless of
+        the `withInfo` query parameter value.
       operationId: reevaluateRecord
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
@@ -1344,6 +1532,10 @@ paths:
       tags:
         - Entity Data
       summary: Get a resolved entity by data source and record ID.
+      description: |
+        Gets the details on a resolved entity that contains the record
+        identified by the data source code and record ID in the specified
+        request path.
       operationId: getEntityByRecordId
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
@@ -1388,6 +1580,10 @@ paths:
       summary: >-
         Returns an analysis of why the entity for the record with the
         respective data source code and record ID resolved.
+      description: |
+        This operation provides an anlysis of why the records in an entity
+        resolved.  The subject entity is the one containing the record
+        identified by the data source code and record ID in the request path.
       operationId: whyEntityByRecordID
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
@@ -1430,8 +1626,25 @@ paths:
       tags:
         - Entity Data
       summary: >-
-        Search for entities that would match or relate to the provided
+        Search for entities that would resolve to or relate to the provided
         entity features.
+      description: |
+        This operation finds all entities that would resolve or relate to the
+        search candidate features specified by the `attr` and/or `attrs` query
+        parameters.  The search candidate features are treated as if they
+        belonged to an inbound record being loaded, thus the attribute names are
+        given by the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+        If including the search candidate features as query parameters presents
+        privacy concerns due to sensitivity of the data, they can alternately
+        be sent in the request body using the `POST /search-entities` endpoint.
+
+        **NOTE:** This operation differs from a keyword search in that it uses
+        deterministic entity resolution rules to determine the result set.  This
+        means that features that are considered "generic" (i.e.: overly common)
+        will be ignored just as they are during entity resolution and will not
+        yield search results.  For example, searching on a gender by itself will
+        return no results rather than half of all entities.  Similarly, a phone
+        number such as `555-1212` may yield no results.
       operationId: searchEntitiesByGet
       parameters:
         - name: attrs
@@ -1576,6 +1789,23 @@ paths:
         Search for entities that would match or relate to the provided
         entity features.  This is similar to `GET /entities` except it requires
         the caller to specify the search criteria as JSON in the request body.
+      description: |
+        This operation finds all entities that would resolve or relate to the
+        search candidate features specified in JSON request body.  The search
+        candidate features are treated as if they belonged to an inbound record
+        being loaded.  The JSON format of the request body is defined by the
+        [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+        This operation is similar to the `GET /entities` endpoint in function
+        except that it provides a means to avoid specifying potentially
+        sensitive data in query parameters, but instead in the request body.
+
+        **NOTE:** This operation differs from a keyword search in that it uses
+        deterministic entity resolution rules to determine the result set.  This
+        means that features that are considered "generic" (i.e.: overly common)
+        will be ignored just as they are during entity resolution and will not
+        yield search results.  For example, searching on a gender by itself will
+        return no results rather than half of all entities.  Similarly, a phone
+        number such as `555-1212` may yield no results.
       operationId: searchEntitiesByPost
       parameters:
         - $ref: '#/components/parameters/includeOnlyQueryParam'
@@ -1651,6 +1881,15 @@ paths:
       tags:
         - Entity Data
       summary: Get a resolved entity by entity ID.
+      description: |
+        Gets the details on a resolved entity that is identified by the entity
+        ID specified in the request path.
+
+        **NOTE:** Bear in mind that entity ID's are transient and may be
+        recycled or repurposed as new records are loaded and entities resolve,
+        unresolve and re-resolve.  An alternative way to identify a record is
+        by one of its composite records using
+        `GET /data-sources/{dataSourceCode}/records/{recordId}/entity`.
       operationId: getEntityByEntityId
       parameters:
       - name: entityId
@@ -1701,6 +1940,16 @@ paths:
       summary: >-
         Returns an analysis of why the entity for the respective
         entity ID resolved.
+      description: |
+        This operation provides an anlysis of why the records in an entity
+        resolved.  The subject entity is identified by the entity ID in the
+        request path.
+
+        **NOTE:** Bear in mind that entity ID's are transient and may be
+        recycled or repurposed as new records are loaded and entities resolve,
+        unresolve and re-resolve.  An alternative way to identify a record is
+        by one of its composite records using
+        `GET /data-sources/{dataSourceCode}/records/{recordId}/entity/why`.
       operationId: whyEntityByEntityID
       parameters:
         - name: entityId
@@ -1751,6 +2000,10 @@ paths:
       summary: >-
         Returns an analysis of why the records identified by the data source
         and record ID's in the query parameters resolved or did not resolve.
+      description: |
+        This operation provides an anlysis of two records identified by data
+        source code and record ID in respective qeury parameters resolved or
+        did not resolve.
       operationId: whyRecords
       parameters:
         - name: dataSource1
@@ -1821,6 +2074,20 @@ paths:
       summary: >-
         Returns an analysis of why the two entities related, did not relate, or
         did not resolve.
+      description: |
+        This operation provides an anlysis of why two entities related, did not
+        relate or did not resolve.  The entities are identified either by
+        entity ID's or by data source code and record ID pairs for constituent
+        records of those entities.
+
+        **NOTE:** If the first entity is identified by entity ID then the second
+        must also be identified an entity ID.  Similarly, if the first entity is
+        identified by data source code and record ID then the second must also
+        be identified by data source code and record ID.
+
+        **ALSO NOTE:** Bear in mind that entity ID's are transient and may be
+        recycled or repurposed as new records are loaded and entities resolve,
+        unresolve and re-resolve.
       operationId: whyEntities
       parameters:
         - name: entity1
@@ -1893,6 +2160,21 @@ paths:
       tags:
         - Entity Data
       summary: Reevaluate an entity identified by its entity ID.
+      description: |
+        Reevaluates an entity identified by the entity ID specified via the
+        `entityId` query parameter.
+
+        **NOTE:** The `withInfo` parameter will return the entity resolution
+        info pertaining to the reevaluation.  This can be used to update a
+        search index or external data mart.   Additionally, Senzing API Server
+        provides a means to have the "raw" entity resolution info (from the
+        underlying native Senzing API) automatically sent to a messaging service
+        such as those provided by Amazon SQS, Rabbit MQ or Kafka regardless of
+        the `withInfo` query parameter value.
+
+        **ALSO NOTE:** Bear in mind that entity ID's are transient and may be
+        recycled or repurposed as new records are loaded and entities resolve,
+        unresolve and re-resolve.
       operationId: reevaluateEntity
       parameters:
         - name: entityId
@@ -1938,9 +2220,22 @@ paths:
         - Entity Graph
       summary: >-
         Finds a path between two entities identified by entity ID or by
-        data sources and record IDs of constituent records.  You may provide
-        entity IDs or data source and record IDs to identify the from/to
-        entities in the path, but you may not mix and match.
+        data sources and record IDs of constituent records.
+      description: |
+        This operation finds the path between two entities and returns a
+        description of that entity path (if any) or a response indicating that
+        there is no path between the entities.  The subject entities are either
+        identfieid by entity ID or by data source code and record ID pairs for
+        constituent records of those entities.
+
+        **NOTE:** If the first entity is identified by entity ID then the second
+        must also be identified an entity ID.  Similarly, if the first entity is
+        identified by data source code and record ID then the second must also
+        be identified by data source code and record ID.
+
+        **ALSO NOTE:** Bear in mind that entity ID's are transient and may be
+        recycled or repurposed as new records are loaded and entities resolve,
+        unresolve and re-resolve.
       operationId: findEntityPath
       parameters:
       - name: from
@@ -2159,12 +2454,24 @@ paths:
       tags:
         - Entity Graph
       summary: >-
-        Finds the entity network around one or more entities identified by
-        their entity IDs or by the data source codes and record ID's of their
-        constituent records.  This attempts to find paths between the specified
-        entities.  If no paths exist, then island networks are returned
-        with each island network containing up to a specified number of
-        related entities.
+        Finds the entity network around one or more entities.
+      description: |
+        This operation finds the entity network around one or more entities.
+        This attempts to find paths between the specified entities.  If no
+        paths exist, then island networks are returned with each island network
+        containing up to a specified number of related entities.  The entities
+        are identified by their entity IDs or by data source code and record ID
+        pairs for constituent records of those entities.
+
+        **NOTE:** If the first entity is identified by entity ID then the
+        subsequent entities must also be identified entity ID.  Similarly, if
+        the first entity is identified by the data source code and record ID
+        of a consistuent record then the subsequent entities must also be
+        identified by the data source code and record ID of constituent records.
+
+        **ALSO NOTE:** Bear in mind that entity ID's are transient and may be
+        recycled or repurposed as new records are loaded and entities resolve,
+        unresolve and re-resolve.
       operationId: findEntityNetwork
       parameters:
       - name: e
@@ -2321,14 +2628,61 @@ paths:
     post:
       tags:
         - Bulk Data
-      summary: Analyze a bulk data set of records. (Supports SSE)
+      summary: Analyze a bulk data set of records. (Supports SSE / Supports Web Sockets)
+      description: |
+        Provides a means to analyze a bulk data file of records prior to loading
+        it.  The records are encoded as a JSON array of JSON objects, a single
+        JSON object per line in JSON-lines file format, or as a CSV with one
+        record per row.  The data should be in pre-mapped format using JSON
+        property names or CSV column names as described by the
+        [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+
+        **SCALABILITY NOTE:** This operation can be invoked in three ways.  In
+        order of increasingly better scalability these are listed below:
+          1. Standard HTTP Request/Response
+          2. HTTP Request with SSE Response (see below)
+          3. HTTP Upgrade Request for Web Sockets (see below)
+
+        Standard HTTP Request/Response (method 1) has the worst scalability
+        because a long-running operation will tie up a Web Server thread **and**
+        continue until complete even if the client aborts the operation since
+        no data is written back to the client until complete and therefore the
+        terminated connection will not be detected.  SSE (method 2) mitigates
+        the problem of detecting when a client has aborted the operation
+        because periodic progress responses are written to the client and
+        therefore a terminated connection will be detected.  However, the best
+        way to invoke this operation is via Web Sockets (method 3) which not
+        only can detect disconnection of the client, but it also upgrades the
+        request to use its own thread outside the Web Server thread pool.
+
+        **SSE NOTE:** This end-point supports "Server-sent Events" (SSE) via the
+        `text/event-stream` media type.  This support is activated by adding the
+        `Accept: text/event-stream` header to a request to override the
+        default `application/json` media type.  Further, the end-point will behave
+        similarly to its standard operation but will produce `progress` events
+        at regular intervals that are equivalent to its `200` response schema.
+        Upon success, the final event will be `completed` with the same response
+        schema as a `200` response.  Upon failure, the final event will be
+        `failed` with same `SzErrorResponse` schema as the `4xx` or `5xx`.
+
+        **WEB SOCKETS NOTE**: If invoking via Web Sockets then the client may
+        send text or binary chunks of the JSON, JSON-Lines or CSV bulk data file
+        as messages.  In Web Sockets, text messages are *always* sent as UTF-8.
+        If the file's character encoding is unknown then the client should send
+        binary messages and the server will attempt to auto-detect the character
+        encoding.  Each message should adhere to the maximum message size
+        specified by the `webSocketsMessageMaxSize` property returned by the
+        `GET /server-info` end-point.  The end of file is detected when the
+        number of seconds specified by the `eofSendTimeout` query parameter have
+        elapsed without a new message being received.
       operationId: analyzeBulkRecords
       parameters:
         - $ref: '#/components/parameters/progressPeriodParam'
+        - $ref: '#/components/parameters/eofSendTimeoutParam'
       requestBody:
-        description: >-
+        description: |
           The bulk record data as a single JSON record per line, a JSON array,
-          or a CSV.  Further, multipart/form-data can be provided with the
+          or a CSV.  Further, `multipart/form-data` can be provided with the
           "data" property representing the record data as described above.  Set
           your content type accordingly.  The data should be in pre-mapped
           format using JSON property names or CSV column names as described by
@@ -2433,11 +2787,57 @@ paths:
     post:
       tags:
         - Bulk Data
-      summary: Load the records in the provided bulk data set. (supports SSE)
+      summary: Load the records in the provided bulk data set. (Supports SSE / Supports Web Sockets)
+      description: |
+        Provides a means to load a bulk data file of records.  The records are
+        encoded as a JSON array of JSON objects, a single JSON object per line
+        in JSON-lines file format, or as a CSV with one record per row.  The
+        data should be in pre-mapped format using JSON property names or CSV
+        column names as described by the
+        [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
+
+        **SCALABILITY NOTE:** This operation can be invoked in three ways.  In
+        order of increasingly better scalability these are listed below:
+          1. Standard HTTP Request/Response
+          2. HTTP Request with SSE Response (see below)
+          3. HTTP Upgrade Request for Web Sockets (see below)
+
+        Standard HTTP Request/Response (method 1) has the worst scalability
+        because a long-running operation will tie up a Web Server thread **and**
+        continue until complete even if the client aborts the operation since
+        no data is written back to the client until complete and therefore the
+        terminated connection will not be detected.  SSE (method 2) mitigates
+        the problem of detecting when a client has aborted the operation
+        because periodic progress responses are written to the client and
+        therefore a terminated connection will be detected.  However, the best
+        way to invoke this operation is via Web Sockets (method 3) which not
+        only can detect disconnection of the client, but it also upgrades the
+        request to use its own thread outside the Web Server thread pool.
+
+        **SSE NOTE:** This end-point supports "Server-sent Events" (SSE) via the
+        `text/event-stream` media type.  This support is activated by adding the
+        `Accept: text/event-stream` header to a request to override the
+        default `application/json` media type.  Further, the end-point will behave
+        similarly to its standard operation but will produce `progress` events
+        at regular intervals that are equivalent to its `200` response schema.
+        Upon success, the final event will be `completed` with the same response
+        schema as a `200` response.  Upon failure, the final event will be
+        `failed` with same `SzErrorResponse` schema as the `4xx` or `5xx`.
+
+        **WEB SOCKETS NOTE**: If invoking via Web Sockets then the client may
+        send text or binary chunks of the JSON, JSON-Lines or CSV bulk data file
+        as messages.  In Web Sockets, text messages are *always* sent as UTF-8.
+        If the file's character encoding is unknown then the client should send
+        binary messages and the server will attempt to auto-detect the character
+        encoding.  Each message should adhere to the maximum message size
+        specified by the `webSocketsMessageMaxSize` property returned by the
+        `GET /server-info` end-point.  The end of file is detected when the
+        number of seconds specified by the `eofSendTimeout` query parameter have
+        elapsed without a new message being received.
       operationId: loadBulkRecords
       parameters:
         - name: dataSource
-          description: >-
+          description: |
             Used to set the overriding data source for the records.  This data
             source will be assigned to every record **unless** the record's
             data source (including blank data source) has a specific mapping
@@ -2722,11 +3122,24 @@ paths:
             multipleSpecificOverridesWithEmptyExample:
               summary: Map multiple specific data sources with empty mapping
               value: [ "::GENERIC", ":COMP:COMPANY", ":ORG:ORGANIZATION" ]
+        - name: maxFailures
+          description: |
+            The maximum number of failures that can occur before the bulk
+            load operation is aborted.  If the value is less-than or equal-to
+            zero (0) then the operation will continue regardless of the number
+            of errors that occur.
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
         - $ref: '#/components/parameters/progressPeriodParam'
+        - $ref: '#/components/parameters/eofSendTimeoutParam'
       requestBody:
-        description: >-
+        description: |
           The bulk record data as a single JSON record per line, a JSON array,
-          or a CSV.  Further, multipart/form-data can be provided with the
+          or a CSV.  Further, `multipart/form-data` can be provided with the
           "data" property representing the record data as described above.  Set
           your content type accordingly.  The data should be in pre-mapped
           format using JSON property names or CSV column names as described by
@@ -3568,6 +3981,23 @@ components:
         type: integer
         format: int64
         default: 3000
+    eofSendTimeoutParam:
+      in: query
+      name: eofSendTimeout
+      required: false
+      description: >-
+        The number of seconds to wait for an additional Web Sockets message
+        before assuming end-of-file (EOF) when using this end-point via Web
+        Sockets protocol.  If this number of seconds elapses with no additional
+        incoming data then the server assumes that there are no more file chunks
+        forthcoming.  If not specified then the default of `3` seconds is used.
+        This parameter is NOT used if the operation is not invoked via the Web
+        Sockets (`ws://`) protocol.  **NOTE**: This is specified in seconds,
+        **not** milliseconds.
+      schema:
+        type: integer
+        format: int32
+        default: 3
   responses:
     ServerError:
       description: Unexpected server error occurred.
@@ -5079,6 +5509,13 @@ components:
             Whether or not admin features are enabled.  If admin features are
             not enabled then the configuration cannot be modified.
           type: boolean
+          nullable: false
+        webSocketsMessageMaxSize:
+          description: >-
+            The maximum size for inbound text or binary messages when invoking
+            end-points via Web Sockets `ws://` protocol.
+          type: integer
+          format: int32
           nullable: false
     SzDataSource:
       description: Describes a data source.
