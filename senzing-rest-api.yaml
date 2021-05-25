@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "2.6.0"
+  version: "2.6.1"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -4012,6 +4012,74 @@ components:
           schema:
             $ref: '#/components/schemas/SzErrorResponse'
   schemas:
+    SzMeta:
+      description: >-
+        Represents the meta data returned with each response.
+      type: object
+      properties:
+        server:
+          description: >-
+            The descriptive name of the server that produced the response.
+          type: string
+        httpMethod:
+          $ref: '#/components/schemas/SzHttpMethod'
+        httpStatusCode:
+          description: >-
+            The HTTP status response code.
+          type: integer
+          format: int16
+        timestamp:
+          description: >-
+            The timestamp of the operation's execution.
+          type: string
+          format: date-time
+        version:
+          description: >-
+            The version number of the server.
+          type: string
+        restApiVersion:
+          description: >-
+            The REST API specification version implemented by the server.
+          type: string
+        nativeApiVersion:
+          description: >-
+            The version of the underlying native Senzing API product.
+          type: string
+        nativeApiBuildVersion:
+          description: >-
+            The build version of the underlying native Senzing API product.
+          type: string
+        nativeApiBuildNumber:
+          description: >-
+            The build number of the underlying native Senzing API product.
+          type: string
+        nativeApiBuildDate:
+          description: >-
+            The build date of the underlying native Senzing API product.
+          type: string
+          format: date-time
+        configCompatibilityVersion:
+          description: >-
+            The config compatilibility version of the underlying native Senzing
+            API product.
+          type: string
+        timings:
+          description: >-
+            The timing measurements that were taken where the keys are
+            identifying what was timed and the values are the number of
+            milliseconds.
+          type: object
+          nullable: true
+          additionalProperties:
+            type: integer
+            format: int64
+    SzLinks:
+      description: >-
+        Represents the default links returned with each response.
+      type: object
+      properties:
+        self:
+          type: string
     SzBaseResponse:
       description: >-
         Represents the base information included in all responses sans the
@@ -4019,50 +4087,9 @@ components:
       type: object
       properties:
         meta:
-          type: object
-          properties:
-            httpMethod:
-              $ref: '#/components/schemas/SzHttpMethod'
-            httpStatusCode:
-              description: >-
-                The HTTP status response code.
-              type: integer
-              format: int16
-            timestamp:
-              description: >-
-                The timestamp of the operation's execution.
-              type: string
-              format: date-time
-            version:
-              type: string
-            restApiVersion:
-              type: string
-            nativeApiVersion:
-              type: string
-            nativeApiBuildVersion:
-              type: string
-            nativeApiBuildNumber:
-              type: string
-            nativeApiBuildDate:
-              type: string
-              format: date-time
-            configCompatibilityVersion:
-              type: string
-            timings:
-              description: >-
-                The timing measurements that were taken where the keys are
-                identifying what was timed and the values are the number of
-                milliseconds.
-              type: object
-              nullable: true
-              additionalProperties:
-                type: integer
-                format: int64
+          $ref: '#/components/schemas/SzMeta'
         links:
-          type: object
-          properties:
-            self:
-              type: string
+          $ref: '#/components/schemas/SzLinks'
     SzErrorResponse:
       description: >-
         The response describing an error that occurred.
