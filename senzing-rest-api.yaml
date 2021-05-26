@@ -47,6 +47,33 @@ servers:
         default: '/'
 
 paths:
+  /:
+    get:
+      tags:
+        - Admin
+      summary: >-
+        Gets a root-level response from the server.  This returns the same
+        as the `GET /heartbeat` endpoint for now, but may change in the future
+        to provide additional information.
+      description: |
+        The root operation can be used to ensure that the HTTP server is
+        indeed running, but this operation does not call upon the underlying
+        native Senzing API and therefore does not ensure the Senzing
+        initialization or configuration is valid.
+      operationId: root
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzBaseResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzBaseResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzBaseResponse'
   /heartbeat:
     get:
       tags:
