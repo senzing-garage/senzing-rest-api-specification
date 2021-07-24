@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   specification as JSON data.  The optional `?asRaw=true` query parameter
   promotes the Open API JSON from the `data` property of the response to the
   root of the response.
+- Added 'infoQueueConfigured' property to SzServerInfo  
 - Modified inline data segments to be first-class named types.
 
 ## [2.6.0] - 2021-04-23
