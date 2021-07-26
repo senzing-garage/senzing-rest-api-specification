@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "2.6.0"
+  version: "2.7.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -47,6 +47,33 @@ servers:
         default: '/'
 
 paths:
+  /:
+    get:
+      tags:
+        - Admin
+      summary: >-
+        Gets a root-level response from the server.  This returns the same
+        as the `GET /heartbeat` endpoint for now, but may change in the future
+        to provide additional information.
+      description: |
+        The root operation can be used to ensure that the HTTP server is
+        indeed running, but this operation does not call upon the underlying
+        native Senzing API and therefore does not ensure the Senzing
+        initialization or configuration is valid.
+      operationId: root
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzBaseResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzBaseResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzBaseResponse'
   /heartbeat:
     get:
       tags:
@@ -73,6 +100,32 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzBaseResponse'
+  /specifications/open-api:
+    get:
+      tags:
+        - Admin
+      summary: >-
+        Gets this Open API specification to describe the API.
+      description: |
+        This operation can be used to obtain the Open API specification in JSON
+        format.  The specification can either be the `data` field of a standard
+        response (i.e.: a response with a `meta`, `links` and `data` field) or
+        as raw format where the root JSON document is the Open API specification
+        JSON.
+      operationId: openApiSpecification
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzOpenApiSpecResponseOrRawJson'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzOpenApiSpecResponseOrRawJson'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzOpenApiSpecResponseOrRawJson'
   /license:
     get:
       tags:
@@ -4012,6 +4065,76 @@ components:
           schema:
             $ref: '#/components/schemas/SzErrorResponse'
   schemas:
+    SzMeta:
+      description: >-
+        Represents the meta data returned with each response.
+      type: object
+      properties:
+        server:
+          description: >-
+            The descriptive name of the server that produced the response.
+          type: string
+        httpMethod:
+          $ref: '#/components/schemas/SzHttpMethod'
+        httpStatusCode:
+          description: >-
+            The HTTP status response code.
+          type: integer
+          format: int16
+        timestamp:
+          description: >-
+            The timestamp of the operation's execution.
+          type: string
+          format: date-time
+        version:
+          description: >-
+            The version number of the server.
+          type: string
+        restApiVersion:
+          description: >-
+            The REST API specification version implemented by the server.
+          type: string
+        nativeApiVersion:
+          description: >-
+            The version of the underlying native Senzing API product.
+          type: string
+        nativeApiBuildVersion:
+          description: >-
+            The build version of the underlying native Senzing API product.
+          type: string
+        nativeApiBuildNumber:
+          description: >-
+            The build number of the underlying native Senzing API product.
+          type: string
+        nativeApiBuildDate:
+          description: >-
+            The build date of the underlying native Senzing API product.
+          type: string
+          format: date-time
+        configCompatibilityVersion:
+          description: >-
+            The config compatilibility version of the underlying native Senzing
+            API product.
+          type: string
+        timings:
+          description: >-
+            The timing measurements that were taken where the keys are
+            identifying what was timed and the values are the number of
+            milliseconds.
+          type: object
+          nullable: true
+          additionalProperties:
+            type: integer
+            format: int64
+    SzLinks:
+      description: >-
+        Represents the default links returned with each response.
+      type: object
+      properties:
+        self:
+          type: string
+        openApiSpecification:
+          type: string
     SzBaseResponse:
       description: >-
         Represents the base information included in all responses sans the
@@ -4019,50 +4142,9 @@ components:
       type: object
       properties:
         meta:
-          type: object
-          properties:
-            httpMethod:
-              $ref: '#/components/schemas/SzHttpMethod'
-            httpStatusCode:
-              description: >-
-                The HTTP status response code.
-              type: integer
-              format: int16
-            timestamp:
-              description: >-
-                The timestamp of the operation's execution.
-              type: string
-              format: date-time
-            version:
-              type: string
-            restApiVersion:
-              type: string
-            nativeApiVersion:
-              type: string
-            nativeApiBuildVersion:
-              type: string
-            nativeApiBuildNumber:
-              type: string
-            nativeApiBuildDate:
-              type: string
-              format: date-time
-            configCompatibilityVersion:
-              type: string
-            timings:
-              description: >-
-                The timing measurements that were taken where the keys are
-                identifying what was timed and the values are the number of
-                milliseconds.
-              type: object
-              nullable: true
-              additionalProperties:
-                type: integer
-                format: int64
+          $ref: '#/components/schemas/SzMeta'
         links:
-          type: object
-          properties:
-            self:
-              type: string
+          $ref: '#/components/schemas/SzLinks'
     SzErrorResponse:
       description: >-
         The response describing an error that occurred.
@@ -4087,6 +4169,36 @@ components:
               type: object
               nullable: true
               additionalProperties: {}
+    SzOpenApiSpecResponse:
+      description: >-
+        Extends the BaseResponse to describe a response containing the
+        Open API specification in JSON format as the data.
+      allOf:
+        - $ref: '#/components/schemas/SzBaseResponse'
+        - type: object
+          properties:
+            data:
+              description: >-
+                This Open API specification in JSON format.
+              type: object
+              nullable: false
+              additionalProperties: {}
+    SzOpenApiSpecResponseOrRawJson:
+      description: >-
+        This represents the possible return type for an Open API specification
+        which can be an instance of `SzOpenApiSpecResponse` or raw JSON of the
+        Open API specification.
+      oneOf:
+        - $ref: '#/components/schemas/SzOpenApiSpecResponse'
+        - type: object
+          additionalProperties: {}
+    SzLicenseResponseData:
+      description: >-
+        Represents the data segment included with an `SzLicenseResponse`
+      type: object
+      properties:
+        license:
+          $ref: '#/components/schemas/SzLicenseInfo'
     SzLicenseResponse:
       description: >-
         The response containing the license information.
@@ -4095,10 +4207,7 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                license:
-                  $ref: '#/components/schemas/SzLicenseInfo'
+              $ref: '#/components/schemas/SzLicenseResponseData'
     SzVersionResponse:
       description: >-
         The response containing the version information.
@@ -4117,6 +4226,17 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/SzServerInfo'
+    SzAttributeTypesResponseData:
+      description: >-
+        Describes the data associated with the `SzAttributeTypesResponse`.
+      type: object
+      properties:
+        attributeTypes:
+          description: >-
+            The list of attribute types.
+          type: array
+          items:
+            $ref: '#/components/schemas/SzAttributeType'
     SzAttributeTypesResponse:
       description: >-
         The response containing attribute type information.
@@ -4125,14 +4245,14 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                attributeTypes:
-                  description: >-
-                    The list of attribute types.
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SzAttributeType'
+              $ref: '#/components/schemas/SzAttributeTypesResponseData'
+    SzAttributeTypeResponseData:
+      description: >-
+        Describes the data segment associated with `SzAttributeTypeResponse`
+      type: object
+      properties:
+        attributeType:
+          $ref: '#/components/schemas/SzAttributeType'
     SzAttributeTypeResponse:
       description: >-
         The response containing information for a single attribute type.
@@ -4141,10 +4261,16 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                attributeType:
-                  $ref: '#/components/schemas/SzAttributeType'
+              $ref: '#/components/schemas/SzAttributeTypeResponseData'
+    SzDataSourceResponseData:
+      description: >-
+        Describes the data associated with `SzDataSourceResponse`
+      type: object
+      properties:
+        dataSource:
+          description: >-
+            The requested data source as an `SzDataSource` object.
+          $ref: '#/components/schemas/SzDataSource'
     SzDataSourceResponse:
       description: >-
         The response describing a data source.
@@ -4153,12 +4279,26 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                dataSource:
-                  description: >-
-                    The requested data source as an `SzDataSource` object.
-                  $ref: '#/components/schemas/SzDataSource'
+              $ref: '#/components/schemas/SzDataSourceResponseData'
+    SzDataSourcesResponseData:
+      description: >-
+        Describes the data for `SzDataSourceResponse`.
+      type: object
+      properties:
+        dataSources:
+          description: >-
+            The list of data source codes for the configured data
+            sources.
+          type: array
+          items:
+            type: string
+        dataSourceDetails:
+          description: >-
+            The list of `SzDataSource` instances describing the data
+            sources that are configured.
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SzDataSource'
     SzDataSourcesResponse:
       description: >-
         The response describing the configured data sources.
@@ -4167,22 +4307,16 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                dataSources:
-                  description: >-
-                    The list of data source codes for the configured data
-                    sources.
-                  type: array
-                  items:
-                    type: string
-                dataSourceDetails:
-                  description: >-
-                    The list of `SzDataSource` instances describing the data
-                    sources that are configured.
-                  type: object
-                  additionalProperties:
-                    $ref: '#/components/schemas/SzDataSource'
+              $ref: '#/components/schemas/SzDataSourcesResponseData'
+    SzEntityTypeResponseData:
+      description: >-
+        Describes the data segment of `SzEntityTypeResponse`
+      type: object
+      properties:
+        entityType:
+          description: >-
+            The requested entity type as an `SzEntityType` object.
+          $ref: '#/components/schemas/SzEntityType'
     SzEntityTypeResponse:
       description: >-
         The response describing an entity type.
@@ -4191,12 +4325,26 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                entityType:
-                  description: >-
-                    The requested entity type as an `SzEntityType` object.
-                  $ref: '#/components/schemas/SzEntityType'
+              $ref: '#/components/schemas/SzEntityTypeResponseData'
+    SzEntityTypesResponseData:
+      description: >-
+        Describes the data segment associated with `SzEntityTypesResponse`
+      type: object
+      properties:
+        entityTypes:
+          description: >-
+            The list of entity type codes for the configured entity
+            types.
+          type: array
+          items:
+            type: string
+        entityTypeDetails:
+          description: >-
+            The list of `SzEntityType` instances describing the
+            configured entity types.
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SzEntityType'
     SzEntityTypesResponse:
       description: >-
         The response describing the configured entity types.
@@ -4205,22 +4353,16 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                entityTypes:
-                  description: >-
-                    The list of entity type codes for the configured entity
-                    types.
-                  type: array
-                  items:
-                    type: string
-                entityTypeDetails:
-                  description: >-
-                    The list of `SzEntityType` instances describing the
-                    configured entity types.
-                  type: object
-                  additionalProperties:
-                    $ref: '#/components/schemas/SzEntityType'
+              $ref: '#/components/schemas/SzEntityTypesResponseData'
+    SzEntityClassResponseData:
+      description: >-
+        Describes the data segment of `SzEntityClassResponse`
+      type: object
+      properties:
+        entityClass:
+          description: >-
+            The requested data source as an `SzEntityClass` object.
+          $ref: '#/components/schemas/SzEntityClass'
     SzEntityClassResponse:
       description: >-
         The response describing an entity class.
@@ -4229,12 +4371,26 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                entityClass:
-                  description: >-
-                    The requested data source as an `SzEntityClass` object.
-                  $ref: '#/components/schemas/SzEntityClass'
+              $ref: '#/components/schemas/SzEntityClassResponseData'
+    SzEntityClassesResponseData:
+      description: >-
+        Describes the data associated with `SzEntityClassesResponse`
+      type: object
+      properties:
+        entityClasses:
+          description: >-
+            The list of entity classes codes for the configured entity
+            classes.
+          type: array
+          items:
+            type: string
+        entityClassDetails:
+          description: >-
+            The list of `SzEntityClass` instances describing the
+            configured entity classes.
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SzEntityClass'
     SzEntityClassesResponse:
       description: >-
         The response describing the configured entity classes.
@@ -4243,69 +4399,66 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                entityClasses:
-                  description: >-
-                    The list of entity classes codes for the configured entity
-                    classes.
-                  type: array
-                  items:
-                    type: string
-                entityClassDetails:
-                  description: >-
-                    The list of `SzEntityClass` instances describing the
-                    configured entity classes.
-                  type: object
-                  additionalProperties:
-                    $ref: '#/components/schemas/SzEntityClass'
+              $ref: '#/components/schemas/SzEntityClassesResponseData'
     SzConfigResponse:
       description: >-
         The response containing raw configuration in the rawData field.
       allOf:
         - $ref: '#/components/schemas/SzResponseWithRawData'
+    SzLoadRecordResponseData:
+      description: >-
+        Describes the data segment of `SzLoadRecordResponse`.
+      type: object
+      properties:
+        recordId:
+          description: >-
+            The record ID of the record that was loaded.
+          type: string
+        info:
+          description: >-
+            The optionally requested info associated with the load.
+          $ref: '#/components/schemas/SzResolutionInfo'
     SzLoadRecordResponse:
+      description: >-
+        Describes the response when a record is successfully loaded.
       allOf:
         - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                recordId:
-                  description: >-
-                    The record ID of the record that was loaded.
-                  type: string
-                info:
-                  description: >-
-                    The optionally requested info associated with the load.
-                  $ref: '#/components/schemas/SzResolutionInfo'
+              $ref: '#/components/schemas/SzLoadRecordResponseData'
+    SzReevaluateResponseData:
+      description: >-
+        Describes the data segment of `SzReevaluateResponse`.
+      type: object
+      properties:
+        info:
+          description: >-
+            The optionally requested info associated with the load.
+          $ref: '#/components/schemas/SzResolutionInfo'
     SzReevaluateResponse:
       allOf:
         - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                info:
-                  description: >-
-                    The optionally requested info associated with the
-                    reevaluation.
-                  $ref: '#/components/schemas/SzResolutionInfo'
+              $ref: '#/components/schemas/SzReevaluateResponseData'
+    SzDeleteRecordResponseData:
+      description: >-
+        Describes the data segment of `SzDeleteRecordResponse`.
+      type: object
+      properties:
+        info:
+          description: >-
+            The optionally requested info associated with the load.
+          $ref: '#/components/schemas/SzResolutionInfo'
     SzDeleteRecordResponse:
       allOf:
         - $ref: '#/components/schemas/SzResponseWithRawData'
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                info:
-                  description: >-
-                    The optionally requested info associated with the
-                    record deletion.
-                  $ref: '#/components/schemas/SzResolutionInfo'
+              $ref: '#/components/schemas/SzDeleteRecordResponseData'
     SzRecordResponse:
       description: >-
         The response describing an entity record.
@@ -4330,6 +4483,19 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/SzEntityData'
+    SzAttributeSearchResponseData:
+      description: >-
+        Describes the data segment of the `SzAttributeSearchResponse`
+      type: object
+      properties:
+        searchResults:
+          description: >-
+            The array of `AttributeSearchResult` instances describing the
+            entities matching the specified entity search attributes
+            including the `AttributeSearchResultType` for each.
+          type: array
+          items:
+            $ref: '#/components/schemas/SzAttributeSearchResult'
     SzAttributeSearchResponse:
       description: >-
         The response describing the resolved entities found from a search.
@@ -4338,16 +4504,7 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                searchResults:
-                  description: >-
-                    The array AttributeSearchResult instances describing the
-                    entities matching the specified entity search attributes
-                    including the AttributeSearchResultType for each.
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SzAttributeSearchResult'
+              $ref: '#/components/schemas/SzAttributeSearchResponseData'
     SzEntityPathResponse:
       description: >-
         The response describing a path between two resolved entities.
@@ -5523,6 +5680,13 @@ components:
             end-points via Web Sockets `ws://` protocol.
           type: integer
           format: int32
+          nullable: false
+        infoQueueConfigured:
+          description: >-
+            Whether or not an asynchronous INFO queue has been configured for
+            automatically sending "INFO" messages when records are loaded,
+            reevaluated or deleted.
+          type: boolean
           nullable: false
     SzDataSource:
       description: Describes a data source.

@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2021-07-22
+
+### Changed in 2.7.0
+
+- Added `GET /` endpoint that mimics the functionality of `GET /heartbeat`
+- Added `GET /specifications/open-api` endpoint to get the Open API
+  specification as JSON data.  The optional `?asRaw=true` query parameter
+  promotes the Open API JSON from the `data` property of the response to the
+  root of the response.
+- Added 'infoQueueConfigured' property to SzServerInfo  
+- Modified inline data segments to be first-class named types.
+
 ## [2.6.0] - 2021-04-23
 
 ### Changed in 2.6.0
