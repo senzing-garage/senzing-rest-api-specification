@@ -5139,15 +5139,6 @@ components:
                 record to the first record in the resolved entity.  This is
                 blank for the first record.
               type: string
-            matchScore:
-              description: >-
-                The match score between the first record in the resolved
-                entity and this record.  The higher the score the closer
-                the match.  This is `null` for the first record in the
-                resolved entity.
-              type: integer
-              format: int32
-              nullable: true
             matchLevel:
               description: >-
                 The integer "match level" describing how the first record in
@@ -5422,14 +5413,6 @@ components:
                 matched to the primary resolved entity.
               type: integer
               format: int32
-            matchScore:
-              description: >-
-                The match score between the primary resolved entity and
-                this related entity.  The higher the score the closer
-                the match.
-              type: integer
-              format: int32
-              nullable: true
             matchKey:
               description: >-
                 The match key describing what features matched between
