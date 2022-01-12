@@ -2781,7 +2781,6 @@ paths:
           application/json; charset=UTF-8:
             schema:
               type: object
-              nullable: true
               additionalProperties: {}
             examples:
               chooseExample:
@@ -2791,7 +2790,6 @@ paths:
           application/json:
             schema:
               type: object
-              nullable: true
               additionalProperties: {}
             examples:
               chooseExample:
@@ -3238,7 +3236,6 @@ paths:
           application/json; charset=UTF-8:
             schema:
               type: object
-              nullable: true
               additionalProperties: {}
             examples:
               chooseExample:
@@ -3248,7 +3245,6 @@ paths:
           application/json:
             schema:
               type: object
-              nullable: true
               additionalProperties: {}
             examples:
               chooseExample:
