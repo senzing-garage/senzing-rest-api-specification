@@ -2770,32 +2770,26 @@ paths:
             schema:
               type: string
             examples:
-              seeTextPlainExample:
-                $ref: '#/components/examples/seeTextPlainExamples'
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonLinesExamples'
           application/x-jsonlines:
             schema:
               type: string
             examples:
-              seeTextPlainExample:
-                $ref: '#/components/examples/seeTextPlainExamples'
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonLinesExamples'
           application/json; charset=UTF-8:
             schema:
-              type: object
-              additionalProperties: {}
+              type: string
             examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonExample:
-                $ref: '#/components/examples/bulkDataJsonExample'
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonExamples'
           application/json:
             schema:
-              type: object
-              additionalProperties: {}
+              type: string
             examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonExample:
-                $ref: '#/components/examples/bulkDataJsonExample'
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonExamples'
           text/csv; charset=UTF-8:
             schema:
               type: string
@@ -3225,32 +3219,26 @@ paths:
             schema:
               type: string
             examples:
-              seeTextPlainExample:
-                $ref: '#/components/examples/seeTextPlainExamples'
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonLinesExamples'
           application/x-jsonlines:
             schema:
               type: string
             examples:
-              seeTextPlainExample:
-                $ref: '#/components/examples/seeTextPlainExamples'
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonLinesExamples'
           application/json; charset=UTF-8:
             schema:
-              type: object
-              additionalProperties: {}
+              type: string
             examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonExample:
-                $ref: '#/components/examples/bulkDataJsonExample'
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonExamples'
           application/json:
             schema:
-              type: object
-              additionalProperties: {}
+              type: string
             examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonExample:
-                $ref: '#/components/examples/bulkDataJsonExample'
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonExamples'
           text/csv; charset=UTF-8:
             schema:
               type: string
@@ -3309,12 +3297,19 @@ components:
       summary: -- choose an example --
       value: >-
 
-    seeTextPlainExamples:
+    seeTextPlainJsonLinesExamples:
       summary: -- see text/plain examples for JSON-lines --
       value: >-
         JSON-lines examples with content type application/x-jsonlines do not
         render properly in Swagger UI as they are escaped as JSON strings.
         Choose the various text/plain content types to see them correctly.
+
+    seeTextPlainJsonExamples:
+      summary: -- see text/plain examples for JSON --
+      value: >-
+        JSON examples with content type application/json do not render
+        properly in Swagger UI as they are escaped as JSON strings.  Choose
+        the various text/plain content types to see them correctly.
 
     noDataSources:
       summary: No data sources in content body
