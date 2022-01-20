@@ -2190,54 +2190,6 @@ paths:
           the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
         required: true
         content:
-          application/x-jsonlines; charset=UTF-8:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonLinesExample:
-                $ref: '#/components/examples/bulkDataJsonLinesExample'
-          application/x-jsonlines:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonLinesExample:
-                $ref: '#/components/examples/bulkDataJsonLinesExample'
-          application/json; charset=UTF-8:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonExample:
-                $ref: '#/components/examples/bulkDataJsonExample'
-          application/json:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonExample:
-                $ref: '#/components/examples/bulkDataJsonExample'
-          text/csv; charset=UTF-8:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataCSVExample:
-                $ref: '#/components/examples/bulkDataCSVExample'
-          text/csv:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataCSVExample:
-                $ref: '#/components/examples/bulkDataCSVExample'
           text/plain; charset=UTF-8:
             schema:
               type: string
@@ -2262,6 +2214,46 @@ paths:
                 $ref: '#/components/examples/bulkDataJsonLinesExample'
               bulkDataJsonExample:
                 $ref: '#/components/examples/bulkDataJsonExample'
+          application/x-jsonlines; charset=UTF-8:
+            schema:
+              type: string
+            examples:
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonLinesExamples'
+          application/x-jsonlines:
+            schema:
+              type: string
+            examples:
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonLinesExamples'
+          application/json; charset=UTF-8:
+            schema:
+              type: string
+            examples:
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonExamples'
+          application/json:
+            schema:
+              type: string
+            examples:
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonExamples'
+          text/csv; charset=UTF-8:
+            schema:
+              type: string
+            examples:
+              chooseExample:
+                $ref: '#/components/examples/chooseExample'
+              bulkDataCSVExample:
+                $ref: '#/components/examples/bulkDataCSVExample'
+          text/csv:
+            schema:
+              type: string
+            examples:
+              chooseExample:
+                $ref: '#/components/examples/chooseExample'
+              bulkDataCSVExample:
+                $ref: '#/components/examples/bulkDataCSVExample'
           multipart/form-data:
             schema:
               type: object
@@ -2503,54 +2495,6 @@ paths:
           the [Senzing Generic Entity Specification](https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification).
         required: true
         content:
-          application/x-jsonlines; charset=UTF-8:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonLinesExample:
-                $ref: '#/components/examples/bulkDataJsonLinesExample'
-          application/x-jsonlines:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonLinesExample:
-                $ref: '#/components/examples/bulkDataJsonLinesExample'
-          application/json; charset=UTF-8:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonExample:
-                $ref: '#/components/examples/bulkDataJsonExample'
-          application/json:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataJsonExample:
-                $ref: '#/components/examples/bulkDataJsonExample'
-          text/csv; charset=UTF-8:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataCSVExample:
-                $ref: '#/components/examples/bulkDataCSVExample'
-          text/csv:
-            schema:
-              type: string
-            examples:
-              chooseExample:
-                $ref: '#/components/examples/chooseExample'
-              bulkDataCSVExample:
-                $ref: '#/components/examples/bulkDataCSVExample'
           text/plain; charset=UTF-8:
             schema:
               type: string
@@ -2575,6 +2519,46 @@ paths:
                 $ref: '#/components/examples/bulkDataJsonLinesExample'
               bulkDataJsonExample:
                 $ref: '#/components/examples/bulkDataJsonExample'
+          application/x-jsonlines; charset=UTF-8:
+            schema:
+              type: string
+            examples:
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonLinesExamples'
+          application/x-jsonlines:
+            schema:
+              type: string
+            examples:
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonLinesExamples'
+          application/json; charset=UTF-8:
+            schema:
+              type: string
+            examples:
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonExamples'
+          application/json:
+            schema:
+              type: string
+            examples:
+              seeTextPlainExamples:
+                $ref: '#/components/examples/seeTextPlainJsonExamples'
+          text/csv; charset=UTF-8:
+            schema:
+              type: string
+            examples:
+              chooseExample:
+                $ref: '#/components/examples/chooseExample'
+              bulkDataCSVExample:
+                $ref: '#/components/examples/bulkDataCSVExample'
+          text/csv:
+            schema:
+              type: string
+            examples:
+              chooseExample:
+                $ref: '#/components/examples/chooseExample'
+              bulkDataCSVExample:
+                $ref: '#/components/examples/bulkDataCSVExample'
           multipart/form-data:
             schema:
               type: object
@@ -2615,10 +2599,26 @@ components:
   examples:
     chooseExample:
       summary: -- choose an example --
-      value:
+      value: >-
+
+    seeTextPlainJsonLinesExamples:
+      summary: -- see text/plain examples for JSON-lines --
+      value: >-
+        JSON-lines examples with content type application/x-jsonlines do not
+        render properly in Swagger UI as they are escaped as JSON strings.
+        Choose the various text/plain content types to see them correctly.
+
+    seeTextPlainJsonExamples:
+      summary: -- see text/plain examples for JSON --
+      value: >-
+        JSON examples with content type application/json do not render
+        properly in Swagger UI as they are escaped as JSON strings.  Choose
+        the various text/plain content types to see them correctly.
+
     noDataSources:
       summary: No data sources in content body
-      value:
+      value: >-
+
     singleDataSourceUnquotedString:
       summary: Single data source as an unquoted string
       value: >-
