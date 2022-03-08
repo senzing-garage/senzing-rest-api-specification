@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed endpoints pertaining to Entity Classes
 - Removed schema objects for Entity Types
 - Removed schema objects for Entity Classes
+- Removed `SzBaseRelatedEntity.matchScore` since `MATCH_SCORE` removed in 3.0
 
 ## [2.7.1] - 2022-01-12
 
