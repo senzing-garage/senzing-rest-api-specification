@@ -4232,13 +4232,6 @@ components:
                 the first record and usually one (1) for other records.
               type: integer
               format: int32
-            refScore:
-              description: >-
-                The ref score between the first record in the resolved entity
-                and this record.  This is zero (0) for the first record in the
-                resolved entity.
-              type: integer
-              format: int32
     SzDataSourceRecordSummary:
       description: >-
         Describes the number of records associated with a specific data source
@@ -4509,12 +4502,6 @@ components:
                 The code identifying the resolution rule that related
                 this entity to the primary resolved entity.
               type: string
-            refScore:
-              description: >-
-                The ref score between the primary resolved entity and
-                this related entity.
-              type: integer
-              format: int32
     SzRelationshipType:
       description: >-
         Describes how an entity is related to another (either a possible match,
