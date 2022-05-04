@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2022-04-01
+
+### Changed in 3.0.0
+
+- Removed endpoints pertaining to Entity Types
+- Removed endpoints pertaining to Entity Classes
+- Removed schema objects for Entity Types
+- Removed schema objects for Entity Classes
+- Removed `SzBaseRelatedEntity.matchScore` since `MATCH_SCORE` removed in 3.0
+- Removed `SzMatchedRecord.refScore` since `REF_SCORE` removed in 3.0
+- Removed `SzBaseRelatedEntity.refScore` since `REF_SCORE` removed in 3.0
+
 ## [2.7.1] - 2022-01-12
 
 ### Changed in 2.7.1
