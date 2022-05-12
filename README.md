@@ -9,15 +9,15 @@ The Senzing REST API specification is an OpenAPI 3.0 Specification of the RESTfu
 
 Viewing the Senzing REST API OpenAPI specification:
 
-1. In [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml)
-1. In [Swagger validator](http://validator.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml)
-1. In [Swagger editor](http://editor.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml)
+1. In [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/main/senzing-rest-api.yaml)
+1. In [Swagger validator](http://validator.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/main/senzing-rest-api.yaml)
+1. In [Swagger editor](http://editor.swagger.io/?url=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/main/senzing-rest-api.yaml)
 1. Using Docker.
   Example:
 
     ```console
     sudo docker run \
-      --env URL=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml \
+      --env URL=https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/main/senzing-rest-api.yaml \
       --name senzing-swagger-ui \
       --publish 9180:8080 \
       --rm \
