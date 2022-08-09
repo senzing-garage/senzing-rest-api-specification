@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2022-08-09
+
+### Changed in 3.1.0
+
+- Added `SzDetailLevel` enumeration for detail levels
+- Added `detailLevelQueryParam` reference to operations that also took 
+  `featureMode` parameter to allow detail level specification with default
+  value of `VERBOSE` to match pre-existing behavior for backwards compatibility.
+- Updated documentation of `SzRelationshipMode` and `withRelated` parameter to
+  reflect interdependence with `detailLevel`.
+- Updated documentation of `partial` flag for `SzResolvedEntity` to reflect how
+  it might be set to `true` depending on the specified `detailLevel`. 
+
 ## [3.0.0] - 2022-05-04
 
 ### Changed in 3.0.0

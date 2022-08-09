@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "3.0.0"
+  version: "3.1.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -1041,6 +1041,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/dataSourceCodePathParam'
         - $ref: '#/components/parameters/recordIdPathParam'
+        - $ref: '#/components/parameters/detailLevelQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/withFeatureStatsQueryParam'
         - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
@@ -1092,6 +1093,7 @@ paths:
         - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
         - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
+        - $ref: '#/components/parameters/detailLevelQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -1247,6 +1249,7 @@ paths:
                 "WORK_ADDR_STATE:CA"
               ]
         - $ref: '#/components/parameters/includeOnlyQueryParam'
+        - $ref: '#/components/parameters/detailLevelQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/withFeatureStatsQueryParam'
         - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
@@ -1310,6 +1313,7 @@ paths:
       operationId: searchEntitiesByPost
       parameters:
         - $ref: '#/components/parameters/includeOnlyQueryParam'
+        - $ref: '#/components/parameters/detailLevelQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/withFeatureStatsQueryParam'
         - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
@@ -1401,6 +1405,7 @@ paths:
         schema:
           type: integer
           format: int64
+      - $ref: '#/components/parameters/detailLevelQueryParam'
       - $ref: '#/components/parameters/featureModeQueryParam'
       - $ref: '#/components/parameters/withFeatureStatsQueryParam'
       - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
@@ -1464,6 +1469,7 @@ paths:
         - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
         - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
+        - $ref: '#/components/parameters/detailLevelQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -1538,6 +1544,7 @@ paths:
         - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
         - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
+        - $ref: '#/components/parameters/detailLevelQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -1626,6 +1633,7 @@ paths:
         - $ref: '#/components/parameters/withRelationshipsQueryParam'
         - $ref: '#/components/parameters/whyWithFeatureStatsQueryParam'
         - $ref: '#/components/parameters/whyWithInternalFeaturesQueryParam'
+        - $ref: '#/components/parameters/detailLevelQueryParam'
         - $ref: '#/components/parameters/featureModeQueryParam'
         - $ref: '#/components/parameters/forceMinimalQueryParam'
         - $ref: '#/components/parameters/withRawQueryParam'
@@ -1794,6 +1802,8 @@ paths:
         description: >-
             The maximum number of degrees to look for a path from the first
             entity to the last entity.  This defaults to `3` if not specified.
+            If specified, the value must be greater-than zero (0) since a path
+            cannot exist at zero degrees of separation.
         in: query
         required: false
         schema:
@@ -1915,6 +1925,7 @@ paths:
           requireMultipleDataSourcesExample:
             summary: Require multiple data sources
             value: [ VIPS, PARTNERS ]
+      - $ref: '#/components/parameters/detailLevelQueryParam'
       - $ref: '#/components/parameters/featureModeQueryParam'
       - $ref: '#/components/parameters/withFeatureStatsQueryParam'
       - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
@@ -2056,6 +2067,10 @@ paths:
         description: >-
             The maximum number of degrees to look for a path between the
             specified entities.  If not specified, this defaults to `3`.
+            Unlike `GET /entity-paths/` the value here may be zero (0) which
+            allows the caller to specify a list of entities and simply
+            "build out" the network around each to a maximum number of degrees
+            and up to a maximum number of entities.
         in: query
         required: false
         schema:
@@ -2090,6 +2105,7 @@ paths:
           format: int32
           minimum: 0
           default: 1000
+      - $ref: '#/components/parameters/detailLevelQueryParam'
       - $ref: '#/components/parameters/featureModeQueryParam'
       - $ref: '#/components/parameters/withFeatureStatsQueryParam'
       - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
@@ -3030,12 +3046,16 @@ components:
              information for related entities with the `partial` property of the
              `SzRelatedEntity` instances set to `true`.  Obtaining additional
              information requires subsequent API calls.
-          * `FULL` - Include full data on the first-degree related entities.
-             This option obtains entity network at one degree for the requested
-             entity and will fully populate up to 1000 related entities and sets
-             the `partial` property of those `SzRelatedEntity` instances to
-             `false`.  Related entities beyond the first 1000 will be left
-             incomplete and have their `partial` property will be set to `true`.
+          * `FULL` - Include full data on the first-degree related entities
+             according to the `featureMode` and `detailLevel` **unless**
+             `forceMinimal` is `true`.  This option obtains the entity network
+             at one degree for the requested entity and will populate up to 1000
+             related entities as much as possible with respect to the
+             `featureMode` and `detailLevel`.  Related entities beyond the first
+             1000 will be left incomplete and have their `partial` property set
+             to `true` regardless of the `detailLevel` and `featureMode`.  If
+             this value is specified along with `forceMinimal=true` then
+             `PARTIAL` is used instead.
       schema:
         default: PARTIAL
         $ref: '#/components/schemas/SzRelationshipMode'
@@ -3060,6 +3080,45 @@ components:
       schema:
         default: WITH_DUPLICATES
         $ref: '#/components/schemas/SzFeatureMode'
+    detailLevelQueryParam:
+      in: query
+      name: detailLevel
+      required: false
+      description: >-
+        Specifies the level of detail desired for the entity data.  Details for
+        features of entities as well as the related entities of entities are
+        controlled by `featureMode`, `withInternalFeatures`, and
+        `withFeatureStats`.  If not specified the value defaults to `VERBOSE`.
+        Possible values are:
+          * `MINIMAL` - The entities returned will include at most their
+                        entity ID's as well as identifiers for their
+                        constituent records (i.e.: data source code and record
+                        ID for each record).  This detail level is optimized for
+                        the fastest possible processing time.
+          * `BRIEF` - Builds upon `MINIMAL` to add the entity name and related
+                      entity match info when related entity match info when
+                      related entities are included.  This detail level aims to
+                      maintain as much speed as possible while providing names
+                      and relationship information for rendering a graph.
+          * `SUMMARY` - Identical to `BRIEF` except that individual record
+                        identifier information is excluded, leaving only the
+                        record summary (i.e.: a record count by data source
+                        code).  This reduces the size of the JSON document for
+                        large entities with thousands of records.  It may take
+                        longer to process than `BRIEF` but less data is
+                        returned as well, speeding up network transfer times.
+          * `VERBOSE` - Combines `BRIEF` and `SUMMARY` and then adds the
+                        original JSON data for each record, the record-level
+                        matching info, as well as formatted record data.  NOTE:
+                        the record-level matching info returned via "how" and
+                        "why" is often more useful than that embedded in the
+                        entity.  Further, the formatted record data, while
+                        readable, is not formatted according to locale (i.e.:
+                        address, name and date formatting may not appear as
+                        expected to a user).
+      schema:
+        default: VERBOSE
+        $ref: '#/components/schemas/SzDetailLevel'
     withRelationshipsQueryParam:
       in: query
       name: withRelationships
@@ -3164,12 +3223,16 @@ components:
       name: forceMinimal
       required: false
       description: >-
-        Whether or not to force the minimum entity detail in the response which
-        may consist of nothing more than an entity ID.  This provides the
-        fastest response to an entity query operation because no additional data
-        needs to be retrieved other than what is directly accessible.  This
-        overrules other parameters governing the retrieval of features or
-        related entities.
+        Whether (or not) to force the minimum entity detail in the response
+        which will consist of nothing more than an entity ID and record
+        identifying information (i.e.: data source code and record ID) for each
+        constituent record of an entity.  Unlike `detailLevel=MINIMAL` setting
+        this to `true` precludes the addition of feature information via other
+        parameters.  Setting this to `true` provides the fastest response to an
+        entity query operation because no additional data needs to be retrieved
+        other than what is directly accessible.  Setting this parameter to
+        `true` overrules other parameters governing the retrieval of features
+        or related entities.
       schema:
         type: boolean
         default: false
@@ -3819,12 +3882,16 @@ components:
              information for related entities with the `partial` property of the
              `SzRelatedEntity` instances set to `true`.  Obtaining additional
              information requires subsequent API calls.
-          * `FULL` - Include full data on the first-degree related entities.
-             This option obtains entity network at one degree for the requested
-             entity and will fully populate up to 1000 related entities and sets
-             the `partial` property of those `SzRelatedEntity` instances to
-             `false`.  Related entities beyond the first 1000 will be left
-             incomplete and have their `partial` property will be set to `true`.
+          * `FULL` - Include full data on the first-degree related entities
+             according to the `featureMode` and `detailLevel` **unless**
+             `forceMinimal` is `true`.  This option obtains the entity network
+             at one degree for the requested entity and will populate up to 1000
+             related entities as much as possible with respect to the
+             `featureMode` and `detailLevel`.  Related entities beyond the first
+             1000 will be left incomplete and have their `partial` property set
+             to `true` regardless of the `detailLevel` and `featureMode`.  If
+             this value is specified along with `forceMinimal=true` then
+             `PARTIAL` is used instead.
       type: string
       enum:
         - NONE
@@ -3858,6 +3925,44 @@ components:
         - SUFFICIENT
         - PREFERRED
         - OPTIONAL
+    SzDetailLevel:
+      description: >-
+        Describes the level of detail desired for entity data when obtained via
+        the various endpoints that return entity data.  Details for features of
+        entities as well as the related entities of entities are controlled by
+        other flags.  Possible values are:
+          * `MINIMAL` - The entities returned will include at most their
+                        entity ID's as well as identifiers for their
+                        constituent records (i.e.: data source code and record
+                        ID for each record).  This detail level is optimized for
+                        the fastest possible processing time.
+          * `BRIEF` - Builds upon `MINIMAL` to add the entity name and related
+                      entity match info when related entity match info when
+                      related entities are included.  This detail level aims to
+                      maintain as much speed as possible while providing names
+                      and relationship information for rendering a graph.
+          * `SUMMARY` - Identical to `BRIEF` except that individual record
+                        identifier information is excluded, leaving only the
+                        record summary (i.e.: a record count by data source
+                        code).  This reduces the size of the JSON document for
+                        large entities with thousands of records.  It may take
+                        longer to process than `BRIEF` but less data is
+                        returned as well, speeding up network transfer times.
+          * `VERBOSE` - Combines `BRIEF` and `SUMMARY` and then adds the
+                        original JSON data for each record, the record-level
+                        matching info, as well as formatted record data.  NOTE:
+                        the record-level matching info returned via "how" and
+                        "why" is often more useful than that embedded in the
+                        entity.  Further, the formatted record data, while
+                        readable, is not formatted according to locale (i.e.:
+                        address, name and date formatting may not appear as
+                        expected to a user).
+      type: string
+      enum:
+        - MINIMAL
+        - BRIEF
+        - SUMMARY
+        - VERBOSE
     SzAttributeType:
       description: >-
         Describes an attribute type that partially (or fully) describes a
@@ -4468,8 +4573,9 @@ components:
             records, otherwise they are not provided.  Also, the
             recordSummary items may be missing the topRecordIds if partial
             is true.  This can be true for partially retrieved related
-            entities or if features are suppressed or if the minimal
-            response flag has been specified.
+            entities or if features are suppressed, if the detail level has
+            has suppressed records or if the force-minimal response flag has
+            been specified.
           type: boolean
         lastSeenTimestamp:
           description: >-
