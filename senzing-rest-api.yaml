@@ -3046,12 +3046,16 @@ components:
              information for related entities with the `partial` property of the
              `SzRelatedEntity` instances set to `true`.  Obtaining additional
              information requires subsequent API calls.
-          * `FULL` - Include full data on the first-degree related entities.
-             This option obtains entity network at one degree for the requested
-             entity and will fully populate up to 1000 related entities and sets
-             the `partial` property of those `SzRelatedEntity` instances to
-             `false`.  Related entities beyond the first 1000 will be left
-             incomplete and have their `partial` property will be set to `true`.
+          * `FULL` - Include full data on the first-degree related entities
+             according to the `featureMode` and `detailLevel` **unless**
+             `forceMinimal` is `true`.  This option obtains the entity network
+             at one degree for the requested entity and will populate up to 1000
+             related entities as much as possible with respect to the
+             `featureMode` and `detailLevel`.  Related entities beyond the first
+             1000 will be left incomplete and have their `partial` property set
+             to `true` regardless of the `detailLevel` and `featureMode`.  If
+             this value is specified along with `forceMinimal=true` then
+             `PARTIAL` is used instead.
       schema:
         default: PARTIAL
         $ref: '#/components/schemas/SzRelationshipMode'
@@ -3081,22 +3085,39 @@ components:
       name: detailLevel
       required: false
       description: >-
-        Specifies the level of detail desired for entity data.  Details for
-        features are still controlled by `featureMode`, `withInternalFeatures`,
-        and `withFeatureStats`.  Possible values are:
+        Specifies the level of detail desired for the entity data.  Details for
+        features of entities as well as the related entities of entities are
+        controlled by `featureMode`, `withInternalFeatures`, and
+        `withFeatureStats`.  If not specified the value defaults to `VERBOSE`.
+        Possible values are:
           * `MINIMAL` - The entities returned will include at most their
                         entity ID's as well as identifiers for their
                         constituent records (i.e.: data source code and record
-                        ID for each record).
-          * `BRIEF` - Builds upon `MINIMAL` to add the entity name and record
-                      summary as well as those for related entities when related
-                      entities are being included.
-          * `STANDARD` - Builds upon `BRIEF` to add record-level matching info
-                         as well as matching info for related entities when
-                         related entities are being included.
-          * `DETAILED` - Builds upon `STANDARD` to add the original JSON data
-                         for each record as well as formatted record data
+                        ID for each record).  This detail level is optimized for
+                        the fastest possible processing time.
+          * `BRIEF` - Builds upon `MINIMAL` to add the entity name and related
+                      entity match info when related entity match info when
+                      related entities are included.  This detail level aims to
+                      maintain as much speed as possible while providing names
+                      and relationship information for rendering a graph.
+          * `SUMMARY` - Identical to `BRIEF` except that individual record
+                        identifier information is excluded, leaving only the
+                        record summary (i.e.: a record count by data source
+                        code).  This reduces the size of the JSON document for
+                        large entities with thousands of records.  It may take
+                        longer to process than `BRIEF` but less data is
+                        returned as well, speeding up network transfer times.
+          * `VERBOSE` - Combines `BRIEF` and `SUMMARY` and then adds the
+                        original JSON data for each record, the record-level
+                        matching info, as well as formatted record data.  NOTE:
+                        the record-level matching info returned via "how" and
+                        "why" is often more useful than that embedded in the
+                        entity.  Further, the formatted record data, while
+                        readable, is not formatted according to locale (i.e.:
+                        address, name and date formatting may not appear as
+                        expected to a user).
       schema:
+        default: VERBOSE
         $ref: '#/components/schemas/SzDetailLevel'
     withRelationshipsQueryParam:
       in: query
@@ -3861,12 +3882,16 @@ components:
              information for related entities with the `partial` property of the
              `SzRelatedEntity` instances set to `true`.  Obtaining additional
              information requires subsequent API calls.
-          * `FULL` - Include full data on the first-degree related entities.
-             This option obtains entity network at one degree for the requested
-             entity and will fully populate up to 1000 related entities and sets
-             the `partial` property of those `SzRelatedEntity` instances to
-             `false`.  Related entities beyond the first 1000 will be left
-             incomplete and have their `partial` property will be set to `true`.
+          * `FULL` - Include full data on the first-degree related entities
+             according to the `featureMode` and `detailLevel` **unless**
+             `forceMinimal` is `true`.  This option obtains the entity network
+             at one degree for the requested entity and will populate up to 1000
+             related entities as much as possible with respect to the
+             `featureMode` and `detailLevel`.  Related entities beyond the first
+             1000 will be left incomplete and have their `partial` property set
+             to `true` regardless of the `detailLevel` and `featureMode`.  If
+             this value is specified along with `forceMinimal=true` then
+             `PARTIAL` is used instead.
       type: string
       enum:
         - NONE
@@ -3909,21 +3934,35 @@ components:
           * `MINIMAL` - The entities returned will include at most their
                         entity ID's as well as identifiers for their
                         constituent records (i.e.: data source code and record
-                        ID for each record).
-          * `BRIEF` - Builds upon `MINIMAL` to add the entity name and record
-                      summary as well as those for related entities when related
-                      entities are being included.
-          * `STANDARD` - Builds upon `BRIEF` to add record-level matching info
-                         as well as matching info for related entities when
-                         related entities are being included.
-          * `DETAILED` - Builds upon `STANDARD` to add the original JSON data
-                         for each record as well as formatted record data
+                        ID for each record).  This detail level is optimized for
+                        the fastest possible processing time.
+          * `BRIEF` - Builds upon `MINIMAL` to add the entity name and related
+                      entity match info when related entity match info when
+                      related entities are included.  This detail level aims to
+                      maintain as much speed as possible while providing names
+                      and relationship information for rendering a graph.
+          * `SUMMARY` - Identical to `BRIEF` except that individual record
+                        identifier information is excluded, leaving only the
+                        record summary (i.e.: a record count by data source
+                        code).  This reduces the size of the JSON document for
+                        large entities with thousands of records.  It may take
+                        longer to process than `BRIEF` but less data is
+                        returned as well, speeding up network transfer times.
+          * `VERBOSE` - Combines `BRIEF` and `SUMMARY` and then adds the
+                        original JSON data for each record, the record-level
+                        matching info, as well as formatted record data.  NOTE:
+                        the record-level matching info returned via "how" and
+                        "why" is often more useful than that embedded in the
+                        entity.  Further, the formatted record data, while
+                        readable, is not formatted according to locale (i.e.:
+                        address, name and date formatting may not appear as
+                        expected to a user).
       type: string
       enum:
         - MINIMAL
         - BRIEF
-        - STANDARD
-        - DETAILED
+        - SUMMARY
+        - VERBOSE
     SzAttributeType:
       description: >-
         Describes an attribute type that partially (or fully) describes a
@@ -4534,8 +4573,9 @@ components:
             records, otherwise they are not provided.  Also, the
             recordSummary items may be missing the topRecordIds if partial
             is true.  This can be true for partially retrieved related
-            entities or if features are suppressed or if the minimal
-            response flag has been specified.
+            entities or if features are suppressed, if the detail level has
+            has suppressed records or if the force-minimal response flag has
+            been specified.
           type: boolean
         lastSeenTimestamp:
           description: >-
