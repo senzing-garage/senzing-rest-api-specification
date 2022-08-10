@@ -5372,7 +5372,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzRelatedFeatures'
-    SzMatchInfo:
+    SzWhyMatchInfo:
       description: >-
         The match info describing why two entities (or records) resolve or
         relate to one another.
@@ -5466,9 +5466,9 @@ components:
           $ref: '#/components/schemas/SzWhyPerspective'
         matchInfo:
           description: >-
-            The `SzMatchInfo` providing the details of the result.
+            The `SzWhyMatchInfo` providing the details of the result.
           nullable: false
-          $ref: '#/components/schemas/SzMatchInfo'
+          $ref: '#/components/schemas/SzWhyMatchInfo'
     SzWhyEntitiesResult:
       description: >-
         Describes why two entities did not resolve or why they related.
@@ -5488,9 +5488,9 @@ components:
           format: int64
         matchInfo:
           description: >-
-            The `SzMatchInfo` providing the details of the result.
+            The `SzWhyMatchInfo` providing the details of the result.
           nullable: false
-          $ref: '#/components/schemas/SzMatchInfo'
+          $ref: '#/components/schemas/SzWhyMatchInfo'
     SzWhyRecordsResult:
       description: >-
         Describes why two records might resolve.
@@ -5508,9 +5508,9 @@ components:
           $ref: '#/components/schemas/SzWhyPerspective'
         matchInfo:
           description: >-
-            The `SzMatchInfo` providing the details of the result.
+            The `SzWhyMatchInfo` providing the details of the result.
           nullable: false
-          $ref: '#/components/schemas/SzMatchInfo'
+          $ref: '#/components/schemas/SzWhyMatchInfo'
 tags:
   - name: Admin
     description: Administrative operations.
