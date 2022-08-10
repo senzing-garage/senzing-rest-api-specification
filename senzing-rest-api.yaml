@@ -4923,8 +4923,7 @@ components:
         incompleteRecordCount:
           description: >-
             The number of records from the bulk data set within the aggregate
-            group that are missing either a `DATA_SOURCE` value or `ENTITY_TYPE`
-            value.
+            group that are missing a `DATA_SOURCE` value.
           type: integer
           format: int32
         failedRecordCount:
