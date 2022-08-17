@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "3.1.0"
+  version: "3.2.0"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -1124,6 +1124,49 @@ paths:
                 $ref: '#/components/schemas/SzErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
+  /data-sources/{dataSourceCode}/records/{recordId}/entity/how:
+    get:
+      tags:
+        - Entity Data
+      summary: >-
+        Returns an analysis of how the entity for the record with the
+        respective data source code and record ID resolved.
+      description: |
+        This operation provides an anlysis of how the records in an entity
+        resolved.  The subject entity is the one containing the record
+        identified by the data source code and record ID in the request path.
+      operationId: howEntityByRecordID
+      parameters:
+        - $ref: '#/components/parameters/dataSourceCodePathParam'
+        - $ref: '#/components/parameters/recordIdPathParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successul response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzHowEntityResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzHowEntityResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzHowEntityResponse'
+        '404':
+          description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /entities:
     get:
       tags:
@@ -1392,8 +1435,8 @@ paths:
 
         **NOTE:** Bear in mind that entity ID's are transient and may be
         recycled or repurposed as new records are loaded and entities resolve,
-        unresolve and re-resolve.  An alternative way to identify a record is
-        by one of its composite records using
+        unresolve and re-resolve.  An alternative way to identify an entity is
+        by one of its constituent records using
         `GET /data-sources/{dataSourceCode}/records/{recordId}/entity`.
       operationId: getEntityByEntityId
       parameters:
@@ -1453,8 +1496,8 @@ paths:
 
         **NOTE:** Bear in mind that entity ID's are transient and may be
         recycled or repurposed as new records are loaded and entities resolve,
-        unresolve and re-resolve.  An alternative way to identify a record is
-        by one of its composite records using
+        unresolve and re-resolve.  An alternative way to identify an entity is
+        by one of its constituent records using
         `GET /data-sources/{dataSourceCode}/records/{recordId}/entity/why`.
       operationId: whyEntityByEntityID
       parameters:
@@ -1486,6 +1529,62 @@ paths:
             default:
               schema:
                 $ref: '#/components/schemas/SzWhyEntityResponse'
+        '404':
+          description: If entity ID is not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /entities/{entityId}/how:
+    get:
+      tags:
+        - Entity Data
+      summary: >-
+        Returns an analysis of how the entity for the respective
+        entity ID resolved.
+      description: |
+        This operation provides an anlysis of how the records in an entity
+        resolved.  The subject entity is identified by the entity ID in the
+        request path.
+
+        **NOTE:** Bear in mind that entity ID's are transient and may be
+        recycled or repurposed as new records are loaded and entities resolve,
+        unresolve and re-resolve.  An alternative way to identify an entity is
+        by one of its constituent records using
+        `GET /data-sources/{dataSourceCode}/records/{recordId}/entity/how`.
+      operationId: howEntityByEntityID
+      parameters:
+        - name: entityId
+          description: >-
+            The unique numeric ID that identifies the entity for which to
+            perform the analysis.
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successul response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzHowEntityResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzHowEntityResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzHowEntityResponse'
         '404':
           description: If entity ID is not found.
           content:
@@ -1711,6 +1810,119 @@ paths:
                 $ref: '#/components/schemas/SzReevaluateResponse'
         '404':
           description: If data source or record ID are not found.
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /virtual-entities:
+    get:
+      tags:
+        - Entity Data
+      summary: >-
+        Builds a virtual entity by simulating the resolution of the records
+        identified by the specified record ID parameters.
+      description: |
+        This operation simulates the resolution of the one or more specified
+        records into a single entity and returns the simulated "virtual"
+        entity.  The subject records are identified by data source code and
+        record ID pairs.
+      operationId: getVirtualEntityByRecordIds
+      parameters:
+        - name: r
+          description: >-
+            Repeating query parameter containing encoded `SzRecordId`
+            definitions that identify records to be inclued in the resultant
+            virtual entity.  At least one record identifier is required.  If
+            both this parameter and the `records` parameter are specified then
+            the values are merged.
+            **NOTE**: An encoded `SzRecordId` can EITHER be encoded as JSON or
+            as a delimited string where the first character is the delimiter and
+            the remainer is parsed as a data source prefix (up to the second
+            occurrence of the delimiter) and a record ID suffix (all characters
+            after the second occurrence of the delimiter).  For example:
+            `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SzRecordIdentifier'
+          examples:
+            noRecordsExample:
+              $ref: '#/components/examples/noRecordsExample'
+            singleByDelimitedRecordIdExample:
+              $ref: '#/components/examples/singleRecordByDelimitedRecordIdExample'
+            multipleByDelimitedRecordIdExample:
+              $ref: '#/components/examples/multipleRecordsByDelimitedRecordIdExample'
+            singleByJsonRecordIdExample:
+              $ref: '#/components/examples/singleRecordByJsonRecordIdExample'
+            multipleByJsonRecordIdExample:
+              $ref: '#/components/examples/multipleRecordsByJsonRecordIdExample'
+            multipleByMixedRecordIdExample:
+              $ref: '#/components/examples/multipleRecordsByMixedRecordIdExample'
+        - name: records
+          description: >-
+            Singular query parameter containing multiple encoded `SzRecordId`
+            definitions that identify records to be inclued in the resultant
+            virtual entity as a JSON array or a simple comma-separated array.
+            At least one record identifier is required.  If both this parameter
+            and the `r` parameter are specified then the values are merged.
+            **NOTE**: An encoded `SzRecordId` can EITHER be encoded as JSON or
+            as a delimited string where the first character is the delimiter and
+            the remainer is parsed as a data source prefix (up to the second
+            occurrence of the delimiter) and a record ID suffix (all characters
+            after the second occurrence of the delimiter).  For example:
+            `{"src":"PEOPLE","id":"12345ABC"}` or `:PEOPLE:12345ABC`.
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SzRecordIdentifiers'
+          examples:
+            noRecordsExample:
+              $ref: '#/components/examples/noRecordsArrayExample'
+            singleByDelimitedRecordIdExample:
+              $ref: '#/components/examples/singleRecordByDelimitedRecordIdArrayExample'
+            multipleByDelimitedRecordIdExample:
+              $ref: '#/components/examples/multipleRecordsByDelimitedRecordIdArrayExample'
+            singleByJsonRecordIdExample:
+              $ref: '#/components/examples/singleRecordByJsonRecordIdArrayExample'
+            multipleByJsonRecordIdExample:
+              $ref: '#/components/examples/multipleRecordsByJsonRecordIdArrayExample'
+            multipleByMixedRecordIdExample:
+              $ref: '#/components/examples/multipleRecordsByMixedRecordIdArrayExample'
+        - $ref: '#/components/parameters/detailLevelQueryParam'
+        - $ref: '#/components/parameters/featureModeQueryParam'
+        - $ref: '#/components/parameters/withFeatureStatsQueryParam'
+        - $ref: '#/components/parameters/withInternalFeaturesQueryParam'
+        - $ref: '#/components/parameters/forceMinimalQueryParam'
+        - $ref: '#/components/parameters/withRawQueryParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/SzVirtualEntityResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SzVirtualEntityResponse'
+            default:
+              schema:
+                $ref: '#/components/schemas/SzVirtualEntityResponse'
+        '400':
+          description: >-
+            If no record identifies are specifeid via the query parameters.
+            Also, if any of the identified records cannot be found.
           content:
             application/json; charset=UTF-8:
               schema:
@@ -1995,8 +2207,8 @@ paths:
           records that are part of the resolved entities to avoid.  At least
           one entity identifier is required.  If both this parameter and the
           `entities` parameter are specified then the values are merged.
-          NOTE: An encoded SzRecordId can EITHER be encoded as JSON or as a
-          delimited string where the first character is the delimiter and the
+          **NOTE**: An encoded `SzRecordId` can EITHER be encoded as JSON or as
+          a delimited string where the first character is the delimiter and the
           remainder is parsed as a data source prefix (up to the second
           occurrence of the delimiter) and a record ID suffix (all characters
           after the second occurrence of the delimiter).  For example:
@@ -2126,9 +2338,9 @@ paths:
                 $ref: '#/components/schemas/SzEntityNetworkResponse'
         '400':
           description: >-
-            If the 'e' entity identifiers parameter is missing or if any of the
-            parameters are not formatted as expected.  Also, if any of the
-            identified entities or records cannot be found.
+            If no entity identifiers are specified or if any of the parameters
+            are not formatted as expected.  Also, if any of the identified
+            entities or records cannot be found.
           content:
             application/json; charset=UTF-8:
               schema:
@@ -2800,6 +3012,9 @@ components:
     noEntitiesExample:
       summary: No entities specified
       value: [ ]
+    noRecordsExample:
+      summary: No records specified
+      value: [ ]
     singleEntityByEntityIdExample:
       summary: Single entity by entity ID
       value: [ 987654 ]
@@ -2809,20 +3024,38 @@ components:
     singleEntityByDelimitedRecordIdExample:
       summary: Single entity by delimiter-encoded record ID
       value: [ ":CUSTOMERS:GHI789" ]
+    singleRecordByDelimitedRecordIdExample:
+      summary: Single record by delimiter-encoded record ID
+      value: [ ":CUSTOMERS:GHI789" ]
     multipleEntitiesByDelimitedRecordIdExample:
       summary: Multiple entities by delimiter-encoded record ID
+      value: [ ":CUSTOMERS:GHI789", ":EMPLOYEES:JKL321" ]
+    multipleRecordsByDelimitedRecordIdExample:
+      summary: Multiple records by delimiter-encoded record ID
       value: [ ":CUSTOMERS:GHI789", ":EMPLOYEES:JKL321" ]
     singleEntityByJsonRecordIdExample:
       summary: Single entity by JSON-encoded record ID
       value: [ '{"src":"CUSTOMERS","id":"GHI789"}' ]
+    singleRecordByJsonRecordIdExample:
+      summary: Single record by JSON-encoded record ID
+      value: [ '{"src":"CUSTOMERS","id":"GHI789"}' ]
     multipleEntitiesByJsonRecordIdExample:
       summary: Multiple entities by JSON-encoded record ID
+      value: [ '{"src":"CUSTOMERS","id":"GHI789"}', '{"src":"EMPLOYEES","id":"JKL321"}' ]
+    multipleRecordsByJsonRecordIdExample:
+      summary: Multiple records by JSON-encoded record ID
       value: [ '{"src":"CUSTOMERS","id":"GHI789"}', '{"src":"EMPLOYEES","id":"JKL321"}' ]
     multipleEntitiesByMixedRecordIdExample:
       summary: Multiple entities by mixed-encoded record ID
       value: [ ":CUSTOMERS:GHI789", '{"src":"EMPLOYEES","id":"JKL321"}' ]
+    multipleRecordsByMixedRecordIdExample:
+      summary: Multiple records by mixed-encoded record ID
+      value: [ ":CUSTOMERS:GHI789", '{"src":"EMPLOYEES","id":"JKL321"}' ]
     noEntitiesArrayExample:
       summary: No entities specified
+      value:
+    noRecordsArrayExample:
+      summary: No records specified
       value:
     singleEntityByEntityIdArrayExample:
       summary: Single entity by entity ID
@@ -2833,17 +3066,32 @@ components:
     singleEntityByDelimitedRecordIdArrayExample:
       summary: Single entity by delimiter-encoded record ID
       value: '[":CUSTOMERS:GHI789"]'
+    singleRecordByDelimitedRecordIdArrayExample:
+      summary: Single record by delimiter-encoded record ID
+      value: '[":CUSTOMERS:GHI789"]'
     multipleEntitiesByDelimitedRecordIdArrayExample:
       summary: Multiple entities by delimiter-encoded record ID
+      value: '[":CUSTOMERS:GHI789",":EMPLOYEES:JKL321"]'
+    multipleRecordsByDelimitedRecordIdArrayExample:
+      summary: Multiple records by delimiter-encoded record ID
       value: '[":CUSTOMERS:GHI789",":EMPLOYEES:JKL321"]'
     singleEntityByJsonRecordIdArrayExample:
       summary: Single entity by JSON-encoded record ID
       value: '[{"src":"CUSTOMERS","id":"GHI789"}]'
+    singleRecordByJsonRecordIdArrayExample:
+      summary: Single record by JSON-encoded record ID
+      value: '[{"src":"CUSTOMERS","id":"GHI789"}]'
     multipleEntitiesByJsonRecordIdArrayExample:
       summary: Multiple entities by JSON-encoded record ID
       value: '[{"src":"CUSTOMERS","id":"GHI789"},{"src":"EMPLOYEES","id":"JKL321"}]'
+    multipleRecordsByJsonRecordIdArrayExample:
+      summary: Multiple records by JSON-encoded record ID
+      value: '[{"src":"CUSTOMERS","id":"GHI789"},{"src":"EMPLOYEES","id":"JKL321"}]'
     multipleEntitiesByMixedRecordIdArrayExample:
       summary: Multiple entities by mixed-encoded record ID
+      value: '[":CUSTOMERS:GHI789",{"src":"EMPLOYEES","id":"JKL321"}]'
+    multipleRecordsByMixedRecordIdArrayExample:
+      summary: Multiple records by mixed-encoded record ID
       value: '[":CUSTOMERS:GHI789",{"src":"EMPLOYEES","id":"JKL321"}]'
     ssnSearchExample:
       summary: Social security number
@@ -3632,6 +3880,16 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/SzEntityData'
+    SzVirtualEntityResponse:
+      description: >-
+        The response describing a simulated virtual entity and possibly its
+        related entities.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/SzVirtualEntityData'
     SzAttributeSearchResponseData:
       description: >-
         Describes the data segment of the `SzAttributeSearchResponse`
@@ -3865,11 +4123,17 @@ components:
           * `WITH_DUPLICATES` - ** (default value) ** Group near-duplicate
                                 feature values and return a representative value
                                 along with its near duplicate values.
+          * `ATTRIBUTED` - Same as `WITH_DUPLICATES` but with record-level
+                           references attributing each feature to the record(s)
+                           that provided it for the entity along with any
+                           usage type that might have been associated with the
+                           feature at the record level.
       type: string
       enum:
         - NONE
         - REPRESENTATIVE
         - WITH_DUPLICATES
+        - ATTRIBUTED
       default: WITH_DUPLICATES
     SzRelationshipMode:
       description: >-
@@ -4029,21 +4293,57 @@ components:
           format: int64
         - $ref: '#/components/schemas/SzRecordId'
         - type: string
+    SzRecordIdentifier:
+      description: >-
+        Identifies a record by its data source code and record ID.  This is
+        either a JSON-encoded `SzRecordId` or a delimited string where the first
+        character is the delimiter, followed by the data source code, then the
+        delimiter and the record ID (e.g.: `|CUSTOMERS|ABC123`).
+      oneOf:
+        - $ref: '#/components/schemas/SzRecordId'
+        - type: string
     SzEntityIdentifiers:
       description: >-
         Identifies zero or more entities by either its entity ID or by the
         data source code and record ID of one of their constituent records.
         Identifiers in the array are homogeneous, either all entity IDs or
-        all RecordId instances containing the data-source-code/record-id pair.
-        If specified as record IDs they are either JSON-encoded `SzRecordId`
-        instances or a delimited string where the first character is the
-        delimiter, followed by the data source code, then the delimiter and the
-        record ID (e.g.: `|CUSTOMERS|ABC123`).
+        all `SzRecordId` instances containing the data-source-code/record-id
+        pair.  If specified as record IDs they are either JSON-encoded
+        `SzRecordId` instances or a delimited string where the first character
+        is the delimiter, followed by the data source code, then the delimiter
+        and the record ID (e.g.: `|CUSTOMERS|ABC123`).
       oneOf:
         - type: array
           items:
             type: integer
             format: int64
+        - type: array
+          items:
+            $ref: '#/components/schemas/SzRecordId'
+        - type: array
+          items:
+            type: string
+        - type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/SzRecordId'
+              - type: string
+    SzRecordIdentifiers:
+      description: >-
+        Identifies zero or more records by their data source codes and record
+        ID's.  Identifiers in the array are homogeneous, either all entity IDs or
+        all RecordId instances containing the data-source-code/record-id pair.
+        The record ID's are either JSON-encoded `SzRecordId` instances or a
+        delimited string where the first character is the delimiter, followed
+        by the data source code, then the delimiter and the record ID (e.g.:
+        `|CUSTOMERS|ABC123`).
+      oneOf:
+        - type: array
+          items:
+            $ref: '#/components/schemas/SzRecordId'
+        - type: array
+          items:
+            type: string
         - type: array
           items:
             oneOf:
@@ -4222,6 +4522,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzFlaggedEntity'
+    SzFeatureReference:
+      description: >-
+        Describes a record's reference to an entity feature along with the
+        optional usage type with which the record references the feature.
+      type: object
+      properties:
+        internalId:
+          description: >-
+            The internal feature ID identifying the feature so that it might
+            be identified and referenced.
+          type: integer
+          format: int64
+        usageType:
+          description: >-
+            The optional associated usage type (e.g.: "HOME or "WORK).  This is
+            the usage type with which the record loaded the feature (if any).
+            Other records in the same entity may have the same feature with a
+            different usage type.
+          type: string
+          nullable: true
     SzEntityRecord:
       description: >-
         Describes a record (aka: observed entity) that has been loaded for
@@ -4239,6 +4559,14 @@ components:
             The identifier that uniquely identifies this record from other
             records from the same data source.  This may have been loaded with
             the record or automatically generated from the record's data.
+        featureReferences:
+          description: >-
+            The optional array of record feature references to the entity
+            features along with the record's usage type if any.
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SzFeatureReference'
         lastSeenTimestamp:
           description: >-
             The timestamp that the record was most recently loaded or updated.
@@ -4675,6 +5003,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzRelatedEntity'
+    SzVirtualEntityData:
+      description: >-
+        Describes the data associated with an `SzVirtualEntityResponse`
+        which currently includes only an `SzResolvedEntity`.
+      type: object
+      properties:
+        resolvedEntity:
+          description: The ResolvedEntity describing the primary entity.
+          $ref: '#/components/schemas/SzResolvedEntity'
     SzAttributeSearchResultType:
       description: >-
         Describes how the entity matching the search attributes would have
@@ -4923,8 +5260,7 @@ components:
         incompleteRecordCount:
           description: >-
             The number of records from the bulk data set within the aggregate
-            group that are missing either a `DATA_SOURCE` value or `ENTITY_TYPE`
-            value.
+            group that are missing a `DATA_SOURCE` value.
           type: integer
           format: int32
         failedRecordCount:
@@ -5373,7 +5709,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzRelatedFeatures'
-    SzMatchInfo:
+    SzWhyMatchInfo:
       description: >-
         The match info describing why two entities (or records) resolve or
         relate to one another.
@@ -5467,9 +5803,9 @@ components:
           $ref: '#/components/schemas/SzWhyPerspective'
         matchInfo:
           description: >-
-            The `SzMatchInfo` providing the details of the result.
+            The `SzWhyMatchInfo` providing the details of the result.
           nullable: false
-          $ref: '#/components/schemas/SzMatchInfo'
+          $ref: '#/components/schemas/SzWhyMatchInfo'
     SzWhyEntitiesResult:
       description: >-
         Describes why two entities did not resolve or why they related.
@@ -5489,9 +5825,9 @@ components:
           format: int64
         matchInfo:
           description: >-
-            The `SzMatchInfo` providing the details of the result.
+            The `SzWhyMatchInfo` providing the details of the result.
           nullable: false
-          $ref: '#/components/schemas/SzMatchInfo'
+          $ref: '#/components/schemas/SzWhyMatchInfo'
     SzWhyRecordsResult:
       description: >-
         Describes why two records might resolve.
@@ -5509,9 +5845,180 @@ components:
           $ref: '#/components/schemas/SzWhyPerspective'
         matchInfo:
           description: >-
-            The `SzMatchInfo` providing the details of the result.
+            The `SzWhyMatchInfo` providing the details of the result.
           nullable: false
-          $ref: '#/components/schemas/SzMatchInfo'
+          $ref: '#/components/schemas/SzWhyMatchInfo'
+    SzHowMatchInfo:
+      description: >-
+        The match info describing how a step in an entity's resolution completed
+        and why the two virtual entities were resolved.
+      type: object
+      properties:
+        matchKey:
+          description: >-
+            The match key indicating the components of the match.
+          nullable: false
+          type: string
+        resolutionRule:
+          description: >-
+            The resolution rule that triggered the match.
+          nullable: true
+          type: string
+        featureScores:
+          description: >-
+            The map of feature types to arrays of `SzFeatureScore` instances
+            for that feature type.
+          nullable: true
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/SzFeatureScore'
+    SzVirtualEntityRecord:
+      description: >-
+        Describes a record that belongs to a virtual entity.  This identifies
+        the record as well as its internal ID to understand which records in
+        the virtual entity are considered to be duplicates of each other.
+      type: object
+      properties:
+        dataSource:
+          description: >-
+            The data source code that uniquely identifies the data source
+            associated with the record.
+          type: string
+          nullable: false
+        recordId:
+          description: >-
+            The record ID that uniquely identifies a record within the
+            respective data source.
+          type: string
+          nullable: false
+        internalId:
+          description: >-
+            The unique internal ID for the record.  Those records having the
+            same value for this field are effectively identical for the purpose
+            of entity resolution and automatically bound together.
+          type: string
+          nullable: false
+    SzVirtualEntity:
+      description: >-
+        Describes a virtual entity that describes an interim resolution step
+        for an actual entity.  Virtual entities that consist of a single record
+        (or multiple "identical" records) are considered singletons and are the
+        initial building blocks in how an entity is resolved.  Those with
+        multiple distinct records are compound virtual entities formed from
+        resolving two virtual entities.
+      type: object
+      properties:
+        virtualEntityId:
+          description: >-
+            The unique identifier that distinguishes this virtual entity from
+            all other virtual entities among all steps in a "how" result.
+          type: string
+          nullable: false
+        singleton:
+          description: >-
+            Indicates if the virtual entity consists of a a single record or
+            one or more effectively identical records (i.e.: with the same
+            internal ID) with a value of `true`.  If this virtual entity
+            comprises multiple distinct records then this is `false`.
+          type: boolean
+          nullable: false
+        records:
+          description: >-
+            The array of `SzVirtualEntityRecords` identifying the constituent
+            records of the virtual entity.  Those records in the array with the
+            same `internalId` property are effectively identical for the
+            purposes of entity resolution.
+          type: array
+          items:
+            $ref: '#/components/schemas/SzVirtualEntityRecord'
+    SzResolutionStep:
+      description: >-
+        Describes a single step in describing how an entity was created.  Each
+        step consists of either the formation of a new "virtual entity" from
+        two records, the adding of a record to an existing virtual entity to
+        create a new virtual entity, or the resolving of two virtual entities
+        into a new virtual entity consisting of all the records.
+      type: object
+      properties:
+        stepNumber:
+          description: >-
+            The step number indicating the order of this step relative to other
+            steps if the steps were flattened to be linear.  However, the
+            non-linear nature of entity resolution means that the ordering of
+            the steps is only relevant within a single branch of the resolution
+            tree.
+          type:  integer
+          format: int32
+          nullable: false
+        inboundVirtualEntity:
+          description: >-
+            The `SzVirtualEntity` describing the inbound virtual entity.
+          nullable: false
+          $ref: '#/components/schemas/SzVirtualEntity'
+        candidateVirtualEntity:
+          description: >-
+            The `SzVirtualEntity` describing the candidate virtual entity.
+          nullable: false
+          $ref: '#/components/schemas/SzVirtualEntity'
+        matchInfo:
+          description: >-
+            The `SzHowMatchInfo` describing how the two virtual entities
+            matched each other.
+          nullable: false
+          $ref: '#/components/schemas/SzHowMatchInfo'
+        resolvedVirtualEntityId:
+          description: >-
+            The virtual entity ID identifying the virtual entity that resulted
+            from resolving the inbound and candidate virtual entities.
+          nullable: false
+          type: string
+    SzHowEntityResult:
+      description: >-
+        Describes the result of the "how entity" operation as a mapping of
+        non-singleton virtual entity ID's to their corresponding
+        `SzResolutionStep` instances as well as an array of `SzVirtualEntity`
+        instances describing the possible final states for the entity.
+        **NOTE**: If there are more than one possible final states then the
+        entity requires reevaluation, while a result with a single final state
+        does not require reevaluation.
+      type: object
+      properties:
+        finalStates:
+          description: >-
+            The array of `SzVirtualEntity` instances describing the possible
+            final states for the entity.  If there are more than one elements
+            in the array then the entity requires reevaluation.  If there is
+            only a single element in the array, then reevaluation is not
+            required.  This array will always have at least one element.
+          nullable: false
+          type: array
+          items:
+            $ref: '#/components/schemas/SzVirtualEntity'
+        resolutionSteps:
+          description: >-
+            The map of virtual entity ID's for non-singleton virtual entities
+            to `SzResolutionStep` instances describing how the virtual entity 
+            for the respective virtual entity ID was formed.  Since singleton
+            virtual entities are base building blocks, they do not have an
+            associated how step.  They are simply formed by the loading of a
+            record to the repository.
+          nullable: false
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SzResolutionStep'
+    SzHowEntityResponse:
+      description: >-
+        The response describing the result of the "how entity" operation.
+      allOf:
+        - $ref: '#/components/schemas/SzResponseWithRawData'
+        - type: object
+          properties:
+            data:
+              description: >-
+                The data field is the `SzHowEntityResult` itself.
+              $ref: '#/components/schemas/SzHowEntityResult'
 tags:
   - name: Admin
     description: Administrative operations.
