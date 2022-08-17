@@ -6,18 +6,57 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.0] - 2022-08-09
+## [3.2.0] - 2022-08-17
 
-### Changed in 3.1.0
+### Changed in 3.2.0
 
 - Added `SzDetailLevel` enumeration for detail levels
-- Added `detailLevelQueryParam` reference to operations that also took 
+- Added `detailLevelQueryParam` reference to operations that also took
   `featureMode` parameter to allow detail level specification with default
   value of `VERBOSE` to match pre-existing behavior for backwards compatibility.
 - Updated documentation of `SzRelationshipMode` and `withRelated` parameter to
   reflect interdependence with `detailLevel`.
 - Updated documentation of `partial` flag for `SzResolvedEntity` to reflect how
-  it might be set to `true` depending on the specified `detailLevel`. 
+  it might be set to `true` depending on the specified `detailLevel`.
+
+## [3.2.0] - 2022-08-17
+
+### Changed in 3.2.0
+
+- Added new `ATTRIBUTED` value for `SzFeatureMode` for pulling back feature
+  references at the record level to indicate which records contributed which
+  features:
+  - Added `SzFeatureReference` schema definition
+  - Added `featureReferences` property to `SzEntityRecord`
+- Added `GET /virtual-entities` operation definition:
+  - Added `SzVirtualEntityResponse` schema definition
+  - Added `SzVirtualEntityData` schema definition
+  - Added `SzRecordIdentifier` schema definition
+  - Added `SzRecordIdentifiers` schema definition
+- Added operations to support "how entity" functionality:
+  - Added `GET /entities/{entityId}/how` operation definition
+  - Added `GET /data-sources/{dataSourceCode}/records/{recordId}/entity/how`
+    operation definition
+  - Added `SzHowMatchInfo` schema definition
+  - Added `SzVirtualEntityRecord` schema definition
+  - Added `SzVirtualEntity` schema definition 
+  - Added `SzResolutionStep` schema definition
+  - Added `SzHowEntityResult` schema definition
+  - Added `SzHowEntityResponse` schema definition
+- Updated `GET /entity-paths` parameter documentation
+
+## [3.1.0] - 2022-08-09
+
+### Changed in 3.1.0
+
+- Added `SzDetailLevel` enumeration for detail levels
+- Added `detailLevelQueryParam` reference to operations that also took
+  `featureMode` parameter to allow detail level specification with default
+  value of `VERBOSE` to match pre-existing behavior for backwards compatibility.
+- Updated documentation of `SzRelationshipMode` and `withRelated` parameter to
+  reflect interdependence with `detailLevel`.
+- Updated documentation of `partial` flag for `SzResolvedEntity` to reflect how
+  it might be set to `true` depending on the specified `detailLevel`.
 
 ## [3.0.0] - 2022-05-04
 
