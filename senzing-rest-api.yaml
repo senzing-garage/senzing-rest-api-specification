@@ -5916,7 +5916,7 @@ components:
             all other virtual entities among all steps in a "how" result.
           type: string
           nullable: false
-        singelton:
+        singleton:
           description: >-
             Indicates if the virtual entity consists of a a single record or
             one or more effectively identical records (i.e.: with the same
@@ -5996,7 +5996,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SzVirtualEntity'
-        steps:
+        resolutionSteps:
           description: >-
             The map of virtual entity ID's for non-singleton virtual entities
             to `SzResolutionStep` instances describing how the virtual entity 
@@ -6007,9 +6007,7 @@ components:
           nullable: false
           type: object
           additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/SzResolutionStep'
+            $ref: '#/components/schemas/SzResolutionStep'
     SzHowEntityResponse:
       description: >-
         The response describing the result of the "how entity" operation.
@@ -6018,13 +6016,9 @@ components:
         - type: object
           properties:
             data:
-              type: object
-              properties:
-                howResult:
-                  description: >-
-                    The `SzHowEntityResult` describing the how the entity was
-                    resolved from its constituent records.
-                  $ref: '#/components/schemas/SzHowEntityResult'
+              description: >-
+                The data field is the `SzHowEntityResult` itself.
+              $ref: '#/components/schemas/SzHowEntityResult'
 tags:
   - name: Admin
     description: Administrative operations.
