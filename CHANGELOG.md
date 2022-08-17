@@ -10,25 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed in 3.2.0
 
-- Added `SzDetailLevel` enumeration for detail levels
-- Added `detailLevelQueryParam` reference to operations that also took
-  `featureMode` parameter to allow detail level specification with default
-  value of `VERBOSE` to match pre-existing behavior for backwards compatibility.
-- Updated documentation of `SzRelationshipMode` and `withRelated` parameter to
-  reflect interdependence with `detailLevel`.
-- Updated documentation of `partial` flag for `SzResolvedEntity` to reflect how
-  it might be set to `true` depending on the specified `detailLevel`.
-
-## [3.2.0] - 2022-08-17
-
-### Changed in 3.2.0
-
 - Added new `ATTRIBUTED` value for `SzFeatureMode` for pulling back feature
   references at the record level to indicate which records contributed which
   features:
   - Added `SzFeatureReference` schema definition
   - Added `featureReferences` property to `SzEntityRecord`
-- Added `GET /virtual-entities` operation definition:
+- Added `GET /virtual-entities` operation definition.
   - Added `SzVirtualEntityResponse` schema definition
   - Added `SzVirtualEntityData` schema definition
   - Added `SzRecordIdentifier` schema definition
