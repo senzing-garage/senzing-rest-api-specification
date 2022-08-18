@@ -1921,7 +1921,7 @@ paths:
                 $ref: '#/components/schemas/SzVirtualEntityResponse'
         '400':
           description: >-
-            If no record identifies are specifeid via the query parameters.
+            If no record identifies are specified via the query parameters.
             Also, if any of the identified records cannot be found.
           content:
             application/json; charset=UTF-8:
@@ -3322,9 +3322,14 @@ components:
                                multiple values that are near duplicates then
                                only one value is included and the others are
                                suppressed.
-          * `WITH_DUPLICATES` - Group near-duplicate feature values and return
-                                a representative value along with its near
-                                duplicate values.
+          * `WITH_DUPLICATES` - ** (default value) ** Group near-duplicate
+                                feature values and return a representative value
+                                along with its near duplicate values.
+          * `ATTRIBUTED` - Same as `WITH_DUPLICATES` but with record-level
+                           references attributing each feature to the record(s)
+                           that provided it for the entity along with any
+                           usage type that might have been associated with the
+                           feature at the record level.
       schema:
         default: WITH_DUPLICATES
         $ref: '#/components/schemas/SzFeatureMode'
