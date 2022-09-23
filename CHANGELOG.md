@@ -6,7 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2022-09-23
+
+### Changed in 3.3.0
+
 ## [3.2.0] - 2022-08-17
+
+- Added `SzDetailLevel.BARE_MINIMAL` value to handle just returning the
+  entity ID's without record information or relationship match info.
+- Added `SzDetailLevel.NETWORM_MINIMAL` value to behave the same as 
+  `SzDetailLevel.BARE_MINIMAL`, but with the addition of relationship
+  match info in the case of related entities being included.
+- Added `SzFeatureMode.ENTITY_NAME_ONLY` to handle just retrieving the 
+  entity name without actually returning other features.
 
 ### Changed in 3.2.0
 
