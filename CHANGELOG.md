@@ -6,19 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [markdownlint](https://dlaa.me/markdownlint/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.0] - 2022-04-03
+
+### Changed in 3.4.0
+
+- Removed documented `maximum` value for `maxDegrees` parameter on 
+  `GET /entity-paths` and `GET /entity-networks` since it was never enforced
+  by the `senzing-api-server` and does not really make sense.
+- Corrected `minimum` value for `maxDegrees` parameter for `GET /entity-path`
+  to be one (1) instead of zero (0).  The `senzing-api-server` has enforced
+  this as one (1) since paths cannot be zero-degree.
+
 ## [3.3.0] - 2022-09-23
 
 ### Changed in 3.3.0
 
-## [3.2.0] - 2022-08-17
-
 - Added `SzDetailLevel.BARE_MINIMAL` value to handle just returning the
   entity ID's without record information or relationship match info.
-- Added `SzDetailLevel.NETWORM_MINIMAL` value to behave the same as 
+- Added `SzDetailLevel.NETWORM_MINIMAL` value to behave the same as
   `SzDetailLevel.BARE_MINIMAL`, but with the addition of relationship
   match info in the case of related entities being included.
-- Added `SzFeatureMode.ENTITY_NAME_ONLY` to handle just retrieving the 
+- Added `SzFeatureMode.ENTITY_NAME_ONLY` to handle just retrieving the
   entity name without actually returning other features.
+
+## [3.2.0] - 2022-08-17
 
 ### Changed in 3.2.0
 
