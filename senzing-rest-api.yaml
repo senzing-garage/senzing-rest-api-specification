@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Senzing REST API
-  version: "3.4.0"
+  version: "3.4.1"
   description: >-
     This is the Senzing REST API.  It describes the REST interface
     to Senzing API functions available via REST.  It leverages the
@@ -3341,6 +3341,14 @@ components:
         controlled by `featureMode`, `withInternalFeatures`, and
         `withFeatureStats`.  If not specified the value defaults to `VERBOSE`.
         Possible values are:
+          * `BARE_MINIMAL` - The entities returned will include only their
+                             entity ID's.  No record information is returned
+                             and if related entities are included, they too will
+                             only be described by their entity ID's and will
+                             **not** include any matching info.
+          * `NETWORK_MINIMAL` - Identical to `BARE_MINIMAL` except in the case
+                                of related entities being included they will
+                                also include related matching info.
           * `MINIMAL` - The entities returned will include at most their
                         entity ID's as well as identifiers for their
                         constituent records (i.e.: data source code and record
