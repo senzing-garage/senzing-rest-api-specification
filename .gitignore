@@ -11,4 +11,8 @@ Thumbs.db
 *.msi
 *.wixpdb
 
+# Visual Studio code
+.vscode/*
+!.vscode/cspell.json
+*.code-workspace
 .history
