@@ -7,7 +7,6 @@ Thumbs.db
 #IDEs
 .idea/
 *.iml
-.vscode/
 *.msi
 *.wixpdb
 
