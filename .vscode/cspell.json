@@ -1,0 +1,36 @@
+{
+  // Version of the setting file.  Always 0.2
+  "version": "0.2",
+  // language - current active spelling language
+  "language": "en",
+  // words - list of words to be always considered correct
+  "words": [
+    "Boundaryt",
+    "CCLA",
+    "CODEOWNER",
+    "CONFIGFILE",
+    "CUST",
+    "DRLIC",
+    "DSRC",
+    "EMPL",
+    "ERRULE",
+    "ICLA",
+    "jsonlines",
+    "NETWORM",
+    "Pgku",
+    "Senzing",
+    "stackoverflow",
+    "swaggerapi",
+    "UTYPE",
+    "wixpdb"
+  ],
+  "ignorePaths": [
+    ".git/**",
+    "examples/data-sources-response-200.json",
+    "examples/entities-response-200.json",
+    "examples/entity-networks-response-200.json",
+    "examples/entity-paths-response-200.json",
+    "examples/entity-search-response-200.json",
+    "examples/records-response-200.json"
+  ]
+}

@@ -7,8 +7,11 @@ Thumbs.db
 #IDEs
 .idea/
 *.iml
-.vscode/
 *.msi
 *.wixpdb
 
+# Visual Studio code
+.vscode/*
+!.vscode/cspell.json
+*.code-workspace
 .history
